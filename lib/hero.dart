@@ -11,10 +11,10 @@ class MovableImage extends StatefulWidget {
   const MovableImage({required this.onMove, super.key});
 
   @override
-  _MovableImageState createState() => _MovableImageState();
+  MovableImageState createState() => MovableImageState();
 }
 
-class _MovableImageState extends State<MovableImage> {
+class MovableImageState extends State<MovableImage> {
   double _x = 64 * 16;
   double _y = 64 * 16;
   final double _step = 16;
@@ -75,20 +75,20 @@ class _MovableImageState extends State<MovableImage> {
         autofocus: true,
         onKeyEvent: (FocusNode node, KeyEvent event) {
           //if (event is KeyDownEvent) {
-            switch (event.logicalKey) {
-              case LogicalKeyboardKey.arrowLeft:
-                updatePosition(_x - _step, _y);
-                break;
-              case LogicalKeyboardKey.arrowRight:
-                updatePosition(_x + _step, _y);
-                break;
-              case LogicalKeyboardKey.arrowUp:
-                updatePosition(_x, _y - _step);
-                break;
-              case LogicalKeyboardKey.arrowDown:
-                updatePosition(_x, _y + _step);
-                break;
-            }
+          switch (event.logicalKey) {
+            case LogicalKeyboardKey.arrowLeft:
+              updatePosition(_x - _step, _y);
+              break;
+            case LogicalKeyboardKey.arrowRight:
+              updatePosition(_x + _step, _y);
+              break;
+            case LogicalKeyboardKey.arrowUp:
+              updatePosition(_x, _y - _step);
+              break;
+            case LogicalKeyboardKey.arrowDown:
+              updatePosition(_x, _y + _step);
+              break;
+          }
           //}
           return KeyEventResult.handled;
         },
@@ -102,47 +102,6 @@ class _MovableImageState extends State<MovableImage> {
       ),
     );
   }
-  //@override
-  //Widget build(BuildContext context) {
-  //  return Focus(
-  //    autofocus: true,
-  //    onKeyEvent: (FocusNode node, KeyEvent event) {
-  //      //if (event is KeyDownEvent) {
-  //      switch (event.logicalKey) {
-  //        case LogicalKeyboardKey.arrowLeft:
-  //          updatePosition(_x - _step, _y);
-  //          break;
-  //        case LogicalKeyboardKey.arrowRight:
-  //          updatePosition(_x + _step, _y);
-  //          break;
-  //        case LogicalKeyboardKey.arrowUp:
-  //          updatePosition(_x, _y - _step);
-  //          break;
-  //        case LogicalKeyboardKey.arrowDown:
-  //          updatePosition(_x, _y + _step);
-  //          break;
-  //      }
-  //      //}
-  //      return KeyEventResult.handled;
-  //    },
-  //    child: Stack(
-  //      // Add this Stack
-  //      children: [
-  //        Positioned(
-  //          left: _x,
-  //          top: _y,
-  //          child: Image.asset(
-  //            'assets/images/tile_0096.png',
-  //            width: TileMap.tileSize,
-  //            height: TileMap.tileSize,
-  //            fit: BoxFit.fill,
-  //            filterQuality: FilterQuality.none,
-  //          ),
-  //        ),
-  //      ],
-  //    ),
-  //  );
-  //}
 }
 
 class HeroPainter extends CustomPainter {

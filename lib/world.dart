@@ -4,15 +4,22 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zeldong/hero.dart';
+import 'package:zeldong/shader.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
 
 class TileMap {
   static const tileSize = 64.0;
   static List<List<int>> map = [];
 
   static Future<void> loadMap() async {
-    final String mapData = await rootBundle.loadString('assets/images/map32.txt');
+    final String mapData = await rootBundle.loadString(
+      'assets/images/map32.txt',
+    );
     final List<String> rows = mapData.trim().split('\n');
-    map = rows.map((row) => row.trim().split(' ').map(int.parse).toList()).toList();
+    map =
+        rows
+            .map((row) => row.trim().split(' ').map(int.parse).toList())
+            .toList();
   }
 
   static Point<int> getTilePosition(double screenX, double screenY) {
@@ -68,22 +75,30 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //return ShaderScaffoldExample(
+
     return Scaffold(
-      body: Center(
-        child: _isLoading 
-          ? const CircularProgressIndicator()
-          : _tileImages == null
-            ? const Text('Failed to load assets')
-            : SizedBox(
-                width: 800,
-                height: 600,
-                child: ClipRect(
-                  child: GameView(
-                    tileImages: _tileImages!,
-                    reloadKey: ValueKey(_tileImages.hashCode),
-                  ),
-                ),
-              ),
+      body: Stack(
+        children: [
+          Center(
+            child:
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : _tileImages == null
+                    ? const Text('Failed to load assets')
+                    : SizedBox(
+                      width: 800,
+                      height: 600,
+                      child: ClipRect(
+                        child: GameView(
+                          tileImages: _tileImages!,
+                          reloadKey: ValueKey(_tileImages.hashCode),
+                        ),
+                      ),
+                    ),
+          ),
+          Center(child: Veil()),
+        ],
       ),
     );
   }
@@ -109,7 +124,7 @@ class _GameViewState extends State<GameView> {
   void updateCamera(double playerX, double playerY) {
     final viewportWidth = 800.0;
     final viewportHeight = 600.0;
-    
+
     setState(() {
       // Center the camera on the player
       cameraOffset = Offset(
@@ -155,17 +170,21 @@ Future<List<ui.Image>> loadTileImages() async {
   final floorImage = AssetImage('assets/images/tile_0049.png');
   final wallImage = AssetImage('assets/images/tile_0040.png');
 
-  floorImage.resolve(ImageConfiguration()).addListener(
-    ImageStreamListener((ImageInfo info, bool _) {
-      floorCompleter.complete(info.image);
-    }),
-  );
+  floorImage
+      .resolve(ImageConfiguration())
+      .addListener(
+        ImageStreamListener((ImageInfo info, bool _) {
+          floorCompleter.complete(info.image);
+        }),
+      );
 
-  wallImage.resolve(ImageConfiguration()).addListener(
-    ImageStreamListener((ImageInfo info, bool _) {
-      wallCompleter.complete(info.image);
-    }),
-  );
+  wallImage
+      .resolve(ImageConfiguration())
+      .addListener(
+        ImageStreamListener((ImageInfo info, bool _) {
+          wallCompleter.complete(info.image);
+        }),
+      );
 
   return Future.wait([floorCompleter.future, wallCompleter.future]);
 }

@@ -1,8 +1,4 @@
-import 'dart:async';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:zeldong/hero.dart';
 import 'package:zeldong/world.dart';
 
 void main() {
@@ -15,6 +11,7 @@ class GameApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Pixel Art Game',
       theme: ThemeData(brightness: Brightness.dark),
       home: const GameScreen(),
