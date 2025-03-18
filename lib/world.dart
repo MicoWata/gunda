@@ -3,12 +3,9 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zeldong/hero.dart';
-import 'package:zeldong/shader.dart';
-import 'package:flutter_shaders/flutter_shaders.dart';
 
 class TileMap {
-  static const tileSize = 64.0;
+  static var tileSize = 64.0;
   static List<List<int>> map = [];
 
   static Future<void> loadMap() async {
@@ -23,11 +20,14 @@ class TileMap {
   }
 
   static Point<int> getTilePosition(double screenX, double screenY) {
-    return Point<int>((screenX ~/ tileSize), (screenY ~/ tileSize));
+    return Point<int>(
+      (screenX ~/ TileMap.tileSize),
+      (screenY ~/ TileMap.tileSize),
+    );
   }
 
   static Point<double> getScreenPosition(int tileX, int tileY) {
-    return Point<double>(tileX * tileSize, tileY * tileSize);
+    return Point<double>(tileX * TileMap.tileSize, tileY * TileMap.tileSize);
   }
 
   static bool isValidTile(int x, int y) {
@@ -38,155 +38,6 @@ class TileMap {
     if (!isValidTile(x, y)) return -1;
     return map[y][x];
   }
-}
-
-class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
-
-  @override
-  State<GameScreen> createState() => _GameScreenState();
-}
-
-class _GameScreenState extends State<GameScreen> {
-  List<ui.Image>? _tileImages;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAssets();
-  }
-
-  Future<void> _loadAssets() async {
-    try {
-      await TileMap.loadMap();
-      final images = await loadTileImages();
-      setState(() {
-        _tileImages = images;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('Error loading assets: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    //return ShaderScaffoldExample(
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          Center(
-            child:
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : _tileImages == null
-                    ? const Text('Failed to load assets')
-                    : SizedBox(
-                      width: 800,
-                      height: 600,
-                      child: ClipRect(
-                        child: GameView(
-                          tileImages: _tileImages!,
-                          reloadKey: ValueKey(_tileImages.hashCode),
-                        ),
-                      ),
-                    ),
-          ),
-          Center(child: Veil()),
-        ],
-      ),
-    );
-  }
-}
-
-class GameView extends StatefulWidget {
-  final List<ui.Image> tileImages;
-  final Key reloadKey;
-
-  const GameView({
-    required this.tileImages,
-    required this.reloadKey,
-    super.key,
-  });
-
-  @override
-  State<GameView> createState() => _GameViewState();
-}
-
-class _GameViewState extends State<GameView> {
-  Offset cameraOffset = Offset.zero;
-
-  void updateCamera(double playerX, double playerY) {
-    final viewportWidth = 800.0;
-    final viewportHeight = 600.0;
-
-    setState(() {
-      // Center the camera on the player
-      cameraOffset = Offset(
-        -(playerX - viewportWidth / 2),
-        -(playerY - viewportHeight / 2),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: TileMap.tileSize * TileMap.map[0].length,
-      height: TileMap.tileSize * TileMap.map.length,
-      child: ClipRect(
-        child: Transform.translate(
-          offset: cameraOffset,
-          child: Stack(
-            children: [
-              CustomPaint(
-                size: Size(
-                  TileMap.tileSize * TileMap.map[0].length,
-                  TileMap.tileSize * TileMap.map.length,
-                ),
-                painter: TileMapPainter(
-                  tileImages: widget.tileImages,
-                  reloadKey: widget.reloadKey,
-                ),
-              ),
-              MovableImage(onMove: updateCamera),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Future<List<ui.Image>> loadTileImages() async {
-  final floorCompleter = Completer<ui.Image>();
-  final wallCompleter = Completer<ui.Image>();
-
-  final floorImage = AssetImage('assets/images/tile_0049.png');
-  final wallImage = AssetImage('assets/images/tile_0040.png');
-
-  floorImage
-      .resolve(ImageConfiguration())
-      .addListener(
-        ImageStreamListener((ImageInfo info, bool _) {
-          floorCompleter.complete(info.image);
-        }),
-      );
-
-  wallImage
-      .resolve(ImageConfiguration())
-      .addListener(
-        ImageStreamListener((ImageInfo info, bool _) {
-          wallCompleter.complete(info.image);
-        }),
-      );
-
-  return Future.wait([floorCompleter.future, wallCompleter.future]);
 }
 
 class TileMapPainter extends CustomPainter {

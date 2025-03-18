@@ -13,27 +13,18 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +22 shader.dart
-badd +78 hero.dart
-badd +23 __FLUTTER_DEV_LOG__
-badd +465 term://~/school/work/zeldoune/lib//495801:/usr/bin/zsh
-badd +174 world.dart
-badd +14 main.dart
-badd +12 ~/school/work/zeldoune/assets/images/shader.frag
-badd +66 ~/school/work/zeldoune/pubspec.yaml
-badd +1 neo-tree\ filesystem\ \[1]
-badd +1 ~/school/work/zeldoune/__FLUTTER_DEV_LOG__
-badd +1 ~/school/work/zeldoune/shaders/shader.frag
-badd +2 term://~/school/work/zeldoune/lib//521819:/usr/bin/zsh
+badd +5 shader.dart
+badd +7 ~/school/work/zeldoune/lib/game.dart
+badd +21 ~/school/work/zeldoune/lib/hero.dart
+badd +15 ~/school/work/zeldoune/lib/main.dart
+badd +128 ~/school/work/zeldoune/lib/world.dart
 argglobal
 %argdel
 set stal=2
 tabnew +setlocal\ bufhidden=wipe
 tabnew +setlocal\ bufhidden=wipe
-tabnew +setlocal\ bufhidden=wipe
-tabnew +setlocal\ bufhidden=wipe
 tabrewind
-edit hero.dart
+edit ~/school/work/zeldoune/lib/game.dart
 let s:save_splitbelow = &splitbelow
 let s:save_splitright = &splitright
 set splitbelow splitright
@@ -53,54 +44,7 @@ set winwidth=1
 exe 'vert 1resize ' . ((&columns * 119 + 80) / 160)
 exe 'vert 2resize ' . ((&columns * 40 + 80) / 160)
 argglobal
-balt main.dart
-setlocal fdm=expr
-setlocal fde=nvim_treesitter#foldexpr()
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=99
-setlocal fml=1
-setlocal fdn=9
-setlocal fen
-17
-normal! zo
-70
-normal! zo
-let s:l = 37 - ((36 * winheight(0) + 25) / 51)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 37
-normal! 0
-wincmd w
-argglobal
-if bufexists(fnamemodify("neo-tree\ filesystem\ \[1]", ":p")) | buffer neo-tree\ filesystem\ \[1] | else | edit neo-tree\ filesystem\ \[1] | endif
-if &buftype ==# 'terminal'
-  silent file neo-tree\ filesystem\ \[1]
-endif
-balt hero.dart
-setlocal fdm=expr
-setlocal fde=nvim_treesitter#foldexpr()
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=99
-setlocal fml=1
-setlocal fdn=9
-setlocal fen
-let s:l = 1 - ((0 * winheight(0) + 25) / 51)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 1
-normal! 0
-wincmd w
-exe 'vert 1resize ' . ((&columns * 119 + 80) / 160)
-exe 'vert 2resize ' . ((&columns * 40 + 80) / 160)
-tabnext
-edit world.dart
-tcd ~/school/work/zeldoune
-argglobal
-balt ~/school/work/zeldoune/__FLUTTER_DEV_LOG__
+balt shader.dart
 setlocal fdm=expr
 setlocal fde=nvim_treesitter#foldexpr()
 setlocal fmr={{{,}}}
@@ -109,41 +53,111 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=9
 setlocal fen
+3
+normal! zo
+14
+normal! zo
+16
+normal! zo
+let s:l = 8 - ((7 * winheight(0) + 25) / 50)
+if s:l < 1 | let s:l = 1 | endif
+keepjumps exe s:l
+normal! zt
+keepjumps 8
+normal! 0
+wincmd w
+argglobal
+enew
+file neo-tree\ filesystem\ \[1]
+balt shader.dart
+setlocal fdm=expr
+setlocal fde=nvim_treesitter#foldexpr()
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=99
+setlocal fml=1
+setlocal fdn=9
+setlocal fen
+wincmd w
+exe 'vert 1resize ' . ((&columns * 119 + 80) / 160)
+exe 'vert 2resize ' . ((&columns * 40 + 80) / 160)
+tabnext
+edit ~/school/work/zeldoune/lib/world.dart
+argglobal
+balt ~/school/work/zeldoune/lib/main.dart
+setlocal fdm=expr
+setlocal fde=nvim_treesitter#foldexpr()
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=9
+setlocal fen
+let s:l = 128 - ((127 * winheight(0) + 25) / 50)
+if s:l < 1 | let s:l = 1 | endif
+keepjumps exe s:l
+normal! zt
+keepjumps 128
+normal! 0
+tabnext
+edit ~/school/work/zeldoune/lib/hero.dart
+argglobal
+balt ~/school/work/zeldoune/lib/game.dart
+setlocal fdm=expr
+setlocal fde=nvim_treesitter#foldexpr()
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=9
+setlocal fen
+8
+normal! zo
+17
+normal! zo
+23
+normal! zo
+28
+normal! zo
+29
+normal! zo
+39
+normal! zo
+40
+normal! zo
+41
+normal! zo
 42
 normal! zo
 49
-normal! zo
-54
 normal! zo
 59
 normal! zo
 60
 normal! zo
-63
+61
 normal! zo
-67
+70
 normal! zo
-69
+71
+normal! zo
+74
 normal! zo
 76
 normal! zo
-77
-normal! zo
 78
 normal! zo
-84
+95
 normal! zo
-87
+96
 normal! zo
-88
+107
 normal! zo
-99
-normal! zo
-113
+112
 normal! zo
 116
 normal! zo
-120
+121
 normal! zo
 122
 normal! zo
@@ -151,108 +165,19 @@ normal! zo
 normal! zo
 131
 normal! zo
+132
+normal! zo
 134
 normal! zo
-135
+147
 normal! zo
-137
-normal! zo
-138
-normal! zo
-139
-normal! zo
-140
-normal! zo
-144
-normal! zo
-158
-normal! zo
-167
-normal! zo
-168
-normal! zo
-175
-normal! zo
-176
-normal! zo
-184
-normal! zo
-191
-normal! zo
-195
-normal! zo
-196
-normal! zo
-198
-normal! zo
-201
-normal! zo
-214
-normal! zo
-let s:l = 80 - ((28 * winheight(0) + 25) / 51)
+let s:l = 21 - ((20 * winheight(0) + 25) / 50)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 80
-normal! 018|
-tabnext
-edit ~/school/work/zeldoune/lib/hero.dart
-tcd ~/school/work/zeldoune
-argglobal
-balt ~/school/work/zeldoune/pubspec.yaml
-setlocal fdm=expr
-setlocal fde=nvim_treesitter#foldexpr()
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=99
-setlocal fml=1
-setlocal fdn=9
-setlocal fen
-let s:l = 78 - ((10 * winheight(0) + 25) / 51)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 78
-normal! 02|
-tabnext
-edit ~/school/work/zeldoune/lib/shader.dart
-tcd ~/school/work/zeldoune/lib
-argglobal
-balt ~/school/work/zeldoune/lib/__FLUTTER_DEV_LOG__
-setlocal fdm=expr
-setlocal fde=nvim_treesitter#foldexpr()
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=9
-setlocal fen
-let s:l = 22 - ((21 * winheight(0) + 25) / 51)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 22
-normal! 03|
-tabnext
-edit ~/school/work/zeldoune/shaders/shader.frag
-tcd ~/school/work/zeldoune
-argglobal
-balt ~/school/work/zeldoune/lib/shader.dart
-setlocal fdm=expr
-setlocal fde=nvim_treesitter#foldexpr()
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=99
-setlocal fml=1
-setlocal fdn=9
-setlocal fen
-let s:l = 7 - ((6 * winheight(0) + 25) / 51)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 7
+keepjumps 21
 normal! 0
-tabnext 4
+tabnext 2
 set stal=1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

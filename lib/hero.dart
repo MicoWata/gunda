@@ -3,18 +3,22 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:zeldong/pause.dart';
 import 'package:zeldong/world.dart';
 
-class MovableImage extends StatefulWidget {
+class Player extends StatefulWidget {
   final Function(double, double) onMove;
 
-  const MovableImage({required this.onMove, super.key});
+  const Player({required this.onMove, super.key});
 
   @override
-  MovableImageState createState() => MovableImageState();
+  PlayerState createState() => PlayerState();
 }
 
-class MovableImageState extends State<MovableImage> {
+class PlayerState extends State<Player> {
+  int hearts = 3;
+  int keys = 3;
+  int coins = 3;
   double _x = 64 * 16;
   double _y = 64 * 16;
   final double _step = 16;
@@ -74,7 +78,13 @@ class MovableImageState extends State<MovableImage> {
       child: Focus(
         autofocus: true,
         onKeyEvent: (FocusNode node, KeyEvent event) {
-          //if (event is KeyDownEvent) {
+          if (event is KeyDownEvent) {
+            switch (event.logicalKey) {
+              case LogicalKeyboardKey.escape:
+                modalKey.currentState?.toggle();
+                break;
+            }
+          }
           switch (event.logicalKey) {
             case LogicalKeyboardKey.arrowLeft:
               updatePosition(_x - _step, _y);
