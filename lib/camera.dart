@@ -21,13 +21,24 @@ class _CameraState extends State<Camera> {
   void updateCamera(double playerX, double playerY) {
     final viewportWidth = Game.size.width;
     final viewportHeight = Game.size.height;
+    final mapWidth = TileMap.tileSize * TileMap.map[0].length;
+    final mapHeight = TileMap.tileSize * TileMap.map.length;
+
+    double offsetX = -(playerX - viewportWidth / 2);
+    double offsetY = -(playerY - viewportHeight / 2);
+
+    // Empêcher la caméra de bouger si on atteint le bord gauche ou droit
+    if (offsetX > 0) offsetX = 0;
+    if (offsetX < -(mapWidth - viewportWidth))
+      offsetX = -(mapWidth - viewportWidth);
+
+    // Empêcher la caméra de bouger si on atteint le bord haut ou bas
+    if (offsetY > 0) offsetY = 0;
+    if (offsetY < -(mapHeight - viewportHeight))
+      offsetY = -(mapHeight - viewportHeight);
 
     setState(() {
-      // Center the camera on the player
-      cameraOffset = Offset(
-        -(playerX - viewportWidth / 2),
-        -(playerY - viewportHeight / 2),
-      );
+      cameraOffset = Offset(offsetX, offsetY);
     });
   }
 
