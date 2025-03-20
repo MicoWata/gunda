@@ -17,8 +17,8 @@ class Player extends StatefulWidget {
 
 class PlayerState extends State<Player> {
   int hearts = 3;
-  int keys = 3;
-  int coins = 3;
+  int keys = 0;
+  int coins = 0;
   double _x = 64 * 16;
   double _y = 64 * 16;
   final double _step = 16;
@@ -99,7 +99,6 @@ class PlayerState extends State<Player> {
               updatePosition(_x, _y + _step);
               break;
           }
-          //}
           return KeyEventResult.handled;
         },
         child: CustomPaint(
@@ -107,19 +106,19 @@ class PlayerState extends State<Player> {
             TileMap.tileSize * TileMap.map[0].length,
             TileMap.tileSize * TileMap.map.length,
           ),
-          painter: HeroPainter(x: _x, y: _y),
+          painter: PlayerPainter(x: _x, y: _y),
         ),
       ),
     );
   }
 }
 
-class HeroPainter extends CustomPainter {
+class PlayerPainter extends CustomPainter {
   final double x;
   final double y;
   ui.Image? heroImage;
 
-  HeroPainter({required this.x, required this.y}) {
+  PlayerPainter({required this.x, required this.y}) {
     _loadHeroImage();
   }
 
@@ -154,7 +153,7 @@ class HeroPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant HeroPainter oldDelegate) {
+  bool shouldRepaint(covariant PlayerPainter oldDelegate) {
     return x != oldDelegate.x || y != oldDelegate.y;
   }
 }
