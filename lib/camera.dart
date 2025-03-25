@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:zeldong/game.dart';
 import 'package:zeldong/hero.dart';
+import 'package:zeldong/pawn.dart';
 import 'package:zeldong/world.dart';
 
 class Camera extends StatefulWidget {
@@ -29,13 +30,15 @@ class _CameraState extends State<Camera> {
 
     // Empêcher la caméra de bouger si on atteint le bord gauche ou droit
     if (offsetX > 0) offsetX = 0;
-    if (offsetX < -(mapWidth - viewportWidth))
+    if (offsetX < -(mapWidth - viewportWidth)) {
       offsetX = -(mapWidth - viewportWidth);
+    }
 
     // Empêcher la caméra de bouger si on atteint le bord haut ou bas
     if (offsetY > 0) offsetY = 0;
-    if (offsetY < -(mapHeight - viewportHeight))
+    if (offsetY < -(mapHeight - viewportHeight)) {
       offsetY = -(mapHeight - viewportHeight);
+    }
 
     setState(() {
       cameraOffset = Offset(offsetX, offsetY);
@@ -63,6 +66,7 @@ class _CameraState extends State<Camera> {
                 ),
               ),
               Player(onMove: updateCamera),
+              Pawn(),
             ],
           ),
         ),

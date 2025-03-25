@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zeldong/camera.dart';
+import 'package:zeldong/home.dart';
 import 'package:zeldong/menu.dart';
 import 'package:zeldong/pause.dart';
 import 'package:zeldong/shader.dart';
@@ -83,6 +84,7 @@ class _GameState extends State<Game> {
             ],
           ),
           Pause(key: modalKey),
+          Home(key: homeKey),
           //Center(child: Veil()),
         ],
       ),
@@ -93,9 +95,20 @@ class _GameState extends State<Game> {
 Future<List<ui.Image>> loadTileImages() async {
   final floorCompleter = Completer<ui.Image>();
   final wallCompleter = Completer<ui.Image>();
+  final pawnCompleter = Completer<ui.Image>();
 
-  final floorImage = AssetImage('assets/images/tile_0049.png');
-  final wallImage = AssetImage('assets/images/tile_0040.png');
+  final floorImage =
+      TileMap.level == 0
+          ? AssetImage('assets/images/tile_0049.png')
+          : AssetImage('assets/images/tile_0201.png');
+  final wallImage =
+      TileMap.level == 0
+          ? AssetImage('assets/images/tile_0040.png')
+          : AssetImage('assets/images/tile_0243.png');
+  final pawnImage =
+      TileMap.level == 0
+          ? AssetImage('assets/images/tile_0110.png')
+          : AssetImage('assets/images/tile_0099.png');
 
   floorImage
       .resolve(ImageConfiguration())
@@ -113,5 +126,17 @@ Future<List<ui.Image>> loadTileImages() async {
         }),
       );
 
-  return Future.wait([floorCompleter.future, wallCompleter.future]);
+  pawnImage
+      .resolve(ImageConfiguration())
+      .addListener(
+        ImageStreamListener((ImageInfo info, bool _) {
+          pawnCompleter.complete(info.image);
+        }),
+      );
+
+  return Future.wait([
+    floorCompleter.future,
+    wallCompleter.future,
+    pawnCompleter.future,
+  ]);
 }

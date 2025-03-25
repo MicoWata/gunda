@@ -7,27 +7,24 @@ import 'package:zeldong/home.dart';
 import 'package:zeldong/pause.dart';
 import 'package:zeldong/world.dart';
 
-class Player extends StatefulWidget {
-  final Function(double, double) onMove;
-
-  const Player({required this.onMove, super.key});
+class Pawn extends StatefulWidget {
+  const Pawn({super.key});
 
   @override
-  PlayerState createState() => PlayerState();
+  PawnState createState() => PawnState();
 }
 
-class PlayerState extends State<Player> {
+class PawnState extends State<Pawn> {
   int hearts = 3;
   int keys = 0;
   int coins = 0;
   double _x = 64 * 16;
-  double _y = 64 * 16;
+  double _y = 64 * 12;
   final double _step = 16;
 
   @override
   void initState() {
     super.initState();
-    widget.onMove(_x, _y);
   }
 
   bool canMove(double newX, double newY) {
@@ -66,7 +63,6 @@ class PlayerState extends State<Player> {
       setState(() {
         _x = newX;
         _y = newY;
-        widget.onMove(_x, _y);
       });
     }
   }
@@ -76,53 +72,23 @@ class PlayerState extends State<Player> {
     return SizedBox(
       width: TileMap.tileSize * TileMap.map[0].length,
       height: TileMap.tileSize * TileMap.map.length,
-      child: Focus(
-        autofocus: true,
-        onKeyEvent: (FocusNode node, KeyEvent event) {
-          if (event is KeyDownEvent) {
-            switch (event.logicalKey) {
-              case LogicalKeyboardKey.escape:
-                modalKey.currentState?.toggle();
-                break;
-              case LogicalKeyboardKey.space:
-                homeKey.currentState?.toggle();
-                break;
-            }
-          }
-          switch (event.logicalKey) {
-            case LogicalKeyboardKey.arrowLeft:
-              updatePosition(_x - _step, _y);
-              break;
-            case LogicalKeyboardKey.arrowRight:
-              updatePosition(_x + _step, _y);
-              break;
-            case LogicalKeyboardKey.arrowUp:
-              updatePosition(_x, _y - _step);
-              break;
-            case LogicalKeyboardKey.arrowDown:
-              updatePosition(_x, _y + _step);
-              break;
-          }
-          return KeyEventResult.handled;
-        },
-        child: CustomPaint(
-          size: Size(
-            TileMap.tileSize * TileMap.map[0].length,
-            TileMap.tileSize * TileMap.map.length,
-          ),
-          painter: PlayerPainter(x: _x, y: _y),
+      child: CustomPaint(
+        size: Size(
+          TileMap.tileSize * TileMap.map[0].length,
+          TileMap.tileSize * TileMap.map.length,
         ),
+        painter: PawnPainter(x: _x, y: _y),
       ),
     );
   }
 }
 
-class PlayerPainter extends CustomPainter {
+class PawnPainter extends CustomPainter {
   final double x;
   final double y;
   ui.Image? heroImage;
 
-  PlayerPainter({required this.x, required this.y}) {
+  PawnPainter({required this.x, required this.y}) {
     _loadHeroImage();
   }
 
@@ -130,8 +96,8 @@ class PlayerPainter extends CustomPainter {
     final completer = Completer<ui.Image>();
     final imageProvider =
         TileMap.level == 0
-            ? AssetImage('assets/images/tile_0096.png')
-            : AssetImage('assets/images/tile_0097.png');
+            ? AssetImage('assets/images/tile_0108.png')
+            : AssetImage('assets/images/tile_0099.png');
     imageProvider
         .resolve(const ImageConfiguration())
         .addListener(
@@ -160,7 +126,7 @@ class PlayerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant PlayerPainter oldDelegate) {
+  bool shouldRepaint(covariant PawnPainter oldDelegate) {
     return x != oldDelegate.x || y != oldDelegate.y;
   }
 }

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-final modalKey = GlobalKey<PauseState>();
+final homeKey = GlobalKey<HomeState>();
 
-class Pause extends StatefulWidget {
-  const Pause({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  PauseState createState() => PauseState();
+  HomeState createState() => HomeState();
 }
 
-class PauseState extends State<Pause> {
+class HomeState extends State<Home> {
   bool _isVisible = false;
 
   void toggle() {
@@ -26,14 +26,14 @@ class PauseState extends State<Pause> {
         children: [
           if (_isVisible)
             SizedBox(
-              width: 64 * 6,
-              height: 64 * 8,
+              width: 64 * 16,
+              height: 64 * 12,
               child: Container(
                 color: Colors.cyan,
                 child: Center(
                   child: SizedBox(
-                    width: 64 * 5,
-                    height: 64 * 7,
+                    width: 64 * 14,
+                    height: 64 * 10,
                     child: Container(
                       color: Colors.green,
                       child: Column(
@@ -46,7 +46,7 @@ class PauseState extends State<Pause> {
                               child: Text('Continue'),
                             ),
                           ),
-                          Flexible(flex: 1, child: Text('Options')),
+                          Flexible(flex: 1, child: Text('New Game')),
                           Flexible(flex: 1, child: Text('Exit')),
                         ],
                       ),
