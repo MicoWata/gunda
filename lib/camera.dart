@@ -18,6 +18,13 @@ class Camera extends StatefulWidget {
 
 class _CameraState extends State<Camera> {
   Offset cameraOffset = Offset.zero;
+  final ValueNotifier<Offset> playerPosition = ValueNotifier<Offset>(Offset.zero);
+
+  @override
+  void dispose() {
+    playerPosition.dispose();
+    super.dispose();
+  }
 
   void updateCamera(double playerX, double playerY) {
     final viewportWidth = Game.size.width;
@@ -65,8 +72,15 @@ class _CameraState extends State<Camera> {
                   reloadKey: widget.reloadKey,
                 ),
               ),
-              Player(onMove: updateCamera),
-              Pawn(),
+              Player(
+                onMove: updateCamera,
+                positionNotifier: playerPosition,
+              ),
+              Pawn(
+                x: 64 * 16, 
+                y: 64 * 12,
+                playerPosition: playerPosition,
+              ),
             ],
           ),
         ),

@@ -9,8 +9,13 @@ import 'package:zeldong/world.dart';
 
 class Player extends StatefulWidget {
   final Function(double, double) onMove;
+  final ValueNotifier<Offset> positionNotifier;
 
-  const Player({required this.onMove, super.key});
+  const Player({
+    required this.onMove, 
+    required this.positionNotifier,
+    super.key
+  });
 
   @override
   PlayerState createState() => PlayerState();
@@ -28,6 +33,7 @@ class PlayerState extends State<Player> {
   void initState() {
     super.initState();
     widget.onMove(_x, _y);
+    widget.positionNotifier.value = Offset(_x, _y);
   }
 
   bool canMove(double newX, double newY) {
@@ -67,6 +73,7 @@ class PlayerState extends State<Player> {
         _x = newX;
         _y = newY;
         widget.onMove(_x, _y);
+        widget.positionNotifier.value = Offset(_x, _y);
       });
     }
   }

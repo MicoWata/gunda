@@ -1,14 +1,21 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:zeldong/home.dart';
-import 'package:zeldong/pause.dart';
 import 'package:zeldong/world.dart';
 
 class Pawn extends StatefulWidget {
-  const Pawn({super.key});
+  final double x;
+  final double y;
+  final ValueNotifier<Offset> playerPosition;
+
+  const Pawn({
+    required this.x,
+    required this.y,
+    required this.playerPosition,
+    super.key,
+  });
 
   @override
   PawnState createState() => PawnState();
@@ -18,13 +25,70 @@ class PawnState extends State<Pawn> {
   int hearts = 3;
   int keys = 0;
   int coins = 0;
-  double _x = 64 * 16;
-  double _y = 64 * 12;
-  final double _step = 16;
+  late double _x;
+  late double _y;
+  final double _step = 8; // Smaller step for slower movement
+  Timer? _moveTimer;
 
   @override
   void initState() {
     super.initState();
+    _x = widget.x;
+    _y = widget.y;
+
+    // Start a timer to update position every 200ms
+    _moveTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+      _moveTowardPlayer();
+    });
+
+    // Listen to player position changes
+    widget.playerPosition.addListener(_moveTowardPlayer);
+  }
+
+  @override
+  void dispose() {
+    _moveTimer?.cancel();
+    widget.playerPosition.removeListener(_moveTowardPlayer);
+    super.dispose();
+  }
+
+  void _moveTowardPlayer() {
+    final playerPos = widget.playerPosition.value;
+
+    // Calculate distance to player
+    var point = math.Point(_x, _y);
+    var distance = point.distanceTo(math.Point(playerPos.dx, playerPos.dy));
+
+    if (distance > 64 * 1) {
+      // Calculate direction to player
+      double dx = 0;
+
+      if (_x + 4 < playerPos.dx) {
+        dx = _step;
+      } else if (_x - 4 > playerPos.dx) {
+        dx = -_step;
+      }
+
+      double dy = 0;
+
+      if (_y + 4 < playerPos.dy) {
+        dy = _step;
+      } else if (_y - 4 > playerPos.dy) {
+        dy = -_step;
+      }
+
+      if (dx != 0) {
+        dx = dx * 0.7071; // cos(45°)
+      }
+
+      if (dy != 0) {
+        dy = dy * 0.7071; // sin(45°)
+      }
+
+      if (dx != 0 || dy != 0) {
+        updatePosition(_x + dx, _y + dy);
+      }
+    }
   }
 
   bool canMove(double newX, double newY) {
