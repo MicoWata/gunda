@@ -160,10 +160,10 @@ class Player {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                'v: (${gameState.player.xVelocity.toStringAsFixed(1)}, ${gameState.player.yVelocity.toStringAsFixed(1)})',
-                style: const TextStyle(color: Colors.white, fontSize: 10),
-              ),
+              //Text(
+              //  'v: (${gameState.player.xVelocity.toStringAsFixed(1)}, ${gameState.player.yVelocity.toStringAsFixed(1)})',
+              //  style: const TextStyle(color: Colors.white, fontSize: 10),
+              //),
               const Text(
                 'SPACE: Hold to charge, release to shoot',
                 style: TextStyle(color: Colors.white, fontSize: 10),

@@ -15,7 +15,7 @@ class Game {
   static final GameState state = GameState();
   static final Effect effect = Effect();
   static Camera camera = Camera(viewportWidth: 0, viewportHeight: 0);
-
+  static bool paused = false;
   static const double gameWidth = 2400;
   static const double gameHeight = 2400;
 
@@ -32,6 +32,13 @@ class Game {
         Game.effect.showSlowMotion = false;
       }
     }
+  }
+
+  static bool over() {
+    if (Mob.remaining < 1) {
+      return true;
+    }
+    return false;
   }
 
   static Widget buildGameOverOverlay() {

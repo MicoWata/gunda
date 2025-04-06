@@ -9,6 +9,7 @@ import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/minimap.dart';
 import 'package:gunda/src/mob.dart';
+import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/panel.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
@@ -203,6 +204,10 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                 // Enemy rectangles
                 ...Game.state.enemies.map(
                   (enemy) => Mob.build(enemy, Game.camera),
+                ),
+                // Obstacles
+                ...Game.state.obstacles.map(
+                  (obstacle) => Obstacle.build(obstacle, Game.camera),
                 ),
                 // Target rectangle with physics info
                 //Mob.target(Game.state, Game.camera),

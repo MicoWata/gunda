@@ -5,6 +5,7 @@ import 'package:gunda/src/body.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/mob.dart';
+import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
 
@@ -31,6 +32,9 @@ class GameState {
 
   // Impact particles system
   final List<ImpactParticle> impactParticles = [];
+  
+  // Obstacles in the game
+  final List<Obstacle> obstacles = [];
 
   final Random _random = Random();
 
@@ -98,6 +102,69 @@ class GameState {
     return false;
   }
 
+  /// Initialize obstacles in the game world
+  void _initializeObstacles() {
+    obstacles.clear();
+    
+    // Create border walls around the game area
+    // Left wall
+    obstacles.add(ObstacleFactory.createWall(
+      x: -20,
+      y: -20,
+      width: 20,
+      height: Game.gameHeight + 40,
+    ));
+    
+    // Right wall
+    obstacles.add(ObstacleFactory.createWall(
+      x: Game.gameWidth,
+      y: -20,
+      width: 20,
+      height: Game.gameHeight + 40,
+    ));
+    
+    // Top wall
+    obstacles.add(ObstacleFactory.createWall(
+      x: -20,
+      y: -20,
+      width: Game.gameWidth + 40,
+      height: 20,
+    ));
+    
+    // Bottom wall
+    obstacles.add(ObstacleFactory.createWall(
+      x: -20,
+      y: Game.gameHeight,
+      width: Game.gameWidth + 40,
+      height: 20,
+    ));
+    
+    // Add some obstacles inside the game area
+    // Central block
+    obstacles.add(ObstacleFactory.createMetalBarrier(
+      x: Game.gameWidth / 2 - 100,
+      y: Game.gameHeight / 2 - 100,
+      width: 200,
+      height: 200,
+    ));
+    
+    // Random rocks
+    for (int i = 0; i < 15; i++) {
+      double rockSize = 30 + _random.nextDouble() * 70;
+      double rockX = _random.nextDouble() * (Game.gameWidth - rockSize);
+      double rockY = _random.nextDouble() * (Game.gameHeight - rockSize);
+      
+      // Ensure rocks aren't placed near the player starting position
+      if (!_isNearPlayer(rockX, rockY, 350)) {
+        obstacles.add(ObstacleFactory.createRock(
+          x: rockX,
+          y: rockY,
+          size: rockSize,
+        ));
+      }
+    }
+  }
+
   /// Reset the game to initial state
   void resetGame() {
     isGameOver = false;
@@ -122,5 +189,6 @@ class GameState {
     );
 
     _initializeEnemies();
+    _initializeObstacles();
   }
 }

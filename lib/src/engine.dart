@@ -6,6 +6,7 @@ import 'package:gunda/src/body.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/mob.dart';
+import 'package:gunda/src/obstacle.dart';
 
 class Engine {
   static const double wallBounce = 0.7;
@@ -172,9 +173,199 @@ class Engine {
     //});
   }
 
+  /// Check for projectile collisions with obstacles
+  static void handleProjectileObstacleCollisions() {
+    for (int i = Game.state.projectiles.length - 1; i >= 0; i--) {
+      Projectile projectile = Game.state.projectiles[i];
+      
+      for (Obstacle obstacle in Game.state.obstacles) {
+        if (projectile.collidesWith(obstacle.body)) {
+          // Calculate collision normal based on which side of the obstacle was hit
+          double normalX = 0;
+          double normalY = 0;
+          
+          // Determine the collision normal based on which side was hit
+          // Calculate nearest point on projectile to obstacle
+          final closestX = projectile.x.clamp(obstacle.body.left, obstacle.body.right);
+          final closestY = projectile.y.clamp(obstacle.body.top, obstacle.body.bottom);
+          
+          // Calculate direction from closest point to projectile center
+          final dirX = projectile.x - closestX;
+          final dirY = projectile.y - closestY;
+          
+          // Normalize direction
+          final magnitude = sqrt(dirX * dirX + dirY * dirY);
+          if (magnitude > 0) {
+            normalX = dirX / magnitude;
+            normalY = dirY / magnitude;
+          }
+          
+          // Reflect the velocity
+          final dotProduct = projectile.xVelocity * normalX + projectile.yVelocity * normalY;
+          projectile.xVelocity -= 2 * dotProduct * normalX * wallBounce;
+          projectile.yVelocity -= 2 * dotProduct * normalY * wallBounce;
+          
+          // Move the projectile away from obstacle to prevent getting stuck
+          projectile.x += normalX * (projectile.radius + 1);  // +1 for safety margin
+          projectile.y += normalY * (projectile.radius + 1);
+                    
+          // Increment bounce count
+          projectile.bounceCount++;
+          
+          // Create impact particles
+          final speed = sqrt(projectile.xVelocity * projectile.xVelocity + 
+                           projectile.yVelocity * projectile.yVelocity);
+          
+          Effect.impact(
+            projectile.x,
+            projectile.y,
+            projectile.color,
+            speed / 10,
+            Game.state,
+          );
+          
+          break; // Only handle one collision per projectile per frame
+        }
+      }
+    }
+  }
+
+  /// Check for collisions between player and obstacles
+  static void handlePlayerObstacleCollisions() {
+    Body player = Game.state.player;
+    
+    for (Obstacle obstacle in Game.state.obstacles) {
+      if (player.collidesWith(obstacle.body)) {
+        // Calculate collision normal based on which side of the obstacle was hit
+        double normalX = 0;
+        double normalY = 0;
+        
+        // Determine the collision normal based on which side was hit
+        final dx1 = player.right - obstacle.body.left;
+        final dx2 = obstacle.body.right - player.left;
+        final dy1 = player.bottom - obstacle.body.top;
+        final dy2 = obstacle.body.bottom - player.top;
+        
+        // Find the smallest penetration
+        final List<double> penetrations = [dx1, dx2, dy1, dy2];
+        final minPenetration = penetrations.reduce(min);
+        
+        if (minPenetration == dx1) {
+          normalX = -1;
+        } else if (minPenetration == dx2) {
+          normalX = 1;
+        } else if (minPenetration == dy1) {
+          normalY = -1;
+        } else if (minPenetration == dy2) {
+          normalY = 1;
+        }
+        
+        // Reflect the velocity
+        if (normalX != 0) {
+          player.xVelocity = -player.xVelocity * wallBounce;
+        }
+        if (normalY != 0) {
+          player.yVelocity = -player.yVelocity * wallBounce;
+        }
+        
+        // Move the player out of the obstacle
+        if (normalX < 0) {
+          player.x = obstacle.body.left - player.width;
+        } else if (normalX > 0) {
+          player.x = obstacle.body.right;
+        }
+        if (normalY < 0) {
+          player.y = obstacle.body.top - player.height;
+        } else if (normalY > 0) {
+          player.y = obstacle.body.bottom;
+        }
+        
+        // Create impact particles if the speed is significant
+        final speed = sqrt(player.xVelocity * player.xVelocity + 
+                         player.yVelocity * player.yVelocity);
+        
+        if (speed > 2.0) {
+          Effect.impact(
+            player.centerX,
+            player.centerY,
+            Colors.blue,
+            speed / 5,
+            Game.state,
+          );
+        }
+      }
+    }
+  }
+
+  /// Check for enemy collisions with obstacles
+  static void handleEnemyObstacleCollisions() {
+    for (Enemy enemy in Game.state.enemies) {
+      if (enemy.dead) continue;
+      
+      for (Obstacle obstacle in Game.state.obstacles) {
+        if (enemy.body.collidesWith(obstacle.body)) {
+          // Calculate collision normal based on which side of the obstacle was hit
+          double normalX = 0;
+          double normalY = 0;
+          
+          // Determine the collision normal based on which side was hit
+          final dx1 = enemy.body.right - obstacle.body.left;
+          final dx2 = obstacle.body.right - enemy.body.left;
+          final dy1 = enemy.body.bottom - obstacle.body.top;
+          final dy2 = obstacle.body.bottom - enemy.body.top;
+          
+          // Find the smallest penetration
+          final List<double> penetrations = [dx1, dx2, dy1, dy2];
+          final minPenetration = penetrations.reduce(min);
+          
+          if (minPenetration == dx1) {
+            normalX = -1;
+          } else if (minPenetration == dx2) {
+            normalX = 1;
+          } else if (minPenetration == dy1) {
+            normalY = -1;
+          } else if (minPenetration == dy2) {
+            normalY = 1;
+          }
+          
+          // Reflect the velocity
+          if (normalX != 0) {
+            enemy.body.xVelocity = -enemy.body.xVelocity * wallBounce;
+          }
+          if (normalY != 0) {
+            enemy.body.yVelocity = -enemy.body.yVelocity * wallBounce;
+          }
+          
+          // Move the enemy out of the obstacle
+          if (normalX < 0) {
+            enemy.body.x = obstacle.body.left - enemy.body.width;
+          } else if (normalX > 0) {
+            enemy.body.x = obstacle.body.right;
+          }
+          if (normalY < 0) {
+            enemy.body.y = obstacle.body.top - enemy.body.height;
+          } else if (normalY > 0) {
+            enemy.body.y = obstacle.body.bottom;
+          }
+          
+          break; // Only handle one collision per enemy per frame
+        }
+      }
+    }
+  }
+
   static void updatePlayerPhysics() {
     // Update player position
     Game.state.player.update();
+    
+    // Handle collision with obstacles
+    handlePlayerObstacleCollisions();
+    
+    // Additionally check for projectile-obstacle collisions
+    handleProjectileObstacleCollisions();
+    
+    // Check for enemy-obstacle collisions
+    handleEnemyObstacleCollisions();
 
     // Keep player within bounds and handle wall collisions
     if (Game.state.player.x <= 0) {
