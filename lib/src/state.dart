@@ -12,14 +12,14 @@ class GameState {
   bool isGameOver = false;
   int lives = Player.maxHearts;
   int score = 0;
+  int kills = 0;
+  //int goal = 3;
 
   // Player rectangle
   late Body player;
 
   // Enemy rectangles
   final List<Enemy> enemies = [];
-  //static List<Enemy> mobs = List.empty();
-  int numberOfEnemies = 3;
 
   // Enemy shooting
   final List<bool> enemyCanShoot = [];
@@ -47,7 +47,7 @@ class GameState {
     enemyShootCooldowns.clear();
 
     // Create new enemies
-    for (int i = 0; i < numberOfEnemies; i++) {
+    for (int i = 0; i < Mob.max; i++) {
       // Generate random color shade
       final hue = _random.nextInt(360);
       final color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
@@ -107,6 +107,7 @@ class GameState {
     impactParticles.clear();
     Weapon.power = Weapon.minPower;
     Weapon.isChargingShot = false;
+    Mob.remaining = Mob.count;
 
     // Initialize player at center of game world
     player = Body(
@@ -120,20 +121,6 @@ class GameState {
       mass: Player.playerMass,
     );
 
-    // Debug player position
-    //print(
-    //  "Initial player position: (${player.x}, ${player.y}), center: (${player.centerX}, ${player.centerY})",
-    //);
-
-    // Initialize target
-    //_initializeTarget();
-
-    // Initialize enemies
     _initializeEnemies();
-
-    // Debug
-    //print(
-    //  "Game reset with ${enemies.length} enemies at positions: ${enemies.map((e) => "(${e.body.x.toInt()}, ${e.body.y.toInt()})").join(", ")}",
-    //);
   }
 }

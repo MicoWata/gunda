@@ -10,6 +10,7 @@ class Body {
   double height;
   Color color;
   double mass;
+  bool idle;
 
   Body({
     required this.x,
@@ -20,6 +21,7 @@ class Body {
     required this.height,
     required this.color,
     this.mass = 1.0,
+    this.idle = false,
   });
 
   /// Check if this rectangle collides with another

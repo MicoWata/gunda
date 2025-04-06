@@ -11,28 +11,6 @@ class Engine {
   static const double wallBounce = 0.7;
   static const double collisionBounce = 0.8;
 
-  static void handleCollision() {
-    //// Get collision information
-    //final CollisionInfo collisionInfo =
-    //    CollisionPhysics.calculateCollisionResponse(
-    //      Game.state.player,
-    //      Game.state.target,
-    //    );
-    //
-    //// Don't apply collision if objects are moving away from each other
-    //if (collisionInfo.velocityAlongNormal > 0) return;
-    //
-    //// Apply collision response
-    //CollisionPhysics.applyCollisionImpulse(
-    //  Game.state.player,
-    //  Game.state.target,
-    //  collisionInfo,
-    //);
-    //
-    //// Create visual effects
-    //Effect.collide(collisionInfo);
-  }
-
   static void checkCollisions(Size screenSize) {
     final playerSpeed = sqrt(
       Game.state.player.xVelocity * Game.state.player.xVelocity +
@@ -68,7 +46,7 @@ class Engine {
         for (int j = Game.state.enemies.length - 1; j >= 0; j--) {
           Enemy enemy = Game.state.enemies[j];
 
-          if (projectile.collidesWith(enemy.body)) {
+          if (!enemy.dead && projectile.collidesWith(enemy.body)) {
             // Handle player projectile collision with enemy
             Ball.handleProjectileEnemyCollision(projectile, enemy.body, i, j);
             enemy.hurt();

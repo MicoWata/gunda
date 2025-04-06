@@ -15,6 +15,10 @@ class Mob {
   static double value = 1;
   static Size size = Size(100, 80);
   static double mass = 2.6;
+  static int count = 6;
+  static int max = 3;
+  static int remaining = count;
+  static int hp = 3;
 
   static void _handleEnemyShooting(Body enemy, int enemyIndex) {
     // Check if enemy can shoot (based on cooldown)
@@ -250,62 +254,129 @@ class Mob {
       // Get current enemy
       Enemy enemy = Game.state.enemies[i];
 
-      // Apply friction
-      enemy.body.xVelocity *= Player.friction;
-      enemy.body.yVelocity *= Player.friction;
+      if (!enemy.dead) {
+        // Apply friction
+        enemy.body.xVelocity *= Player.friction;
+        enemy.body.yVelocity *= Player.friction;
 
-      // Update position
-      enemy.body.update();
+        // Update position
+        enemy.body.update();
 
-      // Handle wall collisions
-      _handleEnemyWallCollisions(enemy.body);
+        // Handle wall collisions
+        _handleEnemyWallCollisions(enemy.body);
 
-      // Apply AI behavior
-      _applyEnemyAI(enemy.body, i);
+        // Apply AI behavior
+        _applyEnemyAI(enemy.body, i);
 
-      // Check for collisions with other enemies
-      Engine.handleEnemyToEnemyCollisions(i);
+        // Check for collisions with other enemies
+        Engine.handleEnemyToEnemyCollisions(i);
 
-      // Check for collision with player
-      if (enemy.body.collidesWith(Game.state.player)) {
-        Engine.handleEnemyPlayerCollision(enemy.body);
+        // Check for collision with player
+        if (enemy.body.collidesWith(Game.state.player)) {
+          Engine.handleEnemyPlayerCollision(enemy.body);
+        }
+
+        // Try to shoot at player if cooldown allows
+        _handleEnemyShooting(enemy.body, i);
       }
-
-      // Try to shoot at player if cooldown allows
-      _handleEnemyShooting(enemy.body, i);
     }
   }
 
-  static Widget build(Body enemy, Camera camera) {
-    return Positioned(
-      left: enemy.x - camera.x,
-      top: enemy.y - camera.y,
-      child: Container(
-        width: enemy.width,
-        height: enemy.height,
-        decoration: BoxDecoration(
-          color: enemy.color,
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 4,
-              offset: const Offset(2, 2),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            'Enemy',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 10,
+  static bool _isNearPlayer(double x, double y, double minDistance) {
+    if (!Game.state.player.x.isNaN) {
+      // Make sure player is initialized
+      double playerCenterX = Game.gameWidth / 2;
+      double playerCenterY = Game.gameHeight / 2;
+      double distance = sqrt(
+        pow(x - playerCenterX, 2) + pow(y - playerCenterY, 2),
+      );
+      return distance < minDistance;
+    }
+    return false;
+  }
+
+  static void spawn() {
+    if (remaining > count - max) {
+      for (Enemy enemy in Game.state.enemies) {
+        if (enemy.dead) {
+          double maxWidth = Game.gameWidth - Mob.size.width;
+          double maxHeight = Game.gameHeight - Mob.size.height;
+          double enemyX, enemyY;
+
+          final hue = Game.random.nextInt(360);
+          final color =
+              HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
+
+          do {
+            enemyX = Game.random.nextDouble() * maxWidth;
+            enemyY = Game.random.nextDouble() * maxHeight;
+          } while (_isNearPlayer(enemyX, enemyY, 300));
+
+          enemy.body.x = enemyX;
+          enemy.body.y = enemyY;
+          enemy.body.xVelocity = Game.random.nextDouble() * 2 - 1;
+          enemy.body.yVelocity = Game.random.nextDouble() * 2 - 1;
+          enemy.body.width = Mob.size.width * 0.8;
+          enemy.body.height = Mob.size.height * 0.8;
+          enemy.body.color = color;
+          enemy.body.mass = Mob.mass;
+
+          enemy.dead = false;
+          enemy.hp = hp;
+
+          return;
+        }
+      }
+    }
+  }
+
+  static Widget build(Enemy enemy, Camera camera) {
+    if (!enemy.dead) {
+      return Positioned(
+        left: enemy.body.x - camera.x,
+        top: enemy.body.y - camera.y,
+        child: Container(
+          width: enemy.body.width,
+          height: enemy.body.height,
+          decoration: BoxDecoration(
+            color: enemy.body.color,
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 4,
+                offset: const Offset(2, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(
+                  'Enemy',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+                Text(
+                  enemy.hp.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Container();
+    }
   }
 }
 
@@ -324,10 +395,17 @@ class Enemy {
 
   void hurt() {
     hp -= 1;
-    body.color = Colors.black;
 
-    if (hp < 1) {
+    var r = body.color.r / 4;
+    var g = body.color.g / 4;
+    var b = body.color.b / 4;
+
+    body.color = Color.from(alpha: 1.0, red: r, green: g, blue: b);
+    if (hp < 1 && !dead) {
+      Game.state.kills++;
       dead = true;
+      Mob.spawn();
+      Mob.remaining--;
     }
   }
 }

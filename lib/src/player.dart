@@ -15,8 +15,8 @@ class Player {
   static int lives = 3;
   static int score = 0;
 
-  static const double acceleration = 0.8; // Increased for bigger map
-  static const double maxSpeed = 24.0; // Increased for bigger map
+  static const double acceleration = 0.8;
+  static const double maxSpeed = 32.0;
   static const double friction = 0.9;
   static const double minMovementThreshold = 0.1;
 
@@ -26,7 +26,7 @@ class Player {
   static Offset worldMousePosition = Offset.zero;
 
   static const double playerMass = 10.0;
-  // Update mouse position in both screen and world coordinates
+
   static void updateMousePosition(PointerEvent event) {
     //setState(() {
     Player.mousePosition = event.position;
@@ -39,15 +39,46 @@ class Player {
     //});
   }
 
+  static void dash() {
+    Offset mouse = worldMousePosition;
+    double power = 50;
+
+    final recoilForce = power * 24 / Player.playerMass;
+
+    // Calculate direction from player to mouse
+    final playerCenterX = Game.state.player.centerX;
+    final playerCenterY = Game.state.player.centerY;
+
+    // Calculate vector from player to world mouse position
+    final dx = mouse.dx - playerCenterX;
+    final dy = mouse.dy - playerCenterY;
+
+    // Normalize the vector
+    final distance = sqrt(dx * dx + dy * dy);
+    final normalizedDx = dx / distance;
+    final normalizedDy = dy / distance;
+
+    Game.state.player.applyImpulse(
+      -normalizedDx * recoilForce * 2,
+      -normalizedDy * recoilForce * 2,
+    );
+  }
+
   static void handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent) {
       _pressedKeys.add(event.logicalKey);
 
+      if (event.logicalKey == LogicalKeyboardKey.keyE) {
+        dash();
+      }
       // Start charging shot when space bar is pressed
-      if (event.logicalKey == LogicalKeyboardKey.space &&
-          !Game.state.isGameOver &&
-          !Weapon.isChargingShot) {
-        Weapon.startChargingShot();
+      if (event.logicalKey == LogicalKeyboardKey.space) {
+        if (!Game.state.isGameOver && !Weapon.isChargingShot) {
+          Weapon.startChargingShot();
+        } else if (Game.state.isGameOver) {
+          Game.state.resetGame();
+          Game.state.animationController.repeat();
+        }
       }
     } else if (event is KeyUpEvent) {
       // Release shot when space bar is released

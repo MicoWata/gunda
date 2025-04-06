@@ -17,7 +17,7 @@ class Level {
       size: size,
       painter: GridPainter(
         gridSize: 100, // Larger grid size for the bigger map
-        lineColor: Colors.grey,
+        lineColor: Colors.brown.shade900,
         cameraX: camera.x,
         cameraY: camera.y,
         gameWidth: Game.gameWidth,
@@ -71,11 +71,9 @@ class LinePainter extends CustomPainter {
         Colors.green;
 
     // Draw the trajectory prediction line
-    final linePaint =
-        Paint()
-          ..color = Colors.grey.withValues(alpha: 0.7)
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round;
+    final linePaint = Paint()..color = Colors.grey; //.withValues(alpha: 0.7)
+    //..strokeWidth = 2
+    //..strokeCap = StrokeCap.round;
 
     // Draw dashed trajectory line
     _drawDashedLine(canvas, start, end, linePaint);
@@ -95,7 +93,9 @@ class LinePainter extends CustomPainter {
     // Draw power meter background
     final rectBackgroundPaint =
         Paint()
-          ..color = Colors.grey.withValues(alpha: 0.3)
+          ..color =
+              Colors
+                  .grey //.withValues(alpha: 0.3)
           ..style = PaintingStyle.fill;
 
     final rectBackground = Rect.fromLTWH(
@@ -104,12 +104,29 @@ class LinePainter extends CustomPainter {
       maxRectWidth,
       rectHeight,
     );
-    canvas.drawRect(rectBackground, rectBackgroundPaint);
+    //canvas.drawRect(rectBackground, rectBackgroundPaint);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+      rectBackgroundPaint,
+    );
+    // Draw power meter outline
+    final outlinePaint =
+        Paint()
+          ..color = Colors.lightGreen
+          ..style = PaintingStyle.fill;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+      outlinePaint,
+    );
+    //canvas.drawRect(rectBackground, outlinePaint);
 
     // Draw power meter fill
     final rectPaint =
         Paint()
-          ..color = powerColor.withValues(alpha: 0.7)
+          ..color =
+              powerColor //.withValues(alpha: 0.7)
           ..style = PaintingStyle.fill;
 
     final rect = Rect.fromLTWH(
@@ -118,16 +135,10 @@ class LinePainter extends CustomPainter {
       currentRectWidth,
       rectHeight,
     );
-    canvas.drawRect(rect, rectPaint);
-
-    // Draw power meter outline
-    final outlinePaint =
-        Paint()
-          ..color = Colors.black
-          ..strokeWidth = 1
-          ..style = PaintingStyle.stroke;
-
-    canvas.drawRect(rectBackground, outlinePaint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(8)),
+      rectPaint,
+    );
 
     // Draw power level text
     final textPainter = TextPainter(
@@ -240,7 +251,7 @@ class GridPainter extends CustomPainter {
     final paint =
         Paint()
           ..color = lineColor
-          ..strokeWidth = 1.0;
+          ..strokeWidth = 2.0;
 
     // Calculate grid offset based on camera position
     final double offsetX = -cameraX % gridSize;
@@ -351,7 +362,7 @@ class GridPainter extends CustomPainter {
       final Paint innerStrokePaint =
           Paint()
             ..color = Colors.deepOrange.withValues(alpha: 0.4)
-            ..strokeWidth = 1.0
+            ..strokeWidth = 4.0
             ..style = PaintingStyle.stroke;
 
       canvas.drawRect(

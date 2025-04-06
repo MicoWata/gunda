@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
+import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/state.dart';
 import 'package:gunda/src/weapon.dart';
@@ -15,10 +16,9 @@ class Game {
   static final Effect effect = Effect();
   static Camera camera = Camera(viewportWidth: 0, viewportHeight: 0);
 
-  static const double gameWidth =
-      2400; // Four times the original size (600 * 4)
-  static const double gameHeight =
-      2400; // Four times the original size (600 * 4)
+  static const double gameWidth = 2400;
+  static const double gameHeight = 2400;
+
   static void update() {
     // Handle power level updates for charging shot
     if (Weapon.isChargingShot) {
@@ -41,9 +41,9 @@ class Game {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'GAME OVER',
-              style: TextStyle(
+            Text(
+              Mob.remaining > 0 ? 'GAME OVER' : 'VICTORY',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 40,
                 fontWeight: FontWeight.bold,

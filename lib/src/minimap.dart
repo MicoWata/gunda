@@ -190,15 +190,17 @@ class _MinimapPainter extends CustomPainter {
     // Draw enemy positions
     final enemyPaint = Paint()..style = PaintingStyle.fill;
 
-    for (final enemy in enemies) {
-      // Use enemy's color but ensure visibility
-      enemyPaint.color = enemy.body.color.withValues(alpha: 0.9);
+    for (final Enemy enemy in enemies) {
+      if (!enemy.dead) {
+        // Use enemy's color but ensure visibility
+        enemyPaint.color = enemy.body.color.withValues(alpha: 0.9);
 
-      canvas.drawCircle(
-        Offset(enemy.body.centerX * scaleX, enemy.body.centerY * scaleY),
-        3, // Slightly smaller than player and target
-        enemyPaint,
-      );
+        canvas.drawCircle(
+          Offset(enemy.body.centerX * scaleX, enemy.body.centerY * scaleY),
+          3, // Slightly smaller than player and target
+          enemyPaint,
+        );
+      }
     }
   }
 

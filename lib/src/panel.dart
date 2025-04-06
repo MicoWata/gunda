@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/state.dart';
 
 class Panel {
@@ -41,6 +42,31 @@ class Panel {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          // Kills
+          Container(
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 5,
+                  offset: const Offset(2, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              'Remains: ${Mob.remaining}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
 

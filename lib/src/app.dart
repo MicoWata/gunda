@@ -15,6 +15,15 @@ import 'package:gunda/src/weapon.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
+  static late BuildContext appContext;
+
+  static void snack(String message) {
+    var snackBar = SnackBar(content: Text(message));
+
+    // Find the ScaffoldMessenger in the widget tree
+    // and use it to show a SnackBar.
+    ScaffoldMessenger.of(App.appContext).showSnackBar(snackBar);
+  }
 
   @override
   State<App> createState() => _AppState();
@@ -135,6 +144,8 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    App.appContext = context;
+
     final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
 
@@ -155,7 +166,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
             color:
                 Game.effect.showSlowMotion
                     ? Colors.blueGrey[800] // Darker background for slow motion
-                    : Colors.grey[200], // Normal background
+                    : Colors.brown, // Normal background
             child: Stack(
               children: [
                 // Background grid for visual reference (cached)
@@ -191,7 +202,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                 ),
                 // Enemy rectangles
                 ...Game.state.enemies.map(
-                  (enemy) => Mob.build(enemy.body, Game.camera),
+                  (enemy) => Mob.build(enemy, Game.camera),
                 ),
                 // Target rectangle with physics info
                 //Mob.target(Game.state, Game.camera),
@@ -225,6 +236,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                 ),
                 // Game over overlay
                 if (Game.state.isGameOver) Game.buildGameOverOverlay(),
+                if (Mob.remaining == 0) Game.buildGameOverOverlay(),
               ],
             ),
           ),

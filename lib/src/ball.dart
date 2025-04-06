@@ -248,7 +248,7 @@ class Projectile {
   /// Apply physics calculations to the projectile
   void _applyPhysics(Size screenSize) {
     // Apply gravity
-    yVelocity += Ball.projectileGravity;
+    //yVelocity += Ball.projectileGravity;
 
     // Apply air resistance
     xVelocity *= Ball.projectileAirResistance;
