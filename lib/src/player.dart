@@ -155,7 +155,7 @@ class Player {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Use arrow keys',
+                "Hero",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -165,8 +165,8 @@ class Player {
               //  'v: (${Player.body.xVelocity.toStringAsFixed(1)}, ${Player.body.yVelocity.toStringAsFixed(1)})',
               //  style: const TextStyle(color: Colors.white, fontSize: 10),
               //),
-              const Text(
-                'SPACE: Hold to charge, release to shoot',
+              Text(
+                Player.lives.toString(),
                 style: TextStyle(color: Colors.white, fontSize: 10),
               ),
             ],

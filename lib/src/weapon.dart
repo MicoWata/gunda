@@ -279,7 +279,7 @@ class LinePainter extends CustomPainter {
     // Draw power level text
     final textPainter = TextPainter(
       text: TextSpan(
-        text: 'Power: ${powerLevel.toStringAsFixed(1)}',
+        text: powerLevel.toStringAsFixed(1),
         style: const TextStyle(
           color: Colors.black,
           fontSize: 12,
