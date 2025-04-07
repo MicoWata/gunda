@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
+import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart';
-import 'package:gunda/src/state.dart';
+import 'package:gunda/src/player.dart';
 
 class Minimap {
-  static Widget build(GameState gameState, Camera camera, bool showSlowMotion) {
+  static Widget build(Camera camera, bool showSlowMotion) {
     return Positioned(
       bottom: 20,
       left: 20,
@@ -35,15 +36,15 @@ class Minimap {
               ),
             ),
             Text(
-              'Projectiles: ${gameState.projectiles.length}/${Ball.maxProjectiles}',
+              'Projectiles: ${Level.projectiles.length}/${Ball.maxProjectiles}',
               style: const TextStyle(fontSize: 14, color: Colors.white),
             ),
             Text(
-              'Particles: ${gameState.impactParticles.length}',
+              'Particles: ${Level.impactParticles.length}',
               style: const TextStyle(fontSize: 14, color: Colors.white),
             ),
             Text(
-              'Enemies: ${gameState.enemies.length}',
+              'Enemies: ${Level.enemies.length}',
               style: const TextStyle(fontSize: 14, color: Colors.white),
             ),
             const SizedBox(height: 5),
@@ -53,7 +54,7 @@ class Minimap {
               style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
             Text(
-              'Player: (${gameState.player.x.toInt()}, ${gameState.player.y.toInt()})',
+              'Player: (${Player.body.x.toInt()}, ${Player.body.y.toInt()})',
               style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
             Text(
@@ -77,11 +78,11 @@ class Minimap {
                   viewportHeight: camera.viewportHeight,
                   cameraX: camera.x,
                   cameraY: camera.y,
-                  playerX: gameState.player.centerX,
-                  playerY: gameState.player.centerY,
+                  playerX: Player.body.centerX,
+                  playerY: Player.body.centerY,
                   //targetX: gameState.target.centerX,
                   //targetY: gameState.target.centerY,
-                  enemies: gameState.enemies,
+                  enemies: Level.enemies,
                 ),
               ),
             ),

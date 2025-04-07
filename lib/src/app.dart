@@ -38,7 +38,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     super.initState();
 
     // Initialize game
-    Game.state.resetGame();
+    Game.reset();
 
     // Set up camera with initial viewport size (will be updated in build)
     Game.camera = Camera(viewportWidth: 600.0, viewportHeight: 600.0);
@@ -47,24 +47,24 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     //RawKeyboard.instance.addListener(Player.handleKeyEvent);
 
     // Animation loop for smooth movement
-    Game.state.animationController = AnimationController(
+    Game.animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 16), // ~60fps
     )..addListener(_updatePosition);
 
-    Game.state.animationController.repeat();
+    Game.animationController.repeat();
   }
 
   @override
   void dispose() {
-    Game.state.animationController.dispose();
+    Game.animationController.dispose();
     //RawKeyboard.instance.removeListener(Player.handleKeyEvent);
     super.dispose();
   }
 
   void _updatePosition() {
     // Don't update if game is over
-    if (Game.state.isGameOver) return;
+    if (Game.over) return;
 
     // Handle game state updates
     Game.update();
@@ -79,7 +79,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
       // Make sure camera follows player (this is the most important part)
       // This must happen after player update and before we render the frame
-      Game.camera.follow(Game.state.player);
+      Game.camera.follow(Player.body);
 
       //_updateTargetPhysics();
       //_updateTargetAI();
@@ -93,17 +93,12 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
       // Handle collisions
       Engine.checkCollisions(Size(Game.gameWidth, Game.gameHeight));
-
-      // Invalidate cached grid to ensure it redraws with updated camera position
-      //_cachedGridWidget = null;
-
-      Level.grid = null;
     });
   }
 
   void _updateProjectiles(Size screenSize) {
-    for (int i = Game.state.projectiles.length - 1; i >= 0; i--) {
-      Projectile projectile = Game.state.projectiles[i];
+    for (int i = Level.projectiles.length - 1; i >= 0; i--) {
+      Projectile projectile = Level.projectiles[i];
 
       // Skip some updates if in slow motion for dramatic effect
       if (Game.effect.showSlowMotion && i % 2 == 0) continue;
@@ -124,16 +119,16 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
       );
 
       if (projectileSpeed < 0.5 || projectile.bounceCount > 5) {
-        Game.state.projectiles.removeAt(i);
+        Level.projectiles.removeAt(i);
       }
     }
   }
 
   void _updateParticles() {
-    for (int i = Game.state.impactParticles.length - 1; i >= 0; i--) {
+    for (int i = Level.impactParticles.length - 1; i >= 0; i--) {
       // Update particle and remove if dead
-      if (!Game.state.impactParticles[i].update()) {
-        Game.state.impactParticles.removeAt(i);
+      if (!Level.impactParticles[i].update()) {
+        Level.impactParticles.removeAt(i);
       }
     }
   }
@@ -152,6 +147,8 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
     Game.camera.viewportWidth = screenWidth;
     Game.camera.viewportHeight = screenHeight;
+
+    Level.size = Size(screenWidth, screenHeight);
 
     return Scaffold(
       body: Focus(
@@ -172,59 +169,48 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
               children: [
                 // Background grid for visual reference (cached)
                 //_buildCachedGrid(screenWidth, screenHeight),
-                Level.buildGrid(screenWidth, screenHeight, Game.camera),
+                //Level.buildGrid(screenWidth, screenHeight, Game.camera),
 
                 // Impact particles (combined for better performance)
-                ...(Game.state.impactParticles.isNotEmpty
-                    ? [
-                      Effect.particles(
-                        screenWidth,
-                        screenHeight,
-                        Game.state,
-                        Game.camera,
-                      ),
-                    ]
+                ...(Level.impactParticles.isNotEmpty
+                    ? [Effect.particles(screenWidth, screenHeight, Game.camera)]
                     : []),
 
                 // Projectile trails (combined for better performance)
-                ...(Game.state.projectiles.isNotEmpty
+                ...(Level.projectiles.isNotEmpty
                     ? [
                       Ball.buildCombinedTrails(
                         screenWidth,
                         screenHeight,
-                        Game.state,
                         Game.camera,
                       ),
                     ]
                     : []),
                 // Projectiles
-                ...Game.state.projectiles.map(
+                ...Level.projectiles.map(
                   (projectile) => Ball.buildBall(projectile, Game.camera),
                 ),
                 // Enemy rectangles
-                ...Game.state.enemies.map(
-                  (enemy) => Mob.build(enemy, Game.camera),
-                ),
+                ...Level.enemies.map((enemy) => Mob.build(enemy, Game.camera)),
                 // Obstacles
-                ...Game.state.obstacles.map(
+                ...Level.obstacles.map(
                   (obstacle) => Obstacle.build(obstacle, Game.camera),
                 ),
                 // Target rectangle with physics info
                 //Mob.target(Game.state, Game.camera),
 
                 // Player-controlled rectangle
-                Player.build(Game.state, Game.camera),
+                Player.build(Game.camera),
 
                 // Power meter and aiming line
                 Weapon.build(
                   screenWidth,
                   screenHeight,
                   Player.mousePosition,
-                  Game.state,
                   Game.camera,
                 ),
                 // HUD: Score and lives
-                Panel.build(Game.state),
+                Panel.build(),
                 // Game info panel with minimap
                 // Slow motion overlay
                 if (Game.effect.showSlowMotion)
@@ -234,13 +220,9 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                     color: Colors.blue.withAlpha(25),
                   ),
 
-                Minimap.build(
-                  Game.state,
-                  Game.camera,
-                  Game.effect.showSlowMotion,
-                ),
+                Minimap.build(Game.camera, Game.effect.showSlowMotion),
                 // Game over overlay
-                if (Game.state.isGameOver) Game.buildGameOverOverlay(),
+                if (Game.over) Game.buildGameOverOverlay(),
                 if (Mob.remaining == 0) Game.buildGameOverOverlay(),
               ],
             ),

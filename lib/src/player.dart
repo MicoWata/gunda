@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
-import 'package:gunda/src/state.dart';
 import 'package:gunda/src/weapon.dart';
 
 class Player {
@@ -14,6 +14,7 @@ class Player {
   static int maxHearts = 3;
   static int lives = 3;
   static int score = 0;
+  static Body body = Body(x: 0, y: 0, width: 0, height: 0, color: Colors.red);
 
   static const double acceleration = 0.8;
   static const double maxSpeed = 32.0;
@@ -46,8 +47,8 @@ class Player {
     final recoilForce = power * 24 / Player.playerMass;
 
     // Calculate direction from player to mouse
-    final playerCenterX = Game.state.player.centerX;
-    final playerCenterY = Game.state.player.centerY;
+    final playerCenterX = Player.body.centerX;
+    final playerCenterY = Player.body.centerY;
 
     // Calculate vector from player to world mouse position
     final dx = mouse.dx - playerCenterX;
@@ -58,7 +59,7 @@ class Player {
     final normalizedDx = dx / distance;
     final normalizedDy = dy / distance;
 
-    Game.state.player.applyImpulse(
+    Player.body.applyImpulse(
       -normalizedDx * recoilForce * 2,
       -normalizedDy * recoilForce * 2,
     );
@@ -73,11 +74,11 @@ class Player {
       }
       // Start charging shot when space bar is pressed
       if (event.logicalKey == LogicalKeyboardKey.space) {
-        if (!Game.state.isGameOver && !Weapon.isChargingShot) {
+        if (!Game.over && !Weapon.isChargingShot) {
           Weapon.startChargingShot();
-        } else if (Game.state.isGameOver) {
-          Game.state.resetGame();
-          Game.state.animationController.repeat();
+        } else if (Game.over) {
+          Game.reset();
+          Game.animationController.repeat();
         }
       }
     } else if (event is KeyUpEvent) {
@@ -94,52 +95,52 @@ class Player {
   static void updatePlayerMovement() {
     // Apply acceleration based on pressed keys
     if (_pressedKeys.contains(LogicalKeyboardKey.keyW)) {
-      Game.state.player.yVelocity -= acceleration;
+      Player.body.yVelocity -= acceleration;
     }
     if (_pressedKeys.contains(LogicalKeyboardKey.keyS)) {
-      Game.state.player.yVelocity += acceleration;
+      Player.body.yVelocity += acceleration;
     }
     if (_pressedKeys.contains(LogicalKeyboardKey.keyA)) {
-      Game.state.player.xVelocity -= acceleration;
+      Player.body.xVelocity -= acceleration;
     }
     if (_pressedKeys.contains(LogicalKeyboardKey.keyD)) {
-      Game.state.player.xVelocity += acceleration;
+      Player.body.xVelocity += acceleration;
     }
 
     // Apply friction to player
-    Game.state.player.xVelocity *= friction;
-    Game.state.player.yVelocity *= friction;
+    Player.body.xVelocity *= friction;
+    Player.body.yVelocity *= friction;
 
     // Limit player speed
     final currentSpeed = sqrt(
-      Game.state.player.xVelocity * Game.state.player.xVelocity +
-          Game.state.player.yVelocity * Game.state.player.yVelocity,
+      Player.body.xVelocity * Player.body.xVelocity +
+          Player.body.yVelocity * Player.body.yVelocity,
     );
 
     if (currentSpeed > maxSpeed) {
       final ratio = maxSpeed / currentSpeed;
-      Game.state.player.xVelocity *= ratio;
-      Game.state.player.yVelocity *= ratio;
+      Player.body.xVelocity *= ratio;
+      Player.body.yVelocity *= ratio;
     }
 
     // Stop very small movements
-    if (Game.state.player.xVelocity.abs() < minMovementThreshold) {
-      Game.state.player.xVelocity = 0;
+    if (Player.body.xVelocity.abs() < minMovementThreshold) {
+      Player.body.xVelocity = 0;
     }
-    if (Game.state.player.yVelocity.abs() < minMovementThreshold) {
-      Game.state.player.yVelocity = 0;
+    if (Player.body.yVelocity.abs() < minMovementThreshold) {
+      Player.body.yVelocity = 0;
     }
   }
 
-  static Widget build(GameState gameState, Camera camera) {
+  static Widget build(Camera camera) {
     return Positioned(
-      left: gameState.player.x - camera.x,
-      top: gameState.player.y - camera.y,
+      left: Player.body.x - camera.x,
+      top: Player.body.y - camera.y,
       child: Container(
-        width: gameState.player.width,
-        height: gameState.player.height,
+        width: Player.body.width,
+        height: Player.body.height,
         decoration: BoxDecoration(
-          color: gameState.player.color,
+          color: Player.body.color,
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
@@ -161,7 +162,7 @@ class Player {
                 ),
               ),
               //Text(
-              //  'v: (${gameState.player.xVelocity.toStringAsFixed(1)}, ${gameState.player.yVelocity.toStringAsFixed(1)})',
+              //  'v: (${Player.body.xVelocity.toStringAsFixed(1)}, ${Player.body.yVelocity.toStringAsFixed(1)})',
               //  style: const TextStyle(color: Colors.white, fontSize: 10),
               //),
               const Text(

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/engine.dart';
 import 'package:gunda/src/game.dart';
+import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart';
-import 'package:gunda/src/state.dart';
 
 class Effect {
   bool showSlowMotion = false;
@@ -19,11 +19,10 @@ class Effect {
       info.collisionY,
       Colors.white,
       info.impactEnergy,
-      Game.state,
     );
 
     // Increment score based on impact energy
-    Game.state.score += (Mob.value * info.impactEnergy / 2).ceil();
+    Game.score += (Mob.value * info.impactEnergy / 2).ceil();
 
     // Activate slow motion for dramatic effect on powerful hits
     if (info.impactEnergy > 5) {
@@ -32,13 +31,7 @@ class Effect {
     }
   }
 
-  static void impact(
-    double x,
-    double y,
-    Color baseColor,
-    double intensity,
-    GameState gameState,
-  ) {
+  static void impact(double x, double y, Color baseColor, double intensity) {
     final particleCount = (intensity * 10).floor().clamp(5, 30);
 
     for (int i = 0; i < particleCount; i++) {
@@ -56,7 +49,7 @@ class Effect {
             Color.lerp(baseColor, Colors.black, colorVariation) ?? baseColor;
       }
 
-      gameState.impactParticles.add(
+      Level.impactParticles.add(
         ImpactParticle(
           x: x,
           y: y,
@@ -73,13 +66,12 @@ class Effect {
   static Widget particles(
     double screenWidth,
     double screenHeight,
-    GameState gameState,
     Camera camera,
   ) {
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
       painter: ParticleSystemPainter(
-        particles: gameState.impactParticles,
+        particles: Level.impactParticles,
         cameraX: camera.x,
         cameraY: camera.y,
       ),

@@ -5,8 +5,10 @@ import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/game.dart';
+import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/obstacle.dart';
+import 'package:gunda/src/player.dart';
 
 class Engine {
   static const double wallBounce = 0.7;
@@ -14,38 +16,36 @@ class Engine {
 
   static void checkCollisions(Size screenSize) {
     final playerSpeed = sqrt(
-      Game.state.player.xVelocity * Game.state.player.xVelocity +
-          Game.state.player.yVelocity * Game.state.player.yVelocity,
+      Player.body.xVelocity * Player.body.xVelocity +
+          Player.body.yVelocity * Player.body.yVelocity,
     );
 
-    if (((Game.state.player.x <= 0 ||
-                Game.state.player.x >=
-                    screenSize.width - Game.state.player.width) &&
-            Game.state.player.xVelocity.abs() > 5.0) ||
-        ((Game.state.player.y <= 0 ||
-                Game.state.player.y >=
-                    screenSize.height - Game.state.player.height) &&
-            Game.state.player.yVelocity.abs() > 5.0)) {
+    if (((Player.body.x <= 0 ||
+                Player.body.x >= screenSize.width - Player.body.width) &&
+            Player.body.xVelocity.abs() > 5.0) ||
+        ((Player.body.y <= 0 ||
+                Player.body.y >= screenSize.height - Player.body.height) &&
+            Player.body.yVelocity.abs() > 5.0)) {
       // Reduce lives on high-speed impact with walls
-      if (playerSpeed > 6.0 && !Game.state.isGameOver) {
-        Game.state.lives = Game.state.lives - 1;
+      if (playerSpeed > 6.0 && !Game.over) {
+        Player.lives = Player.lives - 1;
 
         // Check for game over
-        if (Game.state.lives <= 0) {
-          Game.state.isGameOver = true;
-          Game.state.animationController.stop();
+        if (Player.lives <= 0) {
+          Game.over = true;
+          Game.animationController.stop();
         }
       }
     }
 
     // Check for projectile collisions with enemies and player
-    for (int i = Game.state.projectiles.length - 1; i >= 0; i--) {
-      Projectile projectile = Game.state.projectiles[i];
+    for (int i = Level.projectiles.length - 1; i >= 0; i--) {
+      Projectile projectile = Level.projectiles[i];
 
       if (projectile.isPlayerProjectile) {
         // Player projectiles can hit enemies
-        for (int j = Game.state.enemies.length - 1; j >= 0; j--) {
-          Enemy enemy = Game.state.enemies[j];
+        for (int j = Level.enemies.length - 1; j >= 0; j--) {
+          Enemy enemy = Level.enemies[j];
 
           if (!enemy.dead && projectile.collidesWith(enemy.body)) {
             // Handle player projectile collision with enemy
@@ -56,7 +56,7 @@ class Engine {
         }
       } else {
         // Enemy projectiles can hit player
-        if (projectile.collidesWith(Game.state.player)) {
+        if (projectile.collidesWith(Player.body)) {
           // Handle enemy projectile collision with player
           Ball.handleProjectilePlayerCollision(projectile, i);
           continue; // Projectile is removed, move to next one
@@ -66,11 +66,11 @@ class Engine {
   }
 
   static void handleEnemyToEnemyCollisions(int enemyIndex) {
-    final enemy = Game.state.enemies[enemyIndex];
+    final enemy = Level.enemies[enemyIndex];
 
     // Check for collisions with other enemies
-    for (int j = enemyIndex + 1; j < Game.state.enemies.length; j++) {
-      final otherEnemy = Game.state.enemies[j];
+    for (int j = enemyIndex + 1; j < Level.enemies.length; j++) {
+      final otherEnemy = Level.enemies[j];
 
       if (enemy.body.collidesWith(otherEnemy.body)) {
         // Get collision info
@@ -94,7 +94,6 @@ class Engine {
             collisionInfo.collisionY,
             Colors.grey,
             collisionInfo.impactEnergy * 0.5,
-            Game.state,
           );
         }
       }
@@ -105,15 +104,11 @@ class Engine {
   static void handleEnemyPlayerCollision(Body enemy) {
     // Get collision info
     final CollisionInfo collisionInfo =
-        CollisionPhysics.calculateCollisionResponse(Game.state.player, enemy);
+        CollisionPhysics.calculateCollisionResponse(Player.body, enemy);
 
     // Apply collision response if they're moving toward each other
     if (collisionInfo.velocityAlongNormal < 0) {
-      CollisionPhysics.applyCollisionImpulse(
-        Game.state.player,
-        enemy,
-        collisionInfo,
-      );
+      CollisionPhysics.applyCollisionImpulse(Player.body, enemy, collisionInfo);
 
       // Visual effects for collision
       Effect.impact(
@@ -121,7 +116,6 @@ class Engine {
         collisionInfo.collisionY,
         Colors.orange,
         collisionInfo.impactEnergy,
-        Game.state,
       );
     }
   }
@@ -169,61 +163,70 @@ class Engine {
     //
     //// Remove the projectile
     ////setState(() {
-    //Game.state.projectiles.removeAt(index);
+    //Level.projectiles.removeAt(index);
     //});
   }
 
   /// Check for projectile collisions with obstacles
   static void handleProjectileObstacleCollisions() {
-    for (int i = Game.state.projectiles.length - 1; i >= 0; i--) {
-      Projectile projectile = Game.state.projectiles[i];
-      
-      for (Obstacle obstacle in Game.state.obstacles) {
+    for (int i = Level.projectiles.length - 1; i >= 0; i--) {
+      Projectile projectile = Level.projectiles[i];
+
+      for (Obstacle obstacle in Level.obstacles) {
         if (projectile.collidesWith(obstacle.body)) {
           // Calculate collision normal based on which side of the obstacle was hit
           double normalX = 0;
           double normalY = 0;
-          
+
           // Determine the collision normal based on which side was hit
           // Calculate nearest point on projectile to obstacle
-          final closestX = projectile.x.clamp(obstacle.body.left, obstacle.body.right);
-          final closestY = projectile.y.clamp(obstacle.body.top, obstacle.body.bottom);
-          
+          final closestX = projectile.x.clamp(
+            obstacle.body.left,
+            obstacle.body.right,
+          );
+          final closestY = projectile.y.clamp(
+            obstacle.body.top,
+            obstacle.body.bottom,
+          );
+
           // Calculate direction from closest point to projectile center
           final dirX = projectile.x - closestX;
           final dirY = projectile.y - closestY;
-          
+
           // Normalize direction
           final magnitude = sqrt(dirX * dirX + dirY * dirY);
           if (magnitude > 0) {
             normalX = dirX / magnitude;
             normalY = dirY / magnitude;
           }
-          
+
           // Reflect the velocity
-          final dotProduct = projectile.xVelocity * normalX + projectile.yVelocity * normalY;
+          final dotProduct =
+              projectile.xVelocity * normalX + projectile.yVelocity * normalY;
           projectile.xVelocity -= 2 * dotProduct * normalX * wallBounce;
           projectile.yVelocity -= 2 * dotProduct * normalY * wallBounce;
-          
+
           // Move the projectile away from obstacle to prevent getting stuck
-          projectile.x += normalX * (projectile.radius + 1);  // +1 for safety margin
+          projectile.x +=
+              normalX * (projectile.radius + 1); // +1 for safety margin
           projectile.y += normalY * (projectile.radius + 1);
-                    
+
           // Increment bounce count
           projectile.bounceCount++;
-          
+
           // Create impact particles
-          final speed = sqrt(projectile.xVelocity * projectile.xVelocity + 
-                           projectile.yVelocity * projectile.yVelocity);
-          
+          final speed = sqrt(
+            projectile.xVelocity * projectile.xVelocity +
+                projectile.yVelocity * projectile.yVelocity,
+          );
+
           Effect.impact(
             projectile.x,
             projectile.y,
             projectile.color,
             speed / 10,
-            Game.state,
           );
-          
+
           break; // Only handle one collision per projectile per frame
         }
       }
@@ -232,24 +235,24 @@ class Engine {
 
   /// Check for collisions between player and obstacles
   static void handlePlayerObstacleCollisions() {
-    Body player = Game.state.player;
-    
-    for (Obstacle obstacle in Game.state.obstacles) {
+    Body player = Player.body;
+
+    for (Obstacle obstacle in Level.obstacles) {
       if (player.collidesWith(obstacle.body)) {
         // Calculate collision normal based on which side of the obstacle was hit
         double normalX = 0;
         double normalY = 0;
-        
+
         // Determine the collision normal based on which side was hit
         final dx1 = player.right - obstacle.body.left;
         final dx2 = obstacle.body.right - player.left;
         final dy1 = player.bottom - obstacle.body.top;
         final dy2 = obstacle.body.bottom - player.top;
-        
+
         // Find the smallest penetration
         final List<double> penetrations = [dx1, dx2, dy1, dy2];
         final minPenetration = penetrations.reduce(min);
-        
+
         if (minPenetration == dx1) {
           normalX = -1;
         } else if (minPenetration == dx2) {
@@ -259,7 +262,7 @@ class Engine {
         } else if (minPenetration == dy2) {
           normalY = 1;
         }
-        
+
         // Reflect the velocity
         if (normalX != 0) {
           player.xVelocity = -player.xVelocity * wallBounce;
@@ -267,7 +270,7 @@ class Engine {
         if (normalY != 0) {
           player.yVelocity = -player.yVelocity * wallBounce;
         }
-        
+
         // Move the player out of the obstacle
         if (normalX < 0) {
           player.x = obstacle.body.left - player.width;
@@ -279,19 +282,15 @@ class Engine {
         } else if (normalY > 0) {
           player.y = obstacle.body.bottom;
         }
-        
+
         // Create impact particles if the speed is significant
-        final speed = sqrt(player.xVelocity * player.xVelocity + 
-                         player.yVelocity * player.yVelocity);
-        
+        final speed = sqrt(
+          player.xVelocity * player.xVelocity +
+              player.yVelocity * player.yVelocity,
+        );
+
         if (speed > 2.0) {
-          Effect.impact(
-            player.centerX,
-            player.centerY,
-            Colors.blue,
-            speed / 5,
-            Game.state,
-          );
+          Effect.impact(player.centerX, player.centerY, Colors.blue, speed / 5);
         }
       }
     }
@@ -299,25 +298,25 @@ class Engine {
 
   /// Check for enemy collisions with obstacles
   static void handleEnemyObstacleCollisions() {
-    for (Enemy enemy in Game.state.enemies) {
+    for (Enemy enemy in Level.enemies) {
       if (enemy.dead) continue;
-      
-      for (Obstacle obstacle in Game.state.obstacles) {
+
+      for (Obstacle obstacle in Level.obstacles) {
         if (enemy.body.collidesWith(obstacle.body)) {
           // Calculate collision normal based on which side of the obstacle was hit
           double normalX = 0;
           double normalY = 0;
-          
+
           // Determine the collision normal based on which side was hit
           final dx1 = enemy.body.right - obstacle.body.left;
           final dx2 = obstacle.body.right - enemy.body.left;
           final dy1 = enemy.body.bottom - obstacle.body.top;
           final dy2 = obstacle.body.bottom - enemy.body.top;
-          
+
           // Find the smallest penetration
           final List<double> penetrations = [dx1, dx2, dy1, dy2];
           final minPenetration = penetrations.reduce(min);
-          
+
           if (minPenetration == dx1) {
             normalX = -1;
           } else if (minPenetration == dx2) {
@@ -327,7 +326,7 @@ class Engine {
           } else if (minPenetration == dy2) {
             normalY = 1;
           }
-          
+
           // Reflect the velocity
           if (normalX != 0) {
             enemy.body.xVelocity = -enemy.body.xVelocity * wallBounce;
@@ -335,7 +334,7 @@ class Engine {
           if (normalY != 0) {
             enemy.body.yVelocity = -enemy.body.yVelocity * wallBounce;
           }
-          
+
           // Move the enemy out of the obstacle
           if (normalX < 0) {
             enemy.body.x = obstacle.body.left - enemy.body.width;
@@ -347,7 +346,7 @@ class Engine {
           } else if (normalY > 0) {
             enemy.body.y = obstacle.body.bottom;
           }
-          
+
           break; // Only handle one collision per enemy per frame
         }
       }
@@ -356,76 +355,70 @@ class Engine {
 
   static void updatePlayerPhysics() {
     // Update player position
-    Game.state.player.update();
-    
+    Player.body.update();
+
     // Handle collision with obstacles
     handlePlayerObstacleCollisions();
-    
+
     // Additionally check for projectile-obstacle collisions
     handleProjectileObstacleCollisions();
-    
+
     // Check for enemy-obstacle collisions
     handleEnemyObstacleCollisions();
 
     // Keep player within bounds and handle wall collisions
-    if (Game.state.player.x <= 0) {
-      Game.state.player.x = 0;
-      Game.state.player.xVelocity = -Game.state.player.xVelocity * wallBounce;
+    if (Player.body.x <= 0) {
+      Player.body.x = 0;
+      Player.body.xVelocity = -Player.body.xVelocity * wallBounce;
 
       // Create wall impact particles
-      if (Game.state.player.xVelocity.abs() > 2.0) {
+      if (Player.body.xVelocity.abs() > 2.0) {
         Effect.impact(
-          Game.state.player.x,
-          Game.state.player.centerY,
+          Player.body.x,
+          Player.body.centerY,
           Colors.blue,
-          Game.state.player.xVelocity.abs() / 5,
-          Game.state,
+          Player.body.xVelocity.abs() / 5,
         );
       }
-    } else if (Game.state.player.x >=
-        Game.gameWidth - Game.state.player.width) {
-      Game.state.player.x = Game.gameWidth - Game.state.player.width;
-      Game.state.player.xVelocity = -Game.state.player.xVelocity * wallBounce;
+    } else if (Player.body.x >= Game.gameWidth - Player.body.width) {
+      Player.body.x = Game.gameWidth - Player.body.width;
+      Player.body.xVelocity = -Player.body.xVelocity * wallBounce;
 
       // Create wall impact particles
-      if (Game.state.player.xVelocity.abs() > 2.0) {
+      if (Player.body.xVelocity.abs() > 2.0) {
         Effect.impact(
-          Game.state.player.right,
-          Game.state.player.centerY,
+          Player.body.right,
+          Player.body.centerY,
           Colors.blue,
-          Game.state.player.xVelocity.abs() / 5,
-          Game.state,
+          Player.body.xVelocity.abs() / 5,
         );
       }
     }
 
-    if (Game.state.player.y <= 0) {
-      Game.state.player.y = 0;
-      Game.state.player.yVelocity = -Game.state.player.yVelocity * wallBounce;
+    if (Player.body.y <= 0) {
+      Player.body.y = 0;
+      Player.body.yVelocity = -Player.body.yVelocity * wallBounce;
 
       // Create wall impact particles
-      if (Game.state.player.yVelocity.abs() > 2.0) {
+      if (Player.body.yVelocity.abs() > 2.0) {
         Effect.impact(
-          Game.state.player.centerX,
-          Game.state.player.y,
+          Player.body.centerX,
+          Player.body.y,
           Colors.blue,
-          Game.state.player.yVelocity.abs() / 5,
-          Game.state,
+          Player.body.yVelocity.abs() / 5,
         );
       }
-    } else if (Game.state.player.y >=
-        Game.gameHeight - Game.state.player.height) {
-      Game.state.player.y = Game.gameHeight - Game.state.player.height;
-      Game.state.player.yVelocity = -Game.state.player.yVelocity * wallBounce;
+    } else if (Player.body.y >= Game.gameHeight - Player.body.height) {
+      Player.body.y = Game.gameHeight - Player.body.height;
+      Player.body.yVelocity = -Player.body.yVelocity * wallBounce;
 
       // Create wall impact particles
-      if (Game.state.player.yVelocity.abs() > 2.0) {
+      if (Player.body.yVelocity.abs() > 2.0) {
         Effect.impact(
-          Game.state.player.centerX,
-          Game.state.player.bottom,
+          Player.body.centerX,
+          Player.body.bottom,
           Colors.blue,
-          Game.state.player.yVelocity.abs() / 5,
-          Game.state,
+          Player.body.yVelocity.abs() / 5,
         );
       }
     }
@@ -521,4 +514,12 @@ class CollisionPhysics {
     first.applyImpulse(info.impulseX, info.impulseY);
     second.applyImpulse(-info.impulseX, -info.impulseY);
   }
+}
+
+// Helper class for path finding
+class PathVector {
+  final double dx;
+  final double dy;
+
+  PathVector(this.dx, this.dy);
 }

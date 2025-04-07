@@ -28,7 +28,7 @@ class Pause {
               onPressed: () {
                 //setState(() {
                 Game.paused = false;
-                Game.state.animationController.repeat();
+                Game.animationController.repeat();
                 //});
               },
               style: ElevatedButton.styleFrom(

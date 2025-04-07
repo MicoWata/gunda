@@ -5,8 +5,9 @@ import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/game.dart';
+import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart';
-import 'package:gunda/src/state.dart';
+import 'package:gunda/src/player.dart';
 
 class Ball {
   static const double projectileRadius = 10.0;
@@ -64,13 +65,12 @@ class Ball {
   static Widget buildCombinedTrails(
     double screenWidth,
     double screenHeight,
-    GameState state,
     Camera camera,
   ) {
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
       painter: CombinedTrailsPainter(
-        projectiles: state.projectiles,
+        projectiles: Level.projectiles,
         cameraX: camera.x,
         cameraY: camera.y,
       ),
@@ -112,7 +112,6 @@ class Ball {
       projectile.y,
       Colors.deepOrange, // More intense color for enemy hits
       impactForce,
-      Game.state,
     );
 
     // Activate slow motion for dramatic effect on powerful hits
@@ -122,13 +121,12 @@ class Ball {
     }
 
     // Increment score more for enemy hits
-    Game.state.score += (Mob.value * impactForce / 2).ceil();
+    Game.score += (Mob.value * impactForce / 2).ceil();
 
     // Remove the projectile
-    if (projectileIndex >= 0 &&
-        projectileIndex < Game.state.projectiles.length) {
+    if (projectileIndex >= 0 && projectileIndex < Level.projectiles.length) {
       //setState(() {
-      Game.state.projectiles.removeAt(projectileIndex);
+      Level.projectiles.removeAt(projectileIndex);
       //});
     }
   }
@@ -139,8 +137,8 @@ class Ball {
     int projectileIndex,
   ) {
     // Calculate collision response vector
-    final collisionNormalX = projectile.x - Game.state.player.centerX;
-    final collisionNormalY = projectile.y - Game.state.player.centerY;
+    final collisionNormalX = projectile.x - Player.body.centerX;
+    final collisionNormalY = projectile.y - Player.body.centerY;
 
     // Normalize the collision vector
     final magnitude = sqrt(
@@ -158,7 +156,7 @@ class Ball {
     final impulseY = normalizedY * impactForce;
 
     // Apply impulse to player
-    Game.state.player.applyImpulse(impulseX, impulseY);
+    Player.body.applyImpulse(impulseX, impulseY);
 
     // Create impact particles with orange/red to indicate damage
     Effect.impact(
@@ -166,7 +164,6 @@ class Ball {
       projectile.y,
       Colors.red.withValues(alpha: 0.8), // Red color for player damage
       impactForce * 1.2, // More dramatic effect
-      Game.state,
     );
 
     // Activate slow motion for dramatic effect
@@ -176,21 +173,20 @@ class Ball {
     }
 
     // Reduce player lives if hit is strong enough
-    if (impactForce > 3.0 && !Game.state.isGameOver) {
-      Game.state.lives = Game.state.lives - 1;
+    if (impactForce > 3.0 && !Game.over) {
+      Player.lives = Player.lives - 1;
 
       // Check for game over
-      if (Game.state.lives <= 0) {
-        Game.state.isGameOver = true;
-        Game.state.animationController.stop();
+      if (Player.lives <= 0) {
+        Game.over = true;
+        Game.animationController.stop();
       }
     }
 
     // Remove the projectile
-    if (projectileIndex >= 0 &&
-        projectileIndex < Game.state.projectiles.length) {
+    if (projectileIndex >= 0 && projectileIndex < Level.projectiles.length) {
       //setState(() {
-      Game.state.projectiles.removeAt(projectileIndex);
+      Level.projectiles.removeAt(projectileIndex);
       //});
     }
   }

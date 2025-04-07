@@ -8,6 +8,7 @@ import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/engine.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
+import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
 
@@ -19,13 +20,14 @@ class Mob {
   static int max = 3;
   static int remaining = count;
   static int hp = 3;
+  static int cooldown = 1000;
 
-  static void _handleEnemyShooting(Body enemy, int enemyIndex) {
+  static void _handleEnemyShooting(Enemy enemy, int enemyIndex) {
     // Check if enemy can shoot (based on cooldown)
-    if (Game.state.enemyCanShoot[enemyIndex]) {
+    if (enemy.canShoot) {
       // Calculate distance to player
-      final dx = Game.state.player.centerX - enemy.centerX;
-      final dy = Game.state.player.centerY - enemy.centerY;
+      final dx = Player.body.centerX - enemy.body.centerX;
+      final dy = Player.body.centerY - enemy.body.centerY;
       final distanceToPlayer = sqrt(dx * dx + dy * dy);
 
       // Only shoot if within range and not too close
@@ -46,25 +48,24 @@ class Mob {
       }
     } else {
       // Decrease cooldown timer
-      Game.state.enemyShootCooldowns[enemyIndex] -=
-          16; // Assume ~60fps, so ~16ms per frame
+      enemy.cooldown -= 16; // Assume ~60fps, so ~16ms per frame
 
       // Reset cooldown if timer is done
-      if (Game.state.enemyShootCooldowns[enemyIndex] <= 0) {
-        Game.state.enemyCanShoot[enemyIndex] = true;
+      if (enemy.cooldown <= 0) {
+        enemy.canShoot = true;
       }
     }
   }
 
   // Create and fire a projectile from enemy toward player
-  static void _enemyShoot(Body enemy, int enemyIndex) {
+  static void _enemyShoot(Enemy enemy, int enemyIndex) {
     // Calculate direction from enemy to player
-    final enemyCenterX = enemy.centerX;
-    final enemyCenterY = enemy.centerY;
+    final enemyCenterX = enemy.body.centerX;
+    final enemyCenterY = enemy.body.centerY;
 
     // Vector from enemy to player
-    final dx = Game.state.player.centerX - enemyCenterX;
-    final dy = Game.state.player.centerY - enemyCenterY;
+    final dx = Player.body.centerX - enemyCenterX;
+    final dy = Player.body.centerY - enemyCenterY;
 
     // Normalize the vector
     final distance = sqrt(dx * dx + dy * dy);
@@ -97,7 +98,7 @@ class Mob {
               0.7; // Up to 70% of max power
 
       // Create projectile color based on enemy's color
-      final projectileColor = enemy.color.withValues(alpha: 0.8);
+      final projectileColor = enemy.body.color.withValues(alpha: 0.8);
 
       // Create projectile
       final projectile = Projectile(
@@ -112,17 +113,17 @@ class Mob {
       );
 
       // Apply recoil to enemy
-      final recoilForce = enemyPowerLevel * Ball.mass / enemy.mass;
-      enemy.applyImpulse(
+      final recoilForce = enemyPowerLevel * Ball.mass / enemy.body.mass;
+      enemy.body.applyImpulse(
         -finalDx * recoilForce * 1.5, // Less recoil than player
         -finalDy * recoilForce * 1.5,
       );
 
       //setState(() {
-      Game.state.projectiles.add(projectile);
-      Game.state.enemyCanShoot[enemyIndex] = false;
-      Game.state.enemyShootCooldowns[enemyIndex] =
-          Game.state.defaultEnemyShootCooldown;
+      Level.projectiles.add(projectile);
+
+      enemy.canShoot = false;
+      enemy.cooldown = Mob.cooldown;
 
       // Create particle effect at launch position
       Effect.impact(
@@ -132,7 +133,6 @@ class Mob {
           ((projectileColor.r * 1.3).clamp(0, 255)).toInt(),
         ),
         (enemyPowerLevel / Weapon.maxPower) * 0.8, // Smaller effect than player
-        Game.state,
       );
       //});
     }
@@ -174,10 +174,10 @@ class Mob {
     }
   }
 
-  // Enemy AI: Circle around the player
+  // Enemy AI: Circle around the player with obstacle avoidance
   static void _applyCirclingAI(Body enemy) {
-    final dx = Game.state.player.centerX - enemy.centerX;
-    final dy = Game.state.player.centerY - enemy.centerY;
+    final dx = Player.body.centerX - enemy.centerX;
+    final dy = Player.body.centerY - enemy.centerY;
     final distance = sqrt(dx * dx + dy * dy);
 
     // Ideal distance to circle at
@@ -201,26 +201,102 @@ class Mob {
         radialSpeed = -1.0; // Move away
       }
 
-      // Apply circling impulse + distance adjustment
-      enemy.applyImpulse(
-        perpDx * 1.2 + normalizedDx * radialSpeed,
-        perpDy * 1.2 + normalizedDy * radialSpeed,
+      // Calculate intended movement direction
+      final intendedDx = perpDx * 1.2 + normalizedDx * radialSpeed;
+      final intendedDy = perpDy * 1.2 + normalizedDy * radialSpeed;
+
+      // Normalize the intended direction
+      final intendedMag = sqrt(
+        intendedDx * intendedDx + intendedDy * intendedDy,
       );
+      final normalizedIntendedDx = intendedDx / intendedMag;
+      final normalizedIntendedDy = intendedDy / intendedMag;
+
+      // Check if there's an obstacle in the path
+      final obstacleInPath = _checkObstacleInPath(
+        enemy.centerX,
+        enemy.centerY,
+        normalizedIntendedDx,
+        normalizedIntendedDy,
+        enemy.width,
+      );
+
+      if (obstacleInPath) {
+        // Find alternative direction for circling
+        final alternativePath = _findCirclingAlternative(
+          enemy.centerX,
+          enemy.centerY,
+          normalizedIntendedDx,
+          normalizedIntendedDy,
+          enemy.width,
+        );
+
+        // Apply impulse in alternative direction with original magnitude
+        enemy.applyImpulse(
+          alternativePath.dx * intendedMag,
+          alternativePath.dy * intendedMag,
+        );
+      } else {
+        // No obstacle, apply original impulse
+        enemy.applyImpulse(intendedDx, intendedDy);
+      }
     }
   }
 
-  // Enemy AI: Move erratically
+  // Enemy AI: Move erratically with obstacle avoidance
   static void _applyErraticAI(Body enemy) {
     // Change direction randomly every few frames
     if (Game.random.nextInt(60) < 3) {
       // ~5% chance per frame
-      final randomAngle = Game.random.nextDouble() * 2 * pi;
-      final randomSpeed = 0.5 + Game.random.nextDouble() * 2.0;
+      bool validDirection = false;
+      int attempts = 0;
+      final maxAttempts = 8; // Limit attempts to find clear path
 
-      enemy.applyImpulse(
-        cos(randomAngle) * randomSpeed,
-        sin(randomAngle) * randomSpeed,
-      );
+      while (!validDirection && attempts < maxAttempts) {
+        final randomAngle = Game.random.nextDouble() * 2 * pi;
+        final randomDx = cos(randomAngle);
+        final randomDy = sin(randomAngle);
+        final randomSpeed = 0.5 + Game.random.nextDouble() * 2.0;
+
+        // Check if direction has obstacle
+        validDirection =
+            !_checkObstacleInPath(
+              enemy.centerX,
+              enemy.centerY,
+              randomDx,
+              randomDy,
+              enemy.width,
+            );
+
+        if (validDirection) {
+          // Apply impulse in clear direction
+          enemy.applyImpulse(randomDx * randomSpeed, randomDy * randomSpeed);
+          break;
+        }
+
+        attempts++;
+      }
+
+      // If couldn't find clear path, use avoidance algorithm
+      if (!validDirection) {
+        final randomAngle = Game.random.nextDouble() * 2 * pi;
+        final randomDx = cos(randomAngle);
+        final randomDy = sin(randomAngle);
+        final randomSpeed = 0.5 + Game.random.nextDouble() * 2.0;
+
+        final alternativePath = _findCirclingAlternative(
+          enemy.centerX,
+          enemy.centerY,
+          randomDx,
+          randomDy,
+          enemy.width,
+        );
+
+        enemy.applyImpulse(
+          alternativePath.dx * randomSpeed,
+          alternativePath.dy * randomSpeed,
+        );
+      }
     }
 
     // Occasionally dash towards player
@@ -230,12 +306,12 @@ class Mob {
     }
   }
 
-  // Enemy AI: Chase player directly
+  // Enemy AI: Chase player directly with obstacle avoidance
   static void _applyChaseAI(Body enemy, double speed) {
     // Chase player if velocity is low
     if (enemy.xVelocity.abs() < 1.0 && enemy.yVelocity.abs() < 1.0) {
-      final dx = Game.state.player.centerX - enemy.centerX;
-      final dy = Game.state.player.centerY - enemy.centerY;
+      final dx = Player.body.centerX - enemy.centerX;
+      final dy = Player.body.centerY - enemy.centerY;
       final distance = sqrt(dx * dx + dy * dy);
 
       if (distance > 0) {
@@ -243,16 +319,42 @@ class Mob {
         final normalizedDx = dx / distance;
         final normalizedDy = dy / distance;
 
-        // Apply impulse towards player
-        enemy.applyImpulse(normalizedDx * speed, normalizedDy * speed);
+        // Check if there's an obstacle in the path
+        final obstacleInPath = _checkObstacleInPath(
+          enemy.centerX,
+          enemy.centerY,
+          normalizedDx,
+          normalizedDy,
+          enemy.width,
+        );
+
+        if (obstacleInPath) {
+          // Find alternative path
+          final alternativePath = _findAlternativePath(
+            enemy.centerX,
+            enemy.centerY,
+            Player.body.centerX,
+            Player.body.centerY,
+            enemy.width,
+          );
+
+          // Apply impulse in alternative direction
+          enemy.applyImpulse(
+            alternativePath.dx * speed,
+            alternativePath.dy * speed,
+          );
+        } else {
+          // No obstacle in path, move directly toward player
+          enemy.applyImpulse(normalizedDx * speed, normalizedDy * speed);
+        }
       }
     }
   }
 
   static void update() {
-    for (int i = 0; i < Game.state.enemies.length; i++) {
+    for (int i = 0; i < Level.enemies.length; i++) {
       // Get current enemy
-      Enemy enemy = Game.state.enemies[i];
+      Enemy enemy = Level.enemies[i];
 
       if (!enemy.dead) {
         // Apply friction
@@ -272,18 +374,18 @@ class Mob {
         Engine.handleEnemyToEnemyCollisions(i);
 
         // Check for collision with player
-        if (enemy.body.collidesWith(Game.state.player)) {
+        if (enemy.body.collidesWith(Player.body)) {
           Engine.handleEnemyPlayerCollision(enemy.body);
         }
 
         // Try to shoot at player if cooldown allows
-        _handleEnemyShooting(enemy.body, i);
+        _handleEnemyShooting(enemy, i);
       }
     }
   }
 
   static bool _isNearPlayer(double x, double y, double minDistance) {
-    if (!Game.state.player.x.isNaN) {
+    if (!Player.body.x.isNaN) {
       // Make sure player is initialized
       double playerCenterX = Game.gameWidth / 2;
       double playerCenterY = Game.gameHeight / 2;
@@ -295,9 +397,214 @@ class Mob {
     return false;
   }
 
+  // Check if there's an obstacle in the path
+  static bool _checkObstacleInPath(
+    double startX,
+    double startY,
+    double normalizedDx,
+    double normalizedDy,
+    double entitySize,
+  ) {
+    // Look ahead distance based on entity size
+    final lookAheadDistance = entitySize * 3.0;
+    final endX = startX + normalizedDx * lookAheadDistance;
+    final endY = startY + normalizedDy * lookAheadDistance;
+
+    // Simple ray casting to detect obstacle collision
+    for (Obstacle obstacle in Level.obstacles) {
+      // Use a simplified line-rectangle intersection test
+      if (_lineIntersectsRect(
+        startX,
+        startY,
+        endX,
+        endY,
+        obstacle.body.left,
+        obstacle.body.top,
+        obstacle.body.right,
+        obstacle.body.bottom,
+      )) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Check if a line intersects with a rectangle
+  static bool _lineIntersectsRect(
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    double rectLeft,
+    double rectTop,
+    double rectRight,
+    double rectBottom,
+  ) {
+    // Check if line intersects any of the rectangle's edges
+    return (_lineIntersectsLine(
+          x1,
+          y1,
+          x2,
+          y2,
+          rectLeft,
+          rectTop,
+          rectRight,
+          rectTop,
+        ) ||
+        _lineIntersectsLine(
+          x1,
+          y1,
+          x2,
+          y2,
+          rectRight,
+          rectTop,
+          rectRight,
+          rectBottom,
+        ) ||
+        _lineIntersectsLine(
+          x1,
+          y1,
+          x2,
+          y2,
+          rectRight,
+          rectBottom,
+          rectLeft,
+          rectBottom,
+        ) ||
+        _lineIntersectsLine(
+          x1,
+          y1,
+          x2,
+          y2,
+          rectLeft,
+          rectBottom,
+          rectLeft,
+          rectTop,
+        ) ||
+        // Also check if start or end point is inside the rectangle
+        (x1 >= rectLeft &&
+            x1 <= rectRight &&
+            y1 >= rectTop &&
+            y1 <= rectBottom) ||
+        (x2 >= rectLeft &&
+            x2 <= rectRight &&
+            y2 >= rectTop &&
+            y2 <= rectBottom));
+  }
+
+  // Check if two line segments intersect
+  static bool _lineIntersectsLine(
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    double x3,
+    double y3,
+    double x4,
+    double y4,
+  ) {
+    // Calculate denominators
+    final denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+
+    // If denominator is zero, lines are parallel
+    if (denom.abs() < 0.0001) return false;
+
+    final ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+    final ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+
+    // Return true if the intersection is within both line segments
+    return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
+  }
+
+  // Find alternative path for chase AI when obstacle is detected
+  static PathVector _findAlternativePath(
+    double enemyX,
+    double enemyY,
+    double targetX,
+    double targetY,
+    double entitySize,
+  ) {
+    // Try several possible angles to find path without obstacles
+    List<double> angles = [
+      // Try 45 degrees left and right of current direction
+      pi / 4, -pi / 4,
+      // Try 90 degrees left and right
+      pi / 2, -pi / 2,
+      // Try more angles if needed
+      3 * pi / 4, -3 * pi / 4,
+      // In worst case, try going opposite direction
+      pi,
+    ];
+
+    // Get direction to target
+    final dx = targetX - enemyX;
+    final dy = targetY - enemyY;
+    final originalAngle = atan2(dy, dx);
+
+    // Try each alternative angle
+    for (double angleOffset in angles) {
+      final testAngle = originalAngle + angleOffset;
+      final testDx = cos(testAngle);
+      final testDy = sin(testAngle);
+
+      // Check if this direction is clear
+      if (!_checkObstacleInPath(enemyX, enemyY, testDx, testDy, entitySize)) {
+        return PathVector(testDx, testDy);
+      }
+    }
+
+    // If all directions have obstacles, return the original direction
+    // but with a slight randomization to prevent getting stuck
+    final randomAngle =
+        originalAngle + (Game.random.nextDouble() - 0.5) * pi / 2;
+    return PathVector(cos(randomAngle), sin(randomAngle));
+  }
+
+  // Find alternative circling direction when obstacle is detected
+  static PathVector _findCirclingAlternative(
+    double enemyX,
+    double enemyY,
+    double intendedDx,
+    double intendedDy,
+    double entitySize,
+  ) {
+    // Try rotating the vector by various angles
+    List<double> angles = [
+      pi / 6,
+      -pi / 6,
+      pi / 3,
+      -pi / 3,
+      pi / 2,
+      -pi / 2,
+      2 * pi / 3,
+      -2 * pi / 3,
+      5 * pi / 6,
+      -5 * pi / 6,
+    ];
+
+    // Get original angle
+    final originalAngle = atan2(intendedDy, intendedDx);
+
+    // Try each alternative angle
+    for (double angleOffset in angles) {
+      final testAngle = originalAngle + angleOffset;
+      final testDx = cos(testAngle);
+      final testDy = sin(testAngle);
+
+      // Check if this direction is clear
+      if (!_checkObstacleInPath(enemyX, enemyY, testDx, testDy, entitySize)) {
+        return PathVector(testDx, testDy);
+      }
+    }
+
+    // If all directions have obstacles, return the opposite direction as last resort
+    return PathVector(-intendedDx, -intendedDy);
+  }
+
   static void spawn() {
     if (remaining > count - max) {
-      for (Enemy enemy in Game.state.enemies) {
+      for (Enemy enemy in Level.enemies) {
         if (enemy.dead) {
           double maxWidth = Game.gameWidth - Mob.size.width;
           double maxHeight = Game.gameHeight - Mob.size.height;
@@ -390,6 +697,8 @@ class Enemy {
   );
   int hp = 3;
   bool dead = false;
+  bool canShoot = false;
+  int cooldown = 2000;
 
   Enemy({required this.body});
 
@@ -402,7 +711,7 @@ class Enemy {
 
     body.color = Color.from(alpha: 1.0, red: r, green: g, blue: b);
     if (hp < 1 && !dead) {
-      Game.state.kills++;
+      //Game.state.kills++;
       dead = true;
       Mob.spawn();
       Mob.remaining--;

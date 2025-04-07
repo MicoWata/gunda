@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gunda/src/game.dart';
 import 'package:gunda/src/mob.dart';
-import 'package:gunda/src/state.dart';
+import 'package:gunda/src/player.dart';
 
 class Panel {
-  static Widget build(GameState gameState) {
+  static Widget build() {
     return Positioned(
       top: 20,
       right: 20,
@@ -36,7 +37,7 @@ class Panel {
                 ),
                 Row(
                   children: List.generate(
-                    gameState.lives,
+                    Player.lives,
                     (index) =>
                         const Icon(Icons.favorite, color: Colors.red, size: 20),
                   ),
@@ -85,7 +86,7 @@ class Panel {
               ],
             ),
             child: Text(
-              'Score: ${gameState.score}',
+              'Score: ${Game.score}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
