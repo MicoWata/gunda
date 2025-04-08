@@ -43,9 +43,6 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     // Set up camera with initial viewport size (will be updated in build)
     Game.camera = Camera(viewportWidth: 600.0, viewportHeight: 600.0);
 
-    // Set up keyboard listeners
-    //RawKeyboard.instance.addListener(Player.handleKeyEvent);
-
     // Animation loop for smooth movement
     Game.animationController = AnimationController(
       vsync: this,
