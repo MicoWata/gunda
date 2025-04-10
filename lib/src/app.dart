@@ -12,6 +12,7 @@ import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/panel.dart';
 import 'package:gunda/src/player.dart';
+import 'package:gunda/src/shader.dart';
 import 'package:gunda/src/weapon.dart';
 
 class App extends StatefulWidget {
@@ -221,6 +222,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                 // Game over overlay
                 if (Game.over) Game.buildGameOverOverlay(),
                 if (Mob.remaining == 0) Game.buildGameOverOverlay(),
+                Veil(),
               ],
             ),
           ),

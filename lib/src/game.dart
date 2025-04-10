@@ -10,10 +10,8 @@ import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
 
 class Game {
-  // Cached widgets for better performance
   static Player player = Player();
   static final Random random = Random();
-  //static final GameState state = GameState();
   static final Effect effect = Effect();
   static Camera camera = Camera(viewportWidth: 0, viewportHeight: 0);
   static bool paused = false;
@@ -21,7 +19,6 @@ class Game {
   static int score = 0;
   static const double gameWidth = 2400;
   static const double gameHeight = 2400;
-
   static late AnimationController animationController;
 
   static void reset() {
