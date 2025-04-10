@@ -6,18 +6,22 @@ import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/engine.dart';
 import 'package:gunda/src/game.dart';
+import 'package:gunda/src/home.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/minimap.dart';
 import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/panel.dart';
+import 'package:gunda/src/pause.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/shader.dart';
 import 'package:gunda/src/weapon.dart';
 
 class App extends StatefulWidget {
-  const App({super.key});
   static late BuildContext appContext;
+  static bool home = true;
+
+  const App({super.key});
 
   static void snack(String message) {
     var snackBar = SnackBar(content: Text(message));
@@ -72,6 +76,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
     // Update position
     setState(() {
+      if (Game.paused) return;
       // Update positions and handle collisions
       Engine.updatePlayerPhysics();
 
@@ -157,75 +162,69 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         },
         child: MouseRegion(
           onHover: Player.updateMousePosition,
-          child: Container(
-            key: _gameAreaKey,
-            color:
-                Game.effect.showSlowMotion
-                    ? Colors.blueGrey[800] // Darker background for slow motion
-                    : Colors.brown, // Normal background
-            child: Stack(
-              children: [
-                // Background grid for visual reference (cached)
-                //_buildCachedGrid(screenWidth, screenHeight),
-                //Level.buildGrid(screenWidth, screenHeight, Game.camera),
-
-                // Impact particles (combined for better performance)
-                ...(Level.impactParticles.isNotEmpty
-                    ? [Effect.particles(screenWidth, screenHeight, Game.camera)]
-                    : []),
-
-                // Projectile trails (combined for better performance)
-                ...(Level.projectiles.isNotEmpty
-                    ? [
-                      Ball.buildCombinedTrails(
-                        screenWidth,
-                        screenHeight,
-                        Game.camera,
-                      ),
-                    ]
-                    : []),
-                // Projectiles
-                ...Level.projectiles.map(
-                  (projectile) => Ball.buildBall(projectile, Game.camera),
-                ),
-                // Enemy rectangles
-                ...Level.enemies.map((enemy) => Mob.build(enemy, Game.camera)),
-                // Obstacles
-                ...Level.obstacles.map(
-                  (obstacle) => Obstacle.build(obstacle, Game.camera),
-                ),
-                // Target rectangle with physics info
-                //Mob.target(Game.state, Game.camera),
-
-                // Player-controlled rectangle
-                Player.build(Game.camera),
-
-                // Power meter and aiming line
-                Weapon.build(
-                  screenWidth,
-                  screenHeight,
-                  Player.mousePosition,
-                  Game.camera,
-                ),
-                // HUD: Score and lives
-                Panel.build(),
-                // Game info panel with minimap
-                // Slow motion overlay
-                if (Game.effect.showSlowMotion)
-                  Container(
-                    width: screenWidth,
-                    height: screenHeight,
-                    color: Colors.blue.withAlpha(25),
+          child:
+              App.home
+                  ? Home.build()
+                  : Container(
+                    key: _gameAreaKey,
+                    color:
+                        Game.effect.showSlowMotion
+                            ? Colors
+                                .blueGrey[800] // Darker background for slow motion
+                            : Colors.brown, // Normal background
+                    child: Stack(
+                      children: [
+                        ...(Level.impactParticles.isNotEmpty
+                            ? [
+                              Effect.particles(
+                                screenWidth,
+                                screenHeight,
+                                Game.camera,
+                              ),
+                            ]
+                            : []),
+                        ...(Level.projectiles.isNotEmpty
+                            ? [
+                              Ball.buildCombinedTrails(
+                                screenWidth,
+                                screenHeight,
+                                Game.camera,
+                              ),
+                            ]
+                            : []),
+                        ...Level.projectiles.map(
+                          (projectile) =>
+                              Ball.buildBall(projectile, Game.camera),
+                        ),
+                        ...Level.enemies.map(
+                          (enemy) => Mob.build(enemy, Game.camera),
+                        ),
+                        ...Level.obstacles.map(
+                          (obstacle) => Obstacle.build(obstacle, Game.camera),
+                        ),
+                        Player.build(Game.camera),
+                        Weapon.build(
+                          screenWidth,
+                          screenHeight,
+                          Player.mousePosition,
+                          Game.camera,
+                        ),
+                        Panel.build(),
+                        if (Game.effect.showSlowMotion)
+                          Container(
+                            width: screenWidth,
+                            height: screenHeight,
+                            color: Colors.blue.withAlpha(25),
+                          ),
+                        Minimap.build(Game.camera, Game.effect.showSlowMotion),
+                        // Game over overlay
+                        if (Game.paused) Pause.buildGameOverOverlay(),
+                        if (Game.over) Game.buildGameOverOverlay(),
+                        if (Mob.remaining == 0) Game.buildGameOverOverlay(),
+                        Veil(),
+                      ],
+                    ),
                   ),
-
-                Minimap.build(Game.camera, Game.effect.showSlowMotion),
-                // Game over overlay
-                if (Game.over) Game.buildGameOverOverlay(),
-                if (Mob.remaining == 0) Game.buildGameOverOverlay(),
-                Veil(),
-              ],
-            ),
-          ),
         ),
       ),
     );

@@ -18,16 +18,16 @@ class Level {
   static final List<ImpactParticle> impactParticles = [];
   static final List<Obstacle> obstacles = [];
 
-  static void enter() {}
+  static void enter() {
+    initializeEnemies();
+    initializeObstacles();
+  }
 
   static void initializeEnemies() {
     double maxWidth = Game.gameWidth - Mob.size.width;
     double maxHeight = Game.gameHeight - Mob.size.height;
 
-    // Clear existing enemies
     enemies.clear();
-    //enemyCanShoot.clear();
-    //enemyShootCooldowns.clear();
 
     // Create new enemies
     for (int i = 0; i < Mob.max; i++) {
@@ -171,7 +171,6 @@ class Level {
   }
 }
 
-/// Grid painter for background reference
 class GridPainter extends CustomPainter {
   final double gridSize;
   final Color lineColor;

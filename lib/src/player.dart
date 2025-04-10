@@ -72,9 +72,13 @@ class Player {
       if (event.logicalKey == LogicalKeyboardKey.keyE) {
         dash();
       }
-      // Start charging shot when space bar is pressed
+
+      if (event.logicalKey == LogicalKeyboardKey.keyQ) {
+        Game.paused = !Game.paused;
+      }
+
       if (event.logicalKey == LogicalKeyboardKey.space) {
-        if (!Game.over && !Weapon.isChargingShot) {
+        if (!Game.over && !Game.paused && !Weapon.isChargingShot) {
           Weapon.startChargingShot();
         } else if (Game.over) {
           Game.reset();
@@ -82,7 +86,6 @@ class Player {
         }
       }
     } else if (event is KeyUpEvent) {
-      // Release shot when space bar is released
       if (event.logicalKey == LogicalKeyboardKey.space &&
           Weapon.isChargingShot) {
         Weapon.releaseShot(worldMousePosition);

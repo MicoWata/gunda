@@ -45,8 +45,7 @@ class Game {
       mass: Player.playerMass,
     );
 
-    Level.initializeEnemies();
-    Level.initializeObstacles();
+    Level.enter();
   }
 
   static void update() {
