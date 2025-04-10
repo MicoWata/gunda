@@ -30,12 +30,12 @@ class Weapon {
     double dy = end.dy - start.dy;
     double distance = sqrt(dx * dx + dy * dy);
 
-    if (distance <= maxLength) {
-      return end;
-    } else {
-      double ratio = maxLength / distance;
-      return Offset(start.dx + dx * ratio, start.dy + dy * ratio);
-    }
+    //if (distance <= maxLength) {
+    //  return end;
+    //} else {
+    double ratio = maxLength / distance;
+    return Offset(start.dx + dx * ratio, start.dy + dy * ratio);
+    //}
   }
 
   static void startChargingShot() {
@@ -85,7 +85,7 @@ class Weapon {
         y: playerCenterY,
         xVelocity: normalizedDx * power,
         yVelocity: normalizedDy * power,
-        radius: Ball.projectileRadius,
+        radius: Ball.projectileRadius * (power / 8),
         color: projectileColor,
         mass: Ball.mass,
       );
@@ -154,7 +154,7 @@ class Weapon {
               Player.body.centerY - camera.y,
             ),
             mousePosition,
-            100.0, // Longer aiming line for larger map
+            70.0, // Longer aiming line for larger map
           ),
           powerLevel: isChargingShot ? power : minPower,
           cameraX: camera.x,
@@ -215,7 +215,7 @@ class LinePainter extends CustomPainter {
     _drawDashedLine(canvas, start, end, linePaint);
 
     // Create power meter properties
-    final rectHeight = 20.0;
+    final rectHeight = 25.0;
     final maxRectWidth = lineLength;
     final currentRectWidth = maxRectWidth * powerPercentage;
 
