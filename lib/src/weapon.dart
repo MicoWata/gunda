@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:gunda/src/ball.dart';
@@ -141,6 +143,7 @@ class Weapon {
     Camera camera,
   ) {
     if (!Game.over) {
+      //return Image.asset('assets/images/shotgun.png');
       return CustomPaint(
         size: Size(screenWidth, screenHeight),
         painter: LinePainter(
@@ -176,6 +179,7 @@ class LinePainter extends CustomPainter {
   final double maxPower;
   final double cameraX;
   final double cameraY;
+  ui.Image? shotgun;
 
   LinePainter({
     required this.start,
@@ -185,7 +189,22 @@ class LinePainter extends CustomPainter {
     this.maxPower = Weapon.maxPower,
     this.cameraX = 0,
     this.cameraY = 0,
-  });
+  }) {
+    _loadShotgun();
+  }
+
+  Future<void> _loadShotgun() async {
+    final completer = Completer<ui.Image>();
+    final imageProvider = AssetImage('assets/images/shotgun.png');
+    imageProvider
+        .resolve(const ImageConfiguration())
+        .addListener(
+          ImageStreamListener((ImageInfo info, bool _) {
+            completer.complete(info.image);
+            shotgun = info.image;
+          }),
+        );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -274,6 +293,25 @@ class LinePainter extends CustomPainter {
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(8)),
       rectPaint,
+    );
+    canvas.drawImageRect(
+      shotgun!,
+      //Rect.fromCenter(
+      //  center: Offset(0, 0),
+      //  width: shotgun!.width.toDouble(),
+      //  height: shotgun!.height.toDouble(),
+      //),
+      Rect.fromLTWH(
+        0,
+        0,
+        shotgun!.width.toDouble(),
+        shotgun!.height.toDouble(),
+      ),
+      Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 64, 64),
+      //rectBackground,
+      //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
+      //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
+      Paint()..filterQuality = FilterQuality.none,
     );
 
     // Draw power level text

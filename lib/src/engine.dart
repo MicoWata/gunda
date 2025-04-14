@@ -449,7 +449,7 @@ class CollisionInfo {
   });
 }
 
-/// Helper class for collision physics calculations
+// Helper class for collision physics calculations
 class CollisionPhysics {
   /// Calculate collision response values between two GameRectangle objects
   static CollisionInfo calculateCollisionResponse(Body first, Body second) {
