@@ -126,7 +126,7 @@ class DirtyPixelPainter extends CustomPainter {
     // Create a Paint object that uses the shader
     final paint = Paint()..shader = shader;
     // Optional: Set blend mode if you want to blend with underlying content
-    // paint.blendMode = BlendMode.srcOver; // Example: Normal blending
+    paint.blendMode = BlendMode.srcOver; // Example: Normal blending
 
     // Draw a rectangle covering the entire canvas, applying the shader effect
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
