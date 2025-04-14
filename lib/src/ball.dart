@@ -192,6 +192,8 @@ class Ball {
   }
 }
 
+class Sword {}
+
 // Projectile class for physics-based projectiles
 class Projectile {
   double x;

@@ -117,9 +117,9 @@ class DirtyPixelPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Set shader uniforms:
-    // Uniform 0: Resolution (width, height of the paint area)
-    shader.setFloat(0, size.width);
-    shader.setFloat(1, size.height);
+    //Uniform 0: Resolution (width, height of the paint area)
+    shader.setFloat(0, size.width / 128);
+    shader.setFloat(1, size.height / 64);
     // Uniform 2: Time (for animation)
     shader.setFloat(2, time);
 

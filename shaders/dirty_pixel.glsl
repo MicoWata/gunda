@@ -54,7 +54,7 @@ void main() {
 
     // Determine if this "pixel" should be dirty
     float dirtMask = 0.0;
-    float dirtThreshold = 0.98; // Only a small percentage of pixels are dirty (adjust 0.0 to 1.0)
+    float dirtThreshold = 0.9; // Only a small percentage of pixels are dirty (adjust 0.0 to 1.0)
     if (dirtRandom > dirtThreshold) {
         dirtMask = (dirtRandom - dirtThreshold) / (1.0 - dirtThreshold); // Intensity of dirt
         dirtMask = pow(dirtMask, 2.0); // Make it more pronounced
@@ -62,16 +62,16 @@ void main() {
 
     // 3. Combine Effects
     // Start with a transparent base
-    vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 color = vec4(0.0, 0.0, 0.0, 0.1);
 
     // Add the subtle base noise as a slight alpha variation
     color.a += baseNoise;
 
     // Add the "dirt" - make dirty pixels slightly darker and more opaque
     // Using a dark brown/grey color for dirt
-    vec3 dirtColor = vec3(0.1, 0.08, 0.05);
+    vec3 dirtColor = vec3(0.5, 0.2, 0.3);
     color.rgb += dirtColor * dirtMask * 0.5; // Add color based on dirt mask
-    color.a += dirtMask * 0.1; // Increase opacity slightly for dirty pixels
+    color.a += dirtMask * 0.5; // Increase opacity slightly for dirty pixels
 
     // Ensure alpha stays within valid range
     color.a = clamp(color.a, 0.0, 1.0);

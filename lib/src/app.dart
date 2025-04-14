@@ -221,7 +221,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                         if (Game.paused) Pause.buildGameOverOverlay(),
                         if (Game.over) Game.buildGameOverOverlay(),
                         if (Mob.remaining == 0) Game.buildGameOverOverlay(),
-                        Veil(),
+                        DirtyPixel(),
                       ],
                     ),
                   ),
