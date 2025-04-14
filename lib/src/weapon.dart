@@ -261,20 +261,20 @@ class LinePainter extends CustomPainter {
     );
     //canvas.drawRect(rectBackground, rectBackgroundPaint);
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
-      rectBackgroundPaint,
-    );
+    //canvas.drawRRect(
+    //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+    //  rectBackgroundPaint,
+    //);
     // Draw power meter outline
     final outlinePaint =
         Paint()
           ..color = Colors.lightGreen
           ..style = PaintingStyle.fill;
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
-      outlinePaint,
-    );
+    //canvas.drawRRect(
+    //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+    //  outlinePaint,
+    //);
     //canvas.drawRect(rectBackground, outlinePaint);
 
     // Draw power meter fill
@@ -307,7 +307,7 @@ class LinePainter extends CustomPainter {
         shotgun!.width.toDouble(),
         shotgun!.height.toDouble(),
       ),
-      Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 64, 64),
+      Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
       //rectBackground,
       //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
       //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
