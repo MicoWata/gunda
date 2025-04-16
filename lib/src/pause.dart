@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gunda/src/app.dart';
 import 'package:gunda/src/game.dart';
-import 'package:gunda/src/mob.dart';
 
 class Pause {
   static Widget buildGameOverOverlay() {

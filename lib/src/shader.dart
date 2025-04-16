@@ -118,7 +118,7 @@ class DirtyPixelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Set shader uniforms:
     //Uniform 0: Resolution (width, height of the paint area)
-    shader.setFloat(0, size.width / 128);
+    shader.setFloat(0, size.width / 32);
     shader.setFloat(1, size.height / 64);
     // Uniform 2: Time (for animation)
     shader.setFloat(2, time);
@@ -126,7 +126,7 @@ class DirtyPixelPainter extends CustomPainter {
     // Create a Paint object that uses the shader
     final paint = Paint()..shader = shader;
     // Optional: Set blend mode if you want to blend with underlying content
-    paint.blendMode = BlendMode.srcOver; // Example: Normal blending
+    paint.blendMode = BlendMode.multiply; // Example: Normal blending
 
     // Draw a rectangle covering the entire canvas, applying the shader effect
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);

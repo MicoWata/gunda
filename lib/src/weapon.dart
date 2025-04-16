@@ -142,7 +142,7 @@ class Weapon {
     Offset mousePosition,
     Camera camera,
   ) {
-    if (!Game.over) {
+    if (!Game.over && LinePainter.loaded) {
       //return Image.asset('assets/images/shotgun.png');
       return CustomPaint(
         size: Size(screenWidth, screenHeight),
@@ -179,7 +179,8 @@ class LinePainter extends CustomPainter {
   final double maxPower;
   final double cameraX;
   final double cameraY;
-  ui.Image? shotgun;
+  late ui.Image shotgun;
+  static bool loaded = false;
 
   LinePainter({
     required this.start,
@@ -204,141 +205,146 @@ class LinePainter extends CustomPainter {
             shotgun = info.image;
           }),
         );
+    loaded = true;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Calculate line angle and length
-    final dx = end.dx - start.dx;
-    final dy = end.dy - start.dy;
-    final lineLength = sqrt(dx * dx + dy * dy);
-    final angle = atan2(dy, dx);
+    if (loaded) {
+      // Calculate line angle and length
+      final dx = end.dx - start.dx;
+      final dy = end.dy - start.dy;
+      final lineLength = sqrt(dx * dx + dy * dy);
+      final angle = atan2(dy, dx);
 
-    // Calculate power percentage
-    final powerPercentage = (powerLevel - minPower) / (maxPower - minPower);
+      // Calculate power percentage
+      final powerPercentage = (powerLevel - minPower) / (maxPower - minPower);
 
-    // Get power color (green to red gradient based on power)
-    final powerColor =
-        ColorTween(
-          begin: Colors.green,
-          end: Colors.red,
-        ).lerp(powerPercentage) ??
-        Colors.green;
+      // Get power color (green to red gradient based on power)
+      final powerColor =
+          ColorTween(
+            begin: Colors.green,
+            end: Colors.red,
+          ).lerp(powerPercentage) ??
+          Colors.green;
 
-    // Draw the trajectory prediction line
-    final linePaint = Paint()..color = Colors.grey; //.withValues(alpha: 0.7)
-    //..strokeWidth = 2
-    //..strokeCap = StrokeCap.round;
+      // Draw the trajectory prediction line
+      final linePaint = Paint()..color = Colors.grey; //.withValues(alpha: 0.7)
+      //..strokeWidth = 2
+      //..strokeCap = StrokeCap.round;
 
-    // Draw dashed trajectory line
-    _drawDashedLine(canvas, start, end, linePaint);
+      // Draw dashed trajectory line
+      _drawDashedLine(canvas, start, end, linePaint);
 
-    // Create power meter properties
-    final rectHeight = 25.0;
-    final maxRectWidth = lineLength;
-    final currentRectWidth = maxRectWidth * powerPercentage;
+      // Create power meter properties
+      final rectHeight = 25.0;
+      final maxRectWidth = lineLength;
+      final currentRectWidth = maxRectWidth * powerPercentage;
 
-    // Save canvas state before rotation
-    canvas.save();
+      // Save canvas state before rotation
+      canvas.save();
 
-    // Translate to start point and rotate
-    canvas.translate(start.dx, start.dy);
-    canvas.rotate(angle);
+      // Translate to start point and rotate
+      canvas.translate(start.dx, start.dy);
+      canvas.rotate(angle);
 
-    // Draw power meter background
-    final rectBackgroundPaint =
-        Paint()
-          ..color =
-              Colors
-                  .grey //.withValues(alpha: 0.3)
-          ..style = PaintingStyle.fill;
+      // Draw power meter background
+      //final rectBackgroundPaint =
+      //    Paint()
+      //      ..color =
+      //          Colors
+      //              .grey //.withValues(alpha: 0.3)
+      //      ..style = PaintingStyle.fill;
 
-    final rectBackground = Rect.fromLTWH(
-      0,
-      -rectHeight / 2,
-      maxRectWidth,
-      rectHeight,
-    );
-    //canvas.drawRect(rectBackground, rectBackgroundPaint);
-
-    //canvas.drawRRect(
-    //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
-    //  rectBackgroundPaint,
-    //);
-    // Draw power meter outline
-    final outlinePaint =
-        Paint()
-          ..color = Colors.lightGreen
-          ..style = PaintingStyle.fill;
-
-    //canvas.drawRRect(
-    //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
-    //  outlinePaint,
-    //);
-    //canvas.drawRect(rectBackground, outlinePaint);
-
-    // Draw power meter fill
-    final rectPaint =
-        Paint()
-          ..color =
-              powerColor //.withValues(alpha: 0.7)
-          ..style = PaintingStyle.fill;
-
-    final rect = Rect.fromLTWH(
-      0,
-      -rectHeight / 2,
-      currentRectWidth,
-      rectHeight,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, Radius.circular(8)),
-      rectPaint,
-    );
-    canvas.drawImageRect(
-      shotgun!,
-      //Rect.fromCenter(
-      //  center: Offset(0, 0),
-      //  width: shotgun!.width.toDouble(),
-      //  height: shotgun!.height.toDouble(),
-      //),
-      Rect.fromLTWH(
+      final rectBackground = Rect.fromLTWH(
         0,
-        0,
-        shotgun!.width.toDouble(),
-        shotgun!.height.toDouble(),
-      ),
-      Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
-      //rectBackground,
-      //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
-      //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
-      Paint()..filterQuality = FilterQuality.none,
-    );
+        -rectHeight / 2,
+        maxRectWidth,
+        rectHeight,
+      );
+      //canvas.drawRect(rectBackground, rectBackgroundPaint);
 
-    // Draw power level text
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: powerLevel.toStringAsFixed(1),
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+      //canvas.drawRRect(
+      //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+      //  rectBackgroundPaint,
+      //);
+      // Draw power meter outline
+      //final outlinePaint =
+      //    Paint()
+      //      ..color = Colors.lightGreen
+      //      ..style = PaintingStyle.fill;
+      //
+      //canvas.drawRRect(
+      //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+      //  outlinePaint,
+      //);
+      //canvas.drawRect(rectBackground, outlinePaint);
+
+      // Draw power meter fill
+      final rectPaint =
+          Paint()
+            ..color =
+                powerColor //.withValues(alpha: 0.7)
+            ..style = PaintingStyle.fill;
+
+      final rect = Rect.fromLTWH(
+        0,
+        -rectHeight / 2,
+        currentRectWidth,
+        rectHeight,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, Radius.circular(8)),
+        rectPaint,
+      );
+      canvas.drawImageRect(
+        shotgun,
+        //Rect.fromCenter(
+        //  center: Offset(0, 0),
+        //  width: shotgun!.width.toDouble(),
+        //  height: shotgun!.height.toDouble(),
+        //),
+        Rect.fromLTWH(
+          0,
+          0,
+          shotgun.width.toDouble(),
+          shotgun.height.toDouble(),
         ),
-      ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    );
+        Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
+        //rectBackground,
+        //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
+        //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
+        Paint()..filterQuality = FilterQuality.none,
+      );
+      // Draw power level text
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: powerLevel.toStringAsFixed(1),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
 
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(maxRectWidth / 2 - textPainter.width / 2, -textPainter.height / 2),
-    );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          maxRectWidth / 2 - textPainter.width / 2,
+          -textPainter.height / 2,
+        ),
+      );
 
-    // Restore canvas to original state
-    canvas.restore();
+      // Restore canvas to original state
+      canvas.restore();
 
-    // Draw arrow at end of the line
-    _drawArrow(canvas, end, angle, powerColor);
+      // Draw arrow at end of the line
+      _drawArrow(canvas, end, angle, powerColor);
+    }
   }
 
   /// Draw a dashed line to show projectile trajectory

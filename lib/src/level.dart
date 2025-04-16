@@ -1,6 +1,8 @@
 import 'dart:math';
-
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
@@ -23,57 +25,91 @@ class Level {
     initializeObstacles();
   }
 
-  static void initializeEnemies() {
+  static void initializeEnemies() async {
+    await TileMap.loadMap();
+    var spotsize = 2400 / 32;
+
     double maxWidth = Game.gameWidth - Mob.size.width;
     double maxHeight = Game.gameHeight - Mob.size.height;
 
     enemies.clear();
 
-    // Create new enemies
-    for (int i = 0; i < Mob.max; i++) {
-      // Generate random color shade
-      final hue = Game.random.nextInt(360);
-      final color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
+    for (int x = 0; x < 32; x++) {
+      for (int y = 0; y < 32; y++) {
+        if (TileMap.map[x][y] == 2) {
+          final hue = Game.random.nextInt(360);
+          final color =
+              HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
 
-      // Create enemy with random position but avoid player's initial position
-      double enemyX, enemyY;
-      do {
-        enemyX = Game.random.nextDouble() * maxWidth;
-        enemyY = Game.random.nextDouble() * maxHeight;
-      } while (isNearPlayer(
-        enemyX,
-        enemyY,
-        300,
-      )); // Minimum distance of 300 from player
+          Enemy enemy = Enemy(
+            body: Body(
+              x: x * spotsize,
+              y: y * spotsize,
 
-      Enemy enemy = Enemy(
-        body: Body(
-          x: enemyX,
-          y: enemyY,
-          xVelocity:
-              Game.random.nextDouble() * 2 - 1, // Random initial velocity
-          yVelocity:
-              Game.random.nextDouble() * 2 - 1, // Random initial velocity
-          width: Mob.size.width * 0.8, // Slightly smaller than target
-          height: Mob.size.height * 0.8, // Slightly smaller than target
-          color: color,
-          mass: Mob.mass, // Slightly lighter than target
-        ),
-      );
+              xVelocity:
+                  Game.random.nextDouble() * 2 - 1, // Random initial velocity
+              yVelocity:
+                  Game.random.nextDouble() * 2 - 1, // Random initial velocity
+              width: Mob.size.width, // Slightly smaller than target
+              height: Mob.size.height, // Slightly smaller than target
+              color: color,
+              mass: Mob.mass, // Slightly lighter than target
+            ),
+          );
+          enemies.add(enemy);
 
-      enemies.add(enemy);
-      //enemyCanShoot.add(true); // Each enemy can shoot initially
-      //enemyShootCooldowns.add(
-      //  Mob.cooldown + Game.random.nextInt(1000),
-      //); // Stagger cooldowns
+          //double rockSize =
+          //    (spotsize / 2) + Game.random.nextDouble() * (spotsize / 2);
+          //double rockX = x * spotsize;
+          //double rockY = y * spotsize;
+          //obstacles.add(
+          //  ObstacleFactory.createRock(x: rockX, y: rockY, size: rockSize),
+          //);
+        }
+      }
     }
+    //print(enemies);
+    //// Create new enemies
+    //for (int i = 0; i < Mob.max; i++) {
+    //  // Generate random color shade
+    //  final hue = Game.random.nextInt(360);
+    //  final color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
+    //
+    //  // Create enemy with random position but avoid player's initial position
+    //  double enemyX, enemyY;
+    //  do {
+    //    enemyX = Game.random.nextDouble() * maxWidth;
+    //    enemyY = Game.random.nextDouble() * maxHeight;
+    //  } while (isNearPlayer(
+    //    enemyX,
+    //    enemyY,
+    //    300,
+    //  )); // Minimum distance of 300 from player
+    //
+    //  Enemy enemy = Enemy(
+    //    body: Body(
+    //      x: enemyX,
+    //      y: enemyY,
+    //      xVelocity:
+    //          Game.random.nextDouble() * 2 - 1, // Random initial velocity
+    //      yVelocity:
+    //          Game.random.nextDouble() * 2 - 1, // Random initial velocity
+    //      width: Mob.size.width * 0.8, // Slightly smaller than target
+    //      height: Mob.size.height * 0.8, // Slightly smaller than target
+    //      color: color,
+    //      mass: Mob.mass, // Slightly lighter than target
+    //    ),
+    //  );
+    //
+    //  enemies.add(enemy);
+    //  //enemyCanShoot.add(true); // Each enemy can shoot initially
+    //  //enemyShootCooldowns.add(
+    //  //  Mob.cooldown + Game.random.nextInt(1000),
+    //  //); // Stagger cooldowns
+    //}
   }
 
-  static void initializeObstacles() {
-    obstacles.clear();
-
-    // Create border walls around the game area
-    // Left wall
+  static void walls() {
     obstacles.add(
       ObstacleFactory.createWall(
         x: -20,
@@ -112,9 +148,9 @@ class Level {
         height: 20,
       ),
     );
+  }
 
-    // Add some obstacles inside the game area
-    // Central block
+  static void block() {
     obstacles.add(
       ObstacleFactory.createMetalBarrier(
         x: Game.gameWidth / 2 - 100,
@@ -123,20 +159,46 @@ class Level {
         height: 200,
       ),
     );
+  }
 
-    // Random rocks
-    for (int i = 0; i < 15; i++) {
-      double rockSize = 30 + Game.random.nextDouble() * 70;
-      double rockX = Game.random.nextDouble() * (Game.gameWidth - rockSize);
-      double rockY = Game.random.nextDouble() * (Game.gameHeight - rockSize);
+  static void rocks() {
+    var spotsize = 2400 / 32;
 
-      // Ensure rocks aren't placed near the player starting position
-      if (!isNearPlayer(rockX, rockY, 350)) {
-        obstacles.add(
-          ObstacleFactory.createRock(x: rockX, y: rockY, size: rockSize),
-        );
+    for (int x = 0; x < 32; x++) {
+      for (int y = 0; y < 32; y++) {
+        if (TileMap.map[x][y] == 1) {
+          double rockSize =
+              (spotsize / 2) + Game.random.nextDouble() * (spotsize / 2);
+          double rockX = x * spotsize;
+          double rockY = y * spotsize;
+          obstacles.add(
+            ObstacleFactory.createRock(x: rockX, y: rockY, size: rockSize),
+          );
+        }
       }
     }
+    // Random rocks
+    //for (int i = 0; i < 15; i++) {
+    //  double rockSize = 30 + Game.random.nextDouble() * 70;
+    //  double rockX = Game.random.nextDouble() * (Game.gameWidth - rockSize);
+    //  double rockY = Game.random.nextDouble() * (Game.gameHeight - rockSize);
+    //
+    //  // Ensure rocks aren't placed near the player starting position
+    //  if (!isNearPlayer(rockX, rockY, 350)) {
+    //    obstacles.add(
+    //      ObstacleFactory.createRock(x: rockX, y: rockY, size: rockSize),
+    //    );
+    //  }
+    //}
+  }
+
+  static void initializeObstacles() async {
+    await TileMap.loadMap();
+    obstacles.clear();
+
+    walls();
+    //block();
+    rocks();
   }
 
   static bool isNearPlayer(double x, double y, double minDistance) {
@@ -169,6 +231,45 @@ class Level {
       ),
     );
   }
+}
+
+class TileMap {
+  static var level = 1;
+  static var tileSize = 64.0;
+  static List<List<int>> map = [];
+
+  static Future<void> loadMap() async {
+    final String source =
+        TileMap.level == 0
+            ? 'assets/images/Level1.txt'
+            : 'assets/images/level1.txt';
+    final String mapData = await rootBundle.loadString(source);
+    final List<String> rows = mapData.trim().split('\n');
+    map =
+        rows
+            .map((row) => row.trim().split(' ').map(int.parse).toList())
+            .toList();
+  }
+
+  //static Point<int> getTilePosition(double screenX, double screenY) {
+  //  return Point<int>(
+  //    (screenX ~/ TileMap.tileSize),
+  //    (screenY ~/ TileMap.tileSize),
+  //  );
+  //}
+  //
+  //static Point<double> getScreenPosition(int tileX, int tileY) {
+  //  return Point<double>(tileX * TileMap.tileSize, tileY * TileMap.tileSize);
+  //}
+  //
+  //static bool isValidTile(int x, int y) {
+  //  return y >= 0 && y < map.length && x >= 0 && x < map[0].length;
+  //}
+  //
+  //static int getTileType(int x, int y) {
+  //  if (!isValidTile(x, y)) return -1;
+  //  return map[y][x];
+  //}
 }
 
 class GridPainter extends CustomPainter {
