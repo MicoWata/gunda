@@ -89,24 +89,40 @@ class Game {
   }
 
   static Widget button() {
-    var text = 'Play Again';
+    String text;
+    VoidCallback? onPressAction; // Use VoidCallback? to allow null (disabled)
 
-    void press() {
-      if (Level.remaining > 0) {
-        Player.body.width = 200;
+    // Determine button text and action based on game state
+    if (Level.remaining > 0) {
+      // Game Over - Lost
+      text = 'Play Again';
+      onPressAction = () {
+        // Player.body.width = 200; // Removed this line
         Game.reset();
         Game.animationController.repeat();
-      } else if (Game.level < Level.zones.length) {
+      };
+    } else if (Game.level < Level.zones.length - 1) {
+      // Victory - More levels exist
+      text = 'Next Level';
+      onPressAction = () {
         Game.nextLevel();
-      }
+        Game.animationController.repeat(); // Restart animation for next level
+      };
+    } else {
+      // Victory - Final level completed
+      text = 'You Win!';
+      onPressAction = null; // Disable button after final victory
     }
 
     return ElevatedButton(
-      onPressed: press,
+      onPressed: onPressAction, // Assign the determined action
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        // Optionally add styling for disabled state
+        disabledBackgroundColor: Colors.grey[700],
+        disabledForegroundColor: Colors.grey[400],
       ),
-      child: Text(text, style: TextStyle(fontSize: 20)),
+      child: Text(text, style: const TextStyle(fontSize: 20)),
     );
   }
 
