@@ -71,10 +71,13 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     // Don't update if game is over
     if (Game.over) return;
 
-    // Handle game state updates
+    // Handle game state updates (like slow motion timer)
     Game.update();
 
-    // Update player movement
+    // Update weapon state (like slice animation)
+    Weapon.update();
+
+    // Update player movement based on input
     Player.updatePlayerMovement();
 
     // Update position

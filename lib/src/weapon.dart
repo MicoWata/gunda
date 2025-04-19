@@ -28,7 +28,14 @@ class Weapon {
   static double power = Weapon.minPower;
   static bool isChargingShot = false;
   static bool show = true;
-  static bool slicing = true;
+  static bool slicing = false; // Start not slicing
+
+  // Slice animation state
+  static const int _sliceDuration = 300; // milliseconds
+  static const double _sliceDistance = 60.0; // pixels sword extends
+  static int _sliceStartTime = 0;
+  static Offset _currentSliceOffset = Offset.zero;
+
 
   /// Loads necessary image assets for the weapon.
   static Future<void> loadAssets() async {
@@ -162,10 +169,14 @@ class Weapon {
   }
 
   static void slice() {
-    if (kind == Weapons.sword) {
+    // Start slicing only if using sword and not already slicing
+    if (kind == Weapons.sword && !slicing) {
       slicing = true;
+      _sliceStartTime = DateTime.now().millisecondsSinceEpoch;
+      _currentSliceOffset = Offset.zero; // Reset offset at start
 
-      // finish the slicing function for the sword weapon AI!
+      // TODO: Add cooldown for slicing?
+      // TODO: Implement collision detection/damage during slice
     }
   }
 
@@ -203,23 +214,33 @@ class Weapon {
     Offset mousePosition,
     Camera camera,
   ) {
+    // Base position of the sword hilt (player center in screen coordinates)
+    final baseHiltScreen = Offset(
+      Player.body.centerX - camera.x,
+      Player.body.centerY - camera.y,
+    );
+
+    // Calculate the aiming vector (from player center towards mouse, limited length)
+    // Note: _getLimitedLineEndPoint expects screen coordinates
+    final aimEndPointScreen = _getLimitedLineEndPoint(
+      baseHiltScreen,
+      mousePosition, // Mouse position is already in screen coordinates
+      70.0,
+    );
+    final aimVectorScreen = aimEndPointScreen - baseHiltScreen;
+
+    // Apply the slice offset (which is calculated in world coordinates, so no camera adjustment needed here)
+    // The offset is applied relative to the player's center.
+    final currentHiltScreen = baseHiltScreen + _currentSliceOffset;
+    final currentTipScreen = currentHiltScreen + aimVectorScreen; // Tip moves with the hilt
+
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
       painter: SwordPainter(
-        start: Offset(
-          Player.body.centerX - camera.x,
-          Player.body.centerY - camera.y,
-        ),
-        end: _getLimitedLineEndPoint(
-          Offset(
-            Player.body.centerX - camera.x,
-            Player.body.centerY - camera.y,
-          ),
-          mousePosition,
-          70.0, // Longer aiming line for larger map
-        ),
-        powerLevel: power,
-        cameraX: camera.x,
+        start: currentHiltScreen, // Use the animated hilt position
+        end: currentTipScreen,   // Use the animated tip position
+        powerLevel: power, // Sword doesn't use power level visually like cannon? Maybe remove later.
+        cameraX: camera.x, // Pass camera for potential future use in painter
         cameraY: camera.y,
       ),
     );
