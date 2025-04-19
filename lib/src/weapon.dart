@@ -10,6 +10,8 @@ import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/player.dart';
 
+enum Weapons { sword, gun }
+
 class Weapon {
   static const double minPower = 8.0;
   static const double maxPower = 30.0;
@@ -19,10 +21,11 @@ class Weapon {
   static bool canShoot = true;
   static final cooldown = 300; // milliseconds
 
+  static Weapons kind = Weapons.gun;
   // Power meter for shooting
   static double power = Weapon.minPower;
   static bool isChargingShot = false;
-  static bool show = false;
+  static bool show = true;
 
   static Offset _getLimitedLineEndPoint(
     Offset start,
@@ -144,7 +147,6 @@ class Weapon {
     Camera camera,
   ) {
     if (!Game.over) {
-      //return Image.asset('assets/images/shotgun.png');
       return CustomPaint(
         size: Size(screenWidth, screenHeight),
         painter: LinePainter(
@@ -192,7 +194,11 @@ class LinePainter extends CustomPainter {
     this.cameraX = 0,
     this.cameraY = 0,
   }) {
-    _loadShotgun();
+    _loadWeaponImage();
+  }
+
+  void _loadWeaponImage() async {
+    await _loadShotgun();
   }
 
   Future<void> _loadShotgun() async {
@@ -298,25 +304,27 @@ class LinePainter extends CustomPainter {
         RRect.fromRectAndRadius(rect, Radius.circular(8)),
         rectPaint,
       );
-      canvas.drawImageRect(
-        shotgun,
-        //Rect.fromCenter(
-        //  center: Offset(0, 0),
-        //  width: shotgun!.width.toDouble(),
-        //  height: shotgun!.height.toDouble(),
-        //),
-        Rect.fromLTWH(
-          0,
-          0,
-          shotgun.width.toDouble(),
-          shotgun.height.toDouble(),
-        ),
-        Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
-        //rectBackground,
-        //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
-        //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
-        Paint()..filterQuality = FilterQuality.none,
-      );
+      if (loaded) {
+        canvas.drawImageRect(
+          shotgun,
+          //Rect.fromCenter(
+          //  center: Offset(0, 0),
+          //  width: shotgun!.width.toDouble(),
+          //  height: shotgun!.height.toDouble(),
+          //),
+          Rect.fromLTWH(
+            0,
+            0,
+            shotgun.width.toDouble(),
+            shotgun.height.toDouble(),
+          ),
+          Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
+          //rectBackground,
+          //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
+          //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
+          Paint()..filterQuality = FilterQuality.none,
+        );
+      }
       // Draw power level text
       final textPainter = TextPainter(
         text: TextSpan(
