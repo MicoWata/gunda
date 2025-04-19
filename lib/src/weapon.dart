@@ -357,6 +357,12 @@ class LinePainter extends CustomPainter {
       // Draw arrow at end of the line
       _drawArrow(canvas, end, angle, powerColor);
     }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // TODO: implement shouldRepaint
+    throw UnimplementedError();
+  }
   }
 
   /// Draw a dashed line to show projectile trajectory
