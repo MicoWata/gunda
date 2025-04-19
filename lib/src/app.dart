@@ -42,6 +42,9 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    // Preload assets
+    Weapon.loadAssets(); // Load weapon assets
+
     // Initialize game
     Game.reset();
 

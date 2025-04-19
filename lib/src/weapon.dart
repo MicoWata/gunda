@@ -13,6 +13,8 @@ import 'package:gunda/src/player.dart';
 enum Weapons { sword, gun }
 
 class Weapon {
+  static ui.Image? shotgunImage; // To store the loaded image
+
   static const double minPower = 8.0;
   static const double maxPower = 30.0;
   static const double powerIncreaseRate = 0.3;
@@ -26,6 +28,22 @@ class Weapon {
   static double power = Weapon.minPower;
   static bool isChargingShot = false;
   static bool show = true;
+
+  /// Loads necessary image assets for the weapon.
+  static Future<void> loadAssets() async {
+    final completer = Completer<ui.Image>();
+    final imageProvider = AssetImage('assets/images/shotgun.png');
+    imageProvider
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((ImageInfo info, bool _) {
+      if (!completer.isCompleted) {
+        completer.complete(info.image);
+        shotgunImage = info.image;
+      }
+    }));
+    // Consider adding error handling here if the image fails to load
+    await completer.future; // Wait for the image to load
+  }
 
   static Offset _getLimitedLineEndPoint(
     Offset start,
@@ -182,8 +200,8 @@ class LinePainter extends CustomPainter {
   final double maxPower;
   final double cameraX;
   final double cameraY;
-  late ui.Image shotgun;
-  static bool loaded = false;
+  //late ui.Image shotgun; // Removed instance variable
+  //static bool loaded = false; // Removed static flag
 
   LinePainter({
     required this.start,
@@ -193,31 +211,15 @@ class LinePainter extends CustomPainter {
     this.maxPower = Weapon.maxPower,
     this.cameraX = 0,
     this.cameraY = 0,
-  }) {
-    _loadWeaponImage();
-  }
+  }); // Removed constructor body
 
-  void _loadWeaponImage() async {
-    await _loadShotgun();
-  }
-
-  Future<void> _loadShotgun() async {
-    final completer = Completer<ui.Image>();
-    final imageProvider = AssetImage('assets/images/shotgun.png');
-    imageProvider
-        .resolve(const ImageConfiguration())
-        .addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            completer.complete(info.image);
-            shotgun = info.image;
-          }),
-        );
-    loaded = true;
-  }
+  // Removed _loadWeaponImage method
+  // Removed _loadShotgun method
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (loaded && Weapon.show) {
+    // Use the statically loaded image, check if it's null
+    if (Weapon.shotgunImage != null && Weapon.show) {
       // Calculate line angle and length
       final dx = end.dx - start.dx;
       final dy = end.dy - start.dy;
@@ -304,9 +306,10 @@ class LinePainter extends CustomPainter {
         RRect.fromRectAndRadius(rect, Radius.circular(8)),
         rectPaint,
       );
-      if (loaded) {
-        canvas.drawImageRect(
-          shotgun,
+      // Use the static image directly
+      // No need to check 'loaded' here as it's checked at the start of paint
+      canvas.drawImageRect(
+          Weapon.shotgunImage!, // Use the non-null assertion operator (!)
           //Rect.fromCenter(
           //  center: Offset(0, 0),
           //  width: shotgun!.width.toDouble(),
