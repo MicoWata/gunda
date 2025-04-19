@@ -115,10 +115,10 @@ class Ball {
     );
 
     // Activate slow motion for dramatic effect on powerful hits
-    if (impactForce > 8) {
-      Game.effect.showSlowMotion = true;
-      Game.effect.slowMotionTimer = Game.effect.maxSlowMotionTime;
-    }
+    //if (impactForce > 8) {
+    //  Game.effect.showSlowMotion = true;
+    //  Game.effect.slowMotionTimer = Game.effect.maxSlowMotionTime;
+    //}
 
     // Increment score more for enemy hits
     Game.score += (Mob.value * impactForce / 2).ceil();
@@ -173,11 +173,11 @@ class Ball {
     }
 
     // Reduce player lives if hit is strong enough
-    if (impactForce > 3.0 && !Game.over) {
+    if (!Game.over) {
       Player.lives = Player.lives - 1;
 
       // Check for game over
-      if (Player.lives <= 0) {
+      if (Player.lives < 1) {
         Game.over = true;
         Game.animationController.stop();
       }

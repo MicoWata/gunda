@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gunda/src/game.dart';
-import 'package:gunda/src/mob.dart';
+import 'package:gunda/src/level.dart';
 import 'package:gunda/src/player.dart';
 
 class Panel {
@@ -46,6 +46,55 @@ class Panel {
             ),
           ),
 
+          // remaining
+          Container(
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 5,
+                  offset: const Offset(2, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              'Remains: ${Level.remaining}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // benching
+          Container(
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 5,
+                  offset: const Offset(2, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              'Benching: ${Level.benching}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           // Kills
           Container(
             padding: const EdgeInsets.all(10),
@@ -62,7 +111,7 @@ class Panel {
               ],
             ),
             child: Text(
-              'Remains: ${Mob.remaining}',
+              'Max mobs: ${Level.maxMob}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -70,7 +119,6 @@ class Panel {
               ),
             ),
           ),
-
           // Score display
           Container(
             padding: const EdgeInsets.all(10),
@@ -86,7 +134,7 @@ class Panel {
               ],
             ),
             child: Text(
-              'Score: ${Game.score}',
+              'Level ${Game.level}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,

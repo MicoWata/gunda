@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
+import 'package:gunda/src/level.dart';
+import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/weapon.dart';
 
 class Player {
@@ -17,7 +19,7 @@ class Player {
   static Body body = Body(x: 0, y: 0, width: 0, height: 0, color: Colors.red);
 
   static const double acceleration = 0.8;
-  static const double maxSpeed = 32.0;
+  static const double maxSpeed = 48.0;
   static const double friction = 0.9;
   static const double minMovementThreshold = 0.1;
 
@@ -40,6 +42,14 @@ class Player {
     //});
   }
 
+  static void kill() {
+    for (Enemy mob in Level.enemies) {
+      if (mob.hp > 0) {
+        mob.hurt();
+      }
+    }
+  }
+
   static void dash() {
     Offset mouse = worldMousePosition;
     double power = 50;
@@ -60,9 +70,24 @@ class Player {
     final normalizedDy = dy / distance;
 
     Player.body.applyImpulse(
-      -normalizedDx * recoilForce * 2,
-      -normalizedDy * recoilForce * 2,
+      normalizedDx * recoilForce * 2,
+      normalizedDy * recoilForce * 2,
     );
+  }
+
+  static void enter() {
+    if (Game.over) {
+      if (Level.remaining > 0) {
+        Game.reset();
+        Game.animationController.repeat();
+      } else if (Game.level < Level.zones.length - 1) {
+        Game.nextLevel();
+        Game.animationController.repeat();
+      } else {
+        Game.reset();
+        Game.animationController.repeat();
+      }
+    }
   }
 
   static void handleKeyEvent(KeyEvent event) {
@@ -77,13 +102,17 @@ class Player {
         Game.paused = !Game.paused;
       }
 
+      if (event.logicalKey == LogicalKeyboardKey.keyK) {
+        kill();
+      }
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        enter();
+      }
       if (event.logicalKey == LogicalKeyboardKey.space) {
         if (!Game.over && !Game.paused && !Weapon.isChargingShot) {
           Weapon.startChargingShot();
-        } else if (Game.over) {
-          Game.reset();
-          Game.animationController.repeat();
-        }
+        } //Game.reset();
+        //Game.animationController.repeat();
       }
     } else if (event is KeyUpEvent) {
       if (event.logicalKey == LogicalKeyboardKey.space &&

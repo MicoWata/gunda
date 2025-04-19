@@ -31,7 +31,7 @@ class Engine {
         Player.lives = Player.lives - 1;
 
         // Check for game over
-        if (Player.lives <= 0) {
+        if (Player.lives < 1) {
           Game.over = true;
           Game.animationController.stop();
         }

@@ -22,6 +22,7 @@ class Weapon {
   // Power meter for shooting
   static double power = Weapon.minPower;
   static bool isChargingShot = false;
+  static bool show = false;
 
   static Offset _getLimitedLineEndPoint(
     Offset start,
@@ -142,7 +143,7 @@ class Weapon {
     Offset mousePosition,
     Camera camera,
   ) {
-    if (!Game.over && LinePainter.loaded) {
+    if (!Game.over) {
       //return Image.asset('assets/images/shotgun.png');
       return CustomPaint(
         size: Size(screenWidth, screenHeight),
@@ -210,7 +211,7 @@ class LinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (loaded) {
+    if (loaded && Weapon.show) {
       // Calculate line angle and length
       final dx = end.dx - start.dx;
       final dy = end.dy - start.dy;

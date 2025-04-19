@@ -77,6 +77,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     // Update position
     setState(() {
       if (Game.paused) return;
+
       // Update positions and handle collisions
       Engine.updatePlayerPhysics();
 
@@ -220,7 +221,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                         // Game over overlay
                         if (Game.paused) Pause.buildGameOverOverlay(),
                         if (Game.over) Game.buildGameOverOverlay(),
-                        if (Mob.remaining == 0) Game.buildGameOverOverlay(),
+                        //if (Level.remaining == 0) Game.buildGameOverOverlay(),
                         DirtyPixel(),
                       ],
                     ),

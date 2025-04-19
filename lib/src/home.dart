@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
-import 'package:gunda/src/game.dart';
 
 class Home {
   static bool skip = false;

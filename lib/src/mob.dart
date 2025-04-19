@@ -15,12 +15,9 @@ import 'package:gunda/src/weapon.dart';
 class Mob {
   static double value = 1;
   static Size size = Size(100, 80);
-  static double mass = 2.6;
-  static int count = 6;
-  static int max = 3;
-  static int remaining = count;
-  static int hp = 3;
-  static int cooldown = 1000;
+  static double mass = 1.6;
+  static int hp = 1;
+  static int cooldown = 500;
 
   static void _handleEnemyShooting(Enemy enemy, int enemyIndex) {
     // Check if enemy can shoot (based on cooldown)
@@ -104,8 +101,8 @@ class Mob {
       final projectile = Projectile(
         x: enemyCenterX,
         y: enemyCenterY,
-        xVelocity: finalDx * enemyPowerLevel,
-        yVelocity: finalDy * enemyPowerLevel,
+        xVelocity: finalDx * (enemyPowerLevel * 0.8),
+        yVelocity: finalDy * (enemyPowerLevel * 0.8),
         radius: Ball.projectileRadius * 0.8, // Slightly smaller projectiles
         color: projectileColor,
         mass: Ball.mass * 0.7, // Slightly lighter projectiles
@@ -603,7 +600,12 @@ class Mob {
   }
 
   static void spawn() {
-    if (remaining > count - max) {
+    if (Level.remaining < 1) {
+      Game.over = true;
+      return;
+    }
+
+    if (Level.benching > 0) {
       for (Enemy enemy in Level.enemies) {
         if (enemy.dead) {
           double maxWidth = Game.gameWidth - Mob.size.width;
@@ -695,7 +697,7 @@ class Enemy {
     height: Mob.size.width,
     color: Colors.pink,
   );
-  int hp = 3;
+  int hp = 1;
   bool dead = false;
   bool canShoot = false;
   int cooldown = 2000;
@@ -703,18 +705,20 @@ class Enemy {
   Enemy({required this.body});
 
   void hurt() {
-    hp -= 1;
+    hp--;
 
     var r = body.color.r / 4;
     var g = body.color.g / 4;
     var b = body.color.b / 4;
 
     body.color = Color.from(alpha: 1.0, red: r, green: g, blue: b);
+
     if (hp < 1 && !dead) {
       //Game.state.kills++;
       dead = true;
+      Level.remaining--;
       Mob.spawn();
-      Mob.remaining--;
+      Level.benching--;
     }
   }
 }

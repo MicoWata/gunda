@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
@@ -15,6 +16,8 @@ class Game {
   static Camera camera = Camera(viewportWidth: 0, viewportHeight: 0);
   static bool paused = false;
   static bool over = false;
+  static bool next = false;
+  static bool start = true;
   static int score = 0;
   static const double gameWidth = 2400;
   static const double gameHeight = 2400;
@@ -25,13 +28,13 @@ class Game {
     //isGameOver = false;
     //lives = Player.maxHearts;
     Player.lives = 3;
-    Game.over = false;
-    Game.score = 0;
-    Level.projectiles.clear();
-    Level.impactParticles.clear();
+
+    //Level.projectiles.clear();
+    //Level.impactParticles.clear();
+    //Level.remaining = Level.allMob - Level.maxMob;
+
     Weapon.power = Weapon.minPower;
     Weapon.isChargingShot = false;
-    Level.remaining = Level.allMob - Level.maxMob;
 
     // Initialize player at center of game world
     Player.body = Body(
@@ -45,17 +48,25 @@ class Game {
       mass: Player.playerMass,
     );
 
+    Game.over = false;
+    Game.score = 0;
+
+    Game.level = 0;
     Level.enter();
   }
 
   static void nextLevel() {
     Player.lives = 3;
+
     Game.over = false;
     Game.score = 0;
-    Level.projectiles.clear();
-    Level.impactParticles.clear();
+
     Weapon.power = Weapon.minPower;
     Weapon.isChargingShot = false;
+
+    //Level.projectiles.clear();
+    //Level.impactParticles.clear();
+    //Level.remaining = Level.allMob - Level.maxMob;
 
     // Initialize player at center of game world
     Player.body = Body(
@@ -88,44 +99,6 @@ class Game {
     }
   }
 
-  static Widget button() {
-    String text;
-    VoidCallback? onPressAction; // Use VoidCallback? to allow null (disabled)
-
-    // Determine button text and action based on game state
-    if (Level.remaining > 0) {
-      // Game Over - Lost
-      text = 'Play Again';
-      onPressAction = () {
-        // Player.body.width = 200; // Removed this line
-        Game.reset();
-        Game.animationController.repeat();
-      };
-    } else if (Game.level < Level.zones.length - 1) {
-      // Victory - More levels exist
-      text = 'Next Level';
-      onPressAction = () {
-        Game.nextLevel();
-        Game.animationController.repeat(); // Restart animation for next level
-      };
-    } else {
-      // Victory - Final level completed
-      text = 'You Win!';
-      onPressAction = null; // Disable button after final victory
-    }
-
-    return ElevatedButton(
-      onPressed: onPressAction, // Assign the determined action
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-        // Optionally add styling for disabled state
-        disabledBackgroundColor: Colors.grey[700],
-        disabledForegroundColor: Colors.grey[400],
-      ),
-      child: Text(text, style: const TextStyle(fontSize: 20)),
-    );
-  }
-
   static Widget buildGameOverOverlay() {
     return Container(
       color: Colors.black.withValues(alpha: 0.7),
@@ -142,12 +115,26 @@ class Game {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'Final Score: ${Game.score}',
-              style: const TextStyle(color: Colors.white, fontSize: 24),
-            ),
+            //Text(
+            //  'Final Score: ${Game.score}',
+            //  style: const TextStyle(color: Colors.white, fontSize: 24),
+            //),
             const SizedBox(height: 30),
-            button(),
+            Text(
+              Level.remaining > 0
+                  ? 'ENTER TO RESTART'
+                  : Player.lives > 0
+                  ? Game.level < Level.zones.length - 1
+                      ? 'ENTER NEXT LEVEL'
+                      : 'ENTER TO RESTART'
+                  : 'ENTER TO RESTART',
+              //: 'ENTER NEXT LEVEL',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

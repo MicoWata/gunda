@@ -12,6 +12,13 @@ import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/player.dart';
 
+class Zone {
+  String map;
+  int allMob;
+
+  Zone(this.map, this.allMob);
+}
+
 class Level {
   static late Size size;
 
@@ -20,23 +27,51 @@ class Level {
   static final List<ImpactParticle> impactParticles = [];
   static final List<Obstacle> obstacles = [];
 
+  static bool done = false;
+  static int maxMob = 0;
+  static int allMob = 0;
+  static int remaining = allMob;
+  static int benching = allMob - maxMob;
+
+  static List<Zone> zones = [
+    Zone('assets/images/level0.txt', 2),
+    Zone('assets/images/level1.txt', 4),
+    Zone('assets/images/level2.txt', 6),
+  ];
+
   static void enter() {
+    ////setState(() {
+    Zone zone = zones[Game.level];
+
+    allMob = zone.allMob;
+
+    done = false;
+    enemies.clear();
+    projectiles.clear();
+    impactParticles.clear();
+    obstacles.clear();
+
     initializeEnemies();
     initializeObstacles();
+
+    remaining = allMob;
+
+    //maxMob = 3;
+    //});
   }
 
   static void initializeEnemies() async {
     await TileMap.loadMap();
-    var spotsize = 2400 / 32;
 
-    double maxWidth = Game.gameWidth - Mob.size.width;
-    double maxHeight = Game.gameHeight - Mob.size.height;
+    var spotsize = 2400 / 32;
 
     enemies.clear();
 
+    maxMob = 0;
+
     for (int x = 0; x < 32; x++) {
       for (int y = 0; y < 32; y++) {
-        if (TileMap.map[x][y] == 2) {
+        if (TileMap.map[y][x] == 2) {
           final hue = Game.random.nextInt(360);
           final color =
               HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
@@ -45,7 +80,6 @@ class Level {
             body: Body(
               x: x * spotsize,
               y: y * spotsize,
-
               xVelocity:
                   Game.random.nextDouble() * 2 - 1, // Random initial velocity
               yVelocity:
@@ -56,57 +90,14 @@ class Level {
               mass: Mob.mass, // Slightly lighter than target
             ),
           );
+
           enemies.add(enemy);
 
-          //double rockSize =
-          //    (spotsize / 2) + Game.random.nextDouble() * (spotsize / 2);
-          //double rockX = x * spotsize;
-          //double rockY = y * spotsize;
-          //obstacles.add(
-          //  ObstacleFactory.createRock(x: rockX, y: rockY, size: rockSize),
-          //);
+          maxMob++;
         }
       }
     }
-    //print(enemies);
-    //// Create new enemies
-    //for (int i = 0; i < Mob.max; i++) {
-    //  // Generate random color shade
-    //  final hue = Game.random.nextInt(360);
-    //  final color = HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
-    //
-    //  // Create enemy with random position but avoid player's initial position
-    //  double enemyX, enemyY;
-    //  do {
-    //    enemyX = Game.random.nextDouble() * maxWidth;
-    //    enemyY = Game.random.nextDouble() * maxHeight;
-    //  } while (isNearPlayer(
-    //    enemyX,
-    //    enemyY,
-    //    300,
-    //  )); // Minimum distance of 300 from player
-    //
-    //  Enemy enemy = Enemy(
-    //    body: Body(
-    //      x: enemyX,
-    //      y: enemyY,
-    //      xVelocity:
-    //          Game.random.nextDouble() * 2 - 1, // Random initial velocity
-    //      yVelocity:
-    //          Game.random.nextDouble() * 2 - 1, // Random initial velocity
-    //      width: Mob.size.width * 0.8, // Slightly smaller than target
-    //      height: Mob.size.height * 0.8, // Slightly smaller than target
-    //      color: color,
-    //      mass: Mob.mass, // Slightly lighter than target
-    //    ),
-    //  );
-    //
-    //  enemies.add(enemy);
-    //  //enemyCanShoot.add(true); // Each enemy can shoot initially
-    //  //enemyShootCooldowns.add(
-    //  //  Mob.cooldown + Game.random.nextInt(1000),
-    //  //); // Stagger cooldowns
-    //}
+    benching = allMob - maxMob;
   }
 
   static void walls() {
@@ -166,7 +157,7 @@ class Level {
 
     for (int x = 0; x < 32; x++) {
       for (int y = 0; y < 32; y++) {
-        if (TileMap.map[x][y] == 1) {
+        if (TileMap.map[y][x] == 1) {
           double rockSize =
               (spotsize / 2) + Game.random.nextDouble() * (spotsize / 2);
           double rockX = x * spotsize;
@@ -234,15 +225,13 @@ class Level {
 }
 
 class TileMap {
-  static var level = 1;
+  //static var level = 0;
   static var tileSize = 64.0;
   static List<List<int>> map = [];
 
   static Future<void> loadMap() async {
-    final String source =
-        TileMap.level == 0
-            ? 'assets/images/Level1.txt'
-            : 'assets/images/level1.txt';
+    final String source = Level.zones[Game.level].map;
+    //final String source = 'assets/images/level1.txt';
     final String mapData = await rootBundle.loadString(source);
     final List<String> rows = mapData.trim().split('\n');
     map =
