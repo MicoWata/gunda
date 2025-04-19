@@ -35,6 +35,7 @@ class Weapon {
   static const double _sliceDistance = 60.0; // pixels sword extends
   static int _sliceStartTime = 0;
   static Offset _currentSliceOffset = Offset.zero;
+  static final Set<Enemy> _hitEnemiesThisSlice = {}; // Track enemies hit per slice
 
 
   /// Loads necessary image assets for the weapon.
@@ -191,6 +192,45 @@ class Weapon {
 
         // Calculate the current offset based on direction, distance, and animation factor
         _currentSliceOffset = direction * _sliceDistance * extensionFactor;
+
+        // --- Sword Collision Detection ---
+        // Calculate world coordinates of the sword's hilt and tip
+        final playerCenter = Offset(Player.body.centerX, Player.body.centerY);
+        final worldHilt = playerCenter + _currentSliceOffset;
+        final worldTip = worldHilt + (direction * 70.0); // Use the same length as the visual representation
+
+        // Check collision with enemies
+        for (int i = Level.enemies.length - 1; i >= 0; i--) {
+          Enemy enemy = Level.enemies[i];
+          // Ensure enemy has a body and isn't already dead or hit this slice
+          if (enemy.body != null && !enemy.dead && !_hitEnemiesThisSlice.contains(enemy)) {
+            if (_lineIntersectsRect(worldHilt, worldTip, enemy.body!)) {
+              // Collision detected!
+              _hitEnemiesThisSlice.add(enemy); // Mark as hit for this slice
+
+              // Apply damage (placeholder - needs Enemy.takeDamage method)
+              // enemy.takeDamage(1); // Example damage value
+              print('Sword hit enemy $i!'); // Placeholder action
+
+              // Apply knockback (away from player center)
+              final knockbackDirection = (enemy.body!.center - playerCenter).normalized();
+              final knockbackForce = 15.0; // Adjust force as needed
+              enemy.body!.applyImpulse(
+                knockbackDirection.dx * knockbackForce,
+                knockbackDirection.dy * knockbackForce,
+              );
+
+              // Trigger impact effect
+              Effect.impact(
+                enemy.body!.centerX,
+                enemy.body!.centerY,
+                Colors.white, // Sword impact color
+                0.8, // Impact size/intensity
+              );
+            }
+          }
+        }
+        // --- End Sword Collision Detection ---
       }
     } else {
       _currentSliceOffset = Offset.zero; // Ensure offset is zero when not slicing
@@ -215,9 +255,9 @@ class Weapon {
       slicing = true;
       _sliceStartTime = DateTime.now().millisecondsSinceEpoch;
       _currentSliceOffset = Offset.zero; // Reset offset at start
+      _hitEnemiesThisSlice.clear(); // Clear hit enemies for the new slice
 
       // TODO: Add cooldown for slicing?
-      // TODO: Implement collision detection/damage during slice
     }
   }
 
@@ -476,6 +516,63 @@ class SwordPainter extends CustomPainter {
         oldDelegate.cameraX != cameraX ||
         oldDelegate.cameraY != cameraY;
   }
+
+  // Simple Line Segment vs. Axis-Aligned Bounding Box (AABB) intersection test
+  // This is a basic check and might not be perfectly accurate for all edge cases,
+  // but it's a good starting point.
+  static bool _lineIntersectsRect(Offset p1, Offset p2, Body rect) {
+    // Check if either endpoint is inside the rectangle
+    if (rect.contains(p1) || rect.contains(p2)) {
+      return true;
+    }
+
+    // Check for intersection with each of the 4 rectangle edges
+    // Using a simplified approach: check if line crosses the rectangle's x and y ranges
+    double minX = min(p1.dx, p2.dx);
+    double maxX = max(p1.dx, p2.dx);
+    double minY = min(p1.dy, p2.dy);
+    double maxY = max(p1.dy, p2.dy);
+
+    // Check if the line's bounding box overlaps the rectangle's bounding box
+    if (maxX < rect.left || minX > rect.right || maxY < rect.top || minY > rect.bottom) {
+      return false; // No overlap possible
+    }
+
+    // More robust checks (e.g., Liang-Barsky or separating axis theorem) could be used here
+    // for better accuracy, especially for lines that pass through without endpoints inside.
+    // For now, we'll consider overlap of bounding boxes as a potential intersection.
+    // This might lead to some false positives if the line passes *near* but not *through*.
+
+    // A slightly better check: Test intersection with diagonals (covers more cases)
+    bool intersectsDiagonal1 = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomRight);
+    bool intersectsDiagonal2 = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomLeft);
+
+    // Also check intersection with the rectangle's sides explicitly (more robust)
+    bool intersectsTop = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.topRight);
+    bool intersectsBottom = _lineSegmentIntersection(p1, p2, rect.bottomLeft, rect.bottomRight);
+    bool intersectsLeft = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomLeft);
+    bool intersectsRight = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomRight);
+
+
+    return intersectsDiagonal1 || intersectsDiagonal2 || intersectsTop || intersectsBottom || intersectsLeft || intersectsRight;
+  }
+
+  // Helper to check if two line segments intersect
+  // Source: Adapted from various geometry algorithms (e.g., StackOverflow)
+  static bool _lineSegmentIntersection(Offset p1, Offset p2, Offset p3, Offset p4) {
+    double det = (p2.dx - p1.dx) * (p4.dy - p3.dy) - (p2.dy - p1.dy) * (p4.dx - p3.dx);
+    if (det.abs() < 1e-9) { // Use tolerance for floating point comparison
+      return false; // Parallel or collinear lines
+    } else {
+      double t = ((p3.dx - p1.dx) * (p4.dy - p3.dy) - (p3.dy - p1.dy) * (p4.dx - p3.dx)) / det;
+      double u = -((p2.dx - p1.dx) * (p3.dy - p1.dy) - (p2.dy - p1.dy) * (p3.dx - p1.dx)) / det;
+
+      // Use tolerance for floating point comparison
+      const double epsilon = 1e-9;
+      return t >= -epsilon && t <= 1.0 + epsilon && u >= -epsilon && u <= 1.0 + epsilon; // Intersection point is within both segments (with tolerance)
+    }
+  }
+
 }
 
 class LinePainter extends CustomPainter {

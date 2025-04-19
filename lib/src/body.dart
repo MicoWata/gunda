@@ -38,7 +38,14 @@ class Body {
   double get top => y;
   double get bottom => y + height;
 
+  /// Get corner points
+  Offset get topLeft => Offset(left, top);
+  Offset get topRight => Offset(right, top);
+  Offset get bottomLeft => Offset(left, bottom);
+  Offset get bottomRight => Offset(right, bottom);
+
   /// Get center point
+  Offset get center => Offset(centerX, centerY);
   double get centerX => x + width / 2;
   double get centerY => y + height / 2;
 
@@ -46,6 +53,11 @@ class Body {
   void update() {
     x += xVelocity;
     y += yVelocity;
+  }
+
+  /// Checks if a point is inside the body's bounds.
+  bool contains(Offset point) {
+    return point.dx >= left && point.dx <= right && point.dy >= top && point.dy <= bottom;
   }
 
   /// Apply impulse (change in momentum) to the rectangle
