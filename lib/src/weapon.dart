@@ -34,11 +34,11 @@ class Weapon {
 
   // Slice animation state
   static const int _sliceDuration = 300; // milliseconds
-  static const double _sliceDistance = 60.0; // pixels sword extends
+  static const double _sliceDistance = 120.0; // pixels sword extends
   static int _sliceStartTime = 0;
   static Offset _currentSliceOffset = Offset.zero;
-  static final Set<Enemy> _hitEnemiesThisSlice = {}; // Track enemies hit per slice
-
+  static final Set<Enemy> _hitEnemiesThisSlice =
+      {}; // Track enemies hit per slice
 
   /// Loads necessary image assets for the weapon.
   static Future<void> loadAssets() async {
@@ -163,7 +163,8 @@ class Weapon {
   /// Updates weapon state, like slice animation. Called from game loop.
   static void update() {
     if (slicing) {
-      final elapsedTime = DateTime.now().millisecondsSinceEpoch - _sliceStartTime;
+      final elapsedTime =
+          DateTime.now().millisecondsSinceEpoch - _sliceStartTime;
 
       if (elapsedTime >= _sliceDuration) {
         // Slice finished
@@ -188,9 +189,11 @@ class Weapon {
         if (distance > 0) {
           direction = Offset(dx / distance, dy / distance);
         } else {
-          direction = const Offset(1, 0); // Default direction if mouse is at center
+          direction = const Offset(
+            1,
+            0,
+          ); // Default direction if mouse is at center
         }
-
 
         // Calculate the current offset based on direction, distance, and animation factor
         _currentSliceOffset = direction * _sliceDistance * extensionFactor;
@@ -199,51 +202,57 @@ class Weapon {
         // Calculate world coordinates of the sword's hilt and tip
         // final playerCenter = Offset(Player.body.centerX, Player.body.centerY); // Already defined above
         final worldHilt = playerCenter + _currentSliceOffset;
-        final worldTip = worldHilt + (direction * 70.0); // Use the same length as the visual representation
+        final worldTip =
+            worldHilt +
+            (direction *
+                70.0); // Use the same length as the visual representation
 
         // Check collision with enemies
         for (int i = Level.enemies.length - 1; i >= 0; i--) {
           Enemy enemy = Level.enemies[i];
           // Ensure enemy has a body and isn't already dead or hit this slice
-          if (enemy.body != null && !enemy.dead && !_hitEnemiesThisSlice.contains(enemy)) {
-            if (_lineIntersectsRect(worldHilt, worldTip, enemy.body!)) {
+          if (!enemy.dead && !_hitEnemiesThisSlice.contains(enemy)) {
+            if (_lineIntersectsRect(worldHilt, worldTip, enemy.body)) {
               // Collision detected!
               _hitEnemiesThisSlice.add(enemy); // Mark as hit for this slice
 
               // Apply damage (placeholder - needs Enemy.takeDamage method)
               // enemy.takeDamage(1); // Example damage value
-              print('Sword hit enemy $i!'); // Placeholder action
 
               // Apply knockback (away from player center)
-              final diff = enemy.body!.center - playerCenter;
-              final distance = diff.distance; // Magnitude of the difference vector
+              final diff = enemy.body.center - playerCenter;
+              final distance =
+                  diff.distance; // Magnitude of the difference vector
               Offset knockbackDirection = Offset.zero;
-              if (distance > 0) { // Avoid division by zero
+              if (distance > 0) {
+                // Avoid division by zero
                 knockbackDirection = diff / distance; // Normalize the vector
               }
               final knockbackForce = 15.0; // Adjust force as needed
-              enemy.body!.applyImpulse(
+              enemy.body.applyImpulse(
                 knockbackDirection.dx * knockbackForce,
                 knockbackDirection.dy * knockbackForce,
               );
 
               // Trigger impact effect
               Effect.impact(
-                enemy.body!.centerX,
-                enemy.body!.centerY,
+                enemy.body.centerX,
+                enemy.body.centerY,
                 Colors.white, // Sword impact color
                 0.8, // Impact size/intensity
               );
+
+              enemy.hurt();
             }
           }
         }
         // --- End Sword Collision Detection ---
       }
     } else {
-      _currentSliceOffset = Offset.zero; // Ensure offset is zero when not slicing
+      _currentSliceOffset =
+          Offset.zero; // Ensure offset is zero when not slicing
     }
   }
-
 
   static void updateChargingPower() {
     if (!isChargingShot) return;
@@ -263,8 +272,6 @@ class Weapon {
       _sliceStartTime = DateTime.now().millisecondsSinceEpoch;
       _currentSliceOffset = Offset.zero; // Reset offset at start
       _hitEnemiesThisSlice.clear(); // Clear hit enemies for the new slice
-
-      // TODO: Add cooldown for slicing?
     }
   }
 
@@ -276,7 +283,7 @@ class Weapon {
   ) {
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
-      painter: SwordPainter(
+      painter: LinePainter(
         start: Offset(
           Player.body.centerX - camera.x,
           Player.body.centerY - camera.y,
@@ -320,14 +327,16 @@ class Weapon {
     // Apply the slice offset (which is calculated in world coordinates, so no camera adjustment needed here)
     // The offset is applied relative to the player's center.
     final currentHiltScreen = baseHiltScreen + _currentSliceOffset;
-    final currentTipScreen = currentHiltScreen + aimVectorScreen; // Tip moves with the hilt
+    final currentTipScreen =
+        currentHiltScreen + aimVectorScreen; // Tip moves with the hilt
 
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
       painter: SwordPainter(
         start: currentHiltScreen, // Use the animated hilt position
-        end: currentTipScreen,   // Use the animated tip position
-        powerLevel: power, // Sword doesn't use power level visually like cannon? Maybe remove later.
+        end: currentTipScreen, // Use the animated tip position
+        powerLevel:
+            power, // Sword doesn't use power level visually like cannon? Maybe remove later.
         cameraX: camera.x, // Pass camera for potential future use in painter
         cameraY: camera.y,
       ),
@@ -368,7 +377,10 @@ class Weapon {
     double maxY = max(p1.dy, p2.dy);
 
     // Check if the line's bounding box overlaps the rectangle's bounding box
-    if (maxX < rect.left || minX > rect.right || maxY < rect.top || minY > rect.bottom) {
+    if (maxX < rect.left ||
+        minX > rect.right ||
+        maxY < rect.top ||
+        minY > rect.bottom) {
       return false; // No overlap possible
     }
 
@@ -378,35 +390,86 @@ class Weapon {
     // This might lead to some false positives if the line passes *near* but not *through*.
 
     // A slightly better check: Test intersection with diagonals (covers more cases)
-    bool intersectsDiagonal1 = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomRight);
-    bool intersectsDiagonal2 = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomLeft);
+    bool intersectsDiagonal1 = _lineSegmentIntersection(
+      p1,
+      p2,
+      rect.topLeft,
+      rect.bottomRight,
+    );
+    bool intersectsDiagonal2 = _lineSegmentIntersection(
+      p1,
+      p2,
+      rect.topRight,
+      rect.bottomLeft,
+    );
 
     // Also check intersection with the rectangle's sides explicitly (more robust)
-    bool intersectsTop = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.topRight);
-    bool intersectsBottom = _lineSegmentIntersection(p1, p2, rect.bottomLeft, rect.bottomRight);
-    bool intersectsLeft = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomLeft);
-    bool intersectsRight = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomRight);
+    bool intersectsTop = _lineSegmentIntersection(
+      p1,
+      p2,
+      rect.topLeft,
+      rect.topRight,
+    );
+    bool intersectsBottom = _lineSegmentIntersection(
+      p1,
+      p2,
+      rect.bottomLeft,
+      rect.bottomRight,
+    );
+    bool intersectsLeft = _lineSegmentIntersection(
+      p1,
+      p2,
+      rect.topLeft,
+      rect.bottomLeft,
+    );
+    bool intersectsRight = _lineSegmentIntersection(
+      p1,
+      p2,
+      rect.topRight,
+      rect.bottomRight,
+    );
 
-
-    return intersectsDiagonal1 || intersectsDiagonal2 || intersectsTop || intersectsBottom || intersectsLeft || intersectsRight;
+    return intersectsDiagonal1 ||
+        intersectsDiagonal2 ||
+        intersectsTop ||
+        intersectsBottom ||
+        intersectsLeft ||
+        intersectsRight;
   }
 
   // Helper to check if two line segments intersect
   // Source: Adapted from various geometry algorithms (e.g., StackOverflow)
-  static bool _lineSegmentIntersection(Offset p1, Offset p2, Offset p3, Offset p4) {
-    double det = (p2.dx - p1.dx) * (p4.dy - p3.dy) - (p2.dy - p1.dy) * (p4.dx - p3.dx);
-    if (det.abs() < 1e-9) { // Use tolerance for floating point comparison
+  static bool _lineSegmentIntersection(
+    Offset p1,
+    Offset p2,
+    Offset p3,
+    Offset p4,
+  ) {
+    double det =
+        (p2.dx - p1.dx) * (p4.dy - p3.dy) - (p2.dy - p1.dy) * (p4.dx - p3.dx);
+    if (det.abs() < 1e-9) {
+      // Use tolerance for floating point comparison
       return false; // Parallel or collinear lines
     } else {
-      double t = ((p3.dx - p1.dx) * (p4.dy - p3.dy) - (p3.dy - p1.dy) * (p4.dx - p3.dx)) / det;
-      double u = -((p2.dx - p1.dx) * (p3.dy - p1.dy) - (p2.dy - p1.dy) * (p3.dx - p1.dx)) / det;
+      double t =
+          ((p3.dx - p1.dx) * (p4.dy - p3.dy) -
+              (p3.dy - p1.dy) * (p4.dx - p3.dx)) /
+          det;
+      double u =
+          -((p2.dx - p1.dx) * (p3.dy - p1.dy) -
+              (p2.dy - p1.dy) * (p3.dx - p1.dx)) /
+          det;
 
       // Use tolerance for floating point comparison
       const double epsilon = 1e-9;
-      return t >= -epsilon && t <= 1.0 + epsilon && u >= -epsilon && u <= 1.0 + epsilon; // Intersection point is within both segments (with tolerance)
+      return t >= -epsilon &&
+          t <= 1.0 + epsilon &&
+          u >= -epsilon &&
+          u <=
+              1.0 +
+                  epsilon; // Intersection point is within both segments (with tolerance)
     }
   }
-
 }
 
 /// Custom painter to draw an aiming line with power meter
@@ -458,7 +521,6 @@ class SwordPainter extends CustomPainter {
       // Create power meter properties
       final rectHeight = 25.0;
       final maxRectWidth = lineLength;
-      final currentRectWidth = maxRectWidth * powerPercentage;
 
       // Save canvas state before rotation
       canvas.save();
@@ -478,7 +540,7 @@ class SwordPainter extends CustomPainter {
       final rectBackground = Rect.fromLTWH(
         0,
         -rectHeight / 2,
-        maxRectWidth,
+        maxRectWidth * 2,
         rectHeight,
       );
       //canvas.drawRect(rectBackground, rectBackgroundPaint);
@@ -538,27 +600,27 @@ class SwordPainter extends CustomPainter {
       //);
       //} <--- REMOVE THIS EXTRA BRACE
       // Draw power level text
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: powerLevel.toStringAsFixed(1),
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
-
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          maxRectWidth / 2 - textPainter.width / 2,
-          -textPainter.height / 2,
-        ),
-      );
+      //final textPainter = TextPainter(
+      //  text: TextSpan(
+      //    text: powerLevel.toStringAsFixed(1),
+      //    style: const TextStyle(
+      //      color: Colors.black,
+      //      fontSize: 12,
+      //      fontWeight: FontWeight.bold,
+      //    ),
+      //  ),
+      //  textAlign: TextAlign.center,
+      //  textDirection: TextDirection.ltr,
+      //);
+      //
+      //textPainter.layout();
+      //textPainter.paint(
+      //  canvas,
+      //  Offset(
+      //    maxRectWidth / 2 - textPainter.width / 2,
+      //    -textPainter.height / 2,
+      //  ),
+      //);
 
       // Draw arrow at end of the line (relative to the rotated canvas)
       // Note: 'end' is in screen coordinates, need to adjust for rotation/translation
@@ -586,7 +648,6 @@ class SwordPainter extends CustomPainter {
   // --- Helper methods moved to Weapon class ---
   // static bool _lineIntersectsRect(...) { ... }
   // static bool _lineSegmentIntersection(...) { ... }
-
 }
 
 class LinePainter extends CustomPainter {
@@ -813,7 +874,7 @@ class LinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(SwordPainter oldDelegate) {
+  bool shouldRepaint(LinePainter oldDelegate) {
     // Compare old delegate's properties with the current instance's properties
     return oldDelegate.start != start ||
         oldDelegate.end != end ||

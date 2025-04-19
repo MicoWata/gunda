@@ -156,17 +156,17 @@ class Mob {
   }
 
   // Apply different AI behaviors to enemies
-  static void _applyEnemyAI(Body enemy, int index) {
+  static void _applyEnemyAI(Enemy enemy, int index) {
     // Different behaviors for each enemy
-    switch (index % 3) {
-      case 0: // First enemy chases player aggressively
-        _applyChaseAI(enemy, 1.5);
+    switch (enemy.kind) {
+      case Ennemies.mad: // First enemy chases player aggressively
+        _applyChaseAI(enemy.body, 1.5);
         break;
-      case 1: // Second enemy circles the player
-        _applyCirclingAI(enemy);
+      case Ennemies.wild: // Second enemy.body circles the player
+        _applyCirclingAI(enemy.body);
         break;
-      case 2: // Third enemy moves erratically
-        _applyErraticAI(enemy);
+      case Ennemies.dumb: // Third enemy.body moves erratically
+        _applyErraticAI(enemy.body);
         break;
     }
   }
@@ -365,7 +365,7 @@ class Mob {
         _handleEnemyWallCollisions(enemy.body);
 
         // Apply AI behavior
-        _applyEnemyAI(enemy.body, i);
+        _applyEnemyAI(enemy, i);
 
         // Check for collisions with other enemies
         Engine.handleEnemyToEnemyCollisions(i);
@@ -689,6 +689,8 @@ class Mob {
   }
 }
 
+enum Ennemies { dumb, mad, wild }
+
 class Enemy {
   Body body = Body(
     x: 0,
@@ -701,6 +703,7 @@ class Enemy {
   bool dead = false;
   bool canShoot = false;
   int cooldown = 2000;
+  Ennemies kind = Ennemies.wild;
 
   Enemy({required this.body});
 

@@ -149,12 +149,12 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   }
 
   void _mouseDown() {
-    debugPrint('HOHOHOH');
+    //debugPrint('HOHOHOH');
     Player.click();
   }
 
   void _mouseUp() {
-    debugPrint('HOHOHOH');
+    //debugPrint('HOHOHOH');
     Player.release();
   }
 

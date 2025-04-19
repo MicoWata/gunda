@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
@@ -19,7 +20,7 @@ class Player {
   static Body body = Body(x: 0, y: 0, width: 0, height: 0, color: Colors.red);
 
   static const double acceleration = 0.8;
-  static const double maxSpeed = 48.0;
+  static const double maxSpeed = 64.0;
   static const double friction = 0.9;
   static const double minMovementThreshold = 0.1;
 
@@ -90,14 +91,54 @@ class Player {
     }
   }
 
+  static void click() {
+    attack();
+  }
+
+  static void release() {
+    if (Weapon.isChargingShot) {
+      Weapon.releaseShot(worldMousePosition);
+    }
+  }
+
+  static void attack() {
+    if (Weapon.kind == Weapons.cannon) {
+      shoot();
+    } else {
+      hit();
+    }
+  }
+
+  static void hit() {
+    Weapon.slice();
+  }
+
+  static void changeWeapon() {
+    switch (Weapon.kind) {
+      case Weapons.cannon:
+        Weapon.kind = Weapons.sword;
+      case Weapons.sword:
+        Weapon.kind = Weapons.cannon;
+    }
+  }
+
+  static void shoot() {
+    if (!Game.over && !Game.paused && !Weapon.isChargingShot) {
+      Weapon.startChargingShot();
+    } //Game.reset();
+  }
+
   static void handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent) {
       _pressedKeys.add(event.logicalKey);
 
-      if (event.logicalKey == LogicalKeyboardKey.keyE) {
+      if (event.logicalKey == LogicalKeyboardKey.space) {
         dash();
       }
 
+      if (event.logicalKey == LogicalKeyboardKey.keyE) {
+        changeWeapon();
+      }
       if (event.logicalKey == LogicalKeyboardKey.keyQ) {
         Game.paused = !Game.paused;
       }
@@ -108,17 +149,14 @@ class Player {
       if (event.logicalKey == LogicalKeyboardKey.enter) {
         enter();
       }
-      if (event.logicalKey == LogicalKeyboardKey.space) {
-        if (!Game.over && !Game.paused && !Weapon.isChargingShot) {
-          Weapon.startChargingShot();
-        } //Game.reset();
-        //Game.animationController.repeat();
-      }
+      //if (event.logicalKey == LogicalKeyboardKey.space) {
+      //  attack();
+      //}
     } else if (event is KeyUpEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.space &&
-          Weapon.isChargingShot) {
-        Weapon.releaseShot(worldMousePosition);
-      }
+      //if (event.logicalKey == LogicalKeyboardKey.space &&
+      //    Weapon.isChargingShot) {
+      //  Weapon.releaseShot(worldMousePosition);
+      //}
 
       _pressedKeys.remove(event.logicalKey);
     }
