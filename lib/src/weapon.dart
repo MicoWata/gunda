@@ -215,7 +215,12 @@ class Weapon {
               print('Sword hit enemy $i!'); // Placeholder action
 
               // Apply knockback (away from player center)
-              final knockbackDirection = (enemy.body!.center - playerCenter).normalized();
+              final diff = enemy.body!.center - playerCenter;
+              final distance = diff.distance; // Magnitude of the difference vector
+              Offset knockbackDirection = Offset.zero;
+              if (distance > 0) { // Avoid division by zero
+                knockbackDirection = diff / distance; // Normalize the vector
+              }
               final knockbackForce = 15.0; // Adjust force as needed
               enemy.body!.applyImpulse(
                 knockbackDirection.dx * knockbackForce,
