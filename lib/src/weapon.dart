@@ -318,8 +318,8 @@ class LinePainter extends CustomPainter {
           Rect.fromLTWH(
             0,
             0,
-            shotgun.width.toDouble(),
-            shotgun.height.toDouble(),
+            Weapon.shotgunImage!.width.toDouble(), // Use static image dimensions
+            Weapon.shotgunImage!.height.toDouble(), // Use static image dimensions
           ),
           Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
           //rectBackground,
