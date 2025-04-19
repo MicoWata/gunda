@@ -157,6 +157,47 @@ class Weapon {
     }
   }
 
+  /// Updates weapon state, like slice animation. Called from game loop.
+  static void update() {
+    if (slicing) {
+      final elapsedTime = DateTime.now().millisecondsSinceEpoch - _sliceStartTime;
+
+      if (elapsedTime >= _sliceDuration) {
+        // Slice finished
+        slicing = false;
+        _currentSliceOffset = Offset.zero;
+      } else {
+        // Calculate slice progress (0.0 to 1.0)
+        final progress = elapsedTime / _sliceDuration;
+
+        // Calculate extension factor (0 -> 1 -> 0 using sine wave)
+        final extensionFactor = sin(progress * pi); // Smooth in-out
+
+        // Calculate direction from player center towards mouse
+        final playerCenter = Offset(Player.body.centerX, Player.body.centerY);
+        // Use the pre-calculated world mouse position from Player class
+        final worldMousePosition = Player.worldMousePosition;
+        final dx = worldMousePosition.dx - playerCenter.dx;
+        final dy = worldMousePosition.dy - playerCenter.dy;
+        final distance = sqrt(dx * dx + dy * dy);
+
+        Offset direction = Offset.zero;
+        if (distance > 0) {
+          direction = Offset(dx / distance, dy / distance);
+        } else {
+          direction = const Offset(1, 0); // Default direction if mouse is at center
+        }
+
+
+        // Calculate the current offset based on direction, distance, and animation factor
+        _currentSliceOffset = direction * _sliceDistance * extensionFactor;
+      }
+    } else {
+      _currentSliceOffset = Offset.zero; // Ensure offset is zero when not slicing
+    }
+  }
+
+
   static void updateChargingPower() {
     if (!isChargingShot) return;
 
