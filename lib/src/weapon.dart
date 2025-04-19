@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
+import 'package:gunda/src/body.dart'; // Import Body
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
+import 'package:gunda/src/mob.dart'; // Import Enemy
 import 'package:gunda/src/player.dart';
 
 enum Weapons { sword, cannon }
@@ -195,7 +197,7 @@ class Weapon {
 
         // --- Sword Collision Detection ---
         // Calculate world coordinates of the sword's hilt and tip
-        final playerCenter = Offset(Player.body.centerX, Player.body.centerY);
+        // final playerCenter = Offset(Player.body.centerX, Player.body.centerY); // Already defined above
         final worldHilt = playerCenter + _currentSliceOffset;
         final worldTip = worldHilt + (direction * 70.0); // Use the same length as the visual representation
 
@@ -341,6 +343,65 @@ class Weapon {
       return Container();
     }
   }
+
+  // --- Collision Helper Methods ---
+
+  // Simple Line Segment vs. Axis-Aligned Bounding Box (AABB) intersection test
+  // This is a basic check and might not be perfectly accurate for all edge cases,
+  // but it's a good starting point.
+  static bool _lineIntersectsRect(Offset p1, Offset p2, Body rect) {
+    // Check if either endpoint is inside the rectangle
+    if (rect.contains(p1) || rect.contains(p2)) {
+      return true;
+    }
+
+    // Check for intersection with each of the 4 rectangle edges
+    // Using a simplified approach: check if line crosses the rectangle's x and y ranges
+    double minX = min(p1.dx, p2.dx);
+    double maxX = max(p1.dx, p2.dx);
+    double minY = min(p1.dy, p2.dy);
+    double maxY = max(p1.dy, p2.dy);
+
+    // Check if the line's bounding box overlaps the rectangle's bounding box
+    if (maxX < rect.left || minX > rect.right || maxY < rect.top || minY > rect.bottom) {
+      return false; // No overlap possible
+    }
+
+    // More robust checks (e.g., Liang-Barsky or separating axis theorem) could be used here
+    // for better accuracy, especially for lines that pass through without endpoints inside.
+    // For now, we'll consider overlap of bounding boxes as a potential intersection.
+    // This might lead to some false positives if the line passes *near* but not *through*.
+
+    // A slightly better check: Test intersection with diagonals (covers more cases)
+    bool intersectsDiagonal1 = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomRight);
+    bool intersectsDiagonal2 = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomLeft);
+
+    // Also check intersection with the rectangle's sides explicitly (more robust)
+    bool intersectsTop = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.topRight);
+    bool intersectsBottom = _lineSegmentIntersection(p1, p2, rect.bottomLeft, rect.bottomRight);
+    bool intersectsLeft = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomLeft);
+    bool intersectsRight = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomRight);
+
+
+    return intersectsDiagonal1 || intersectsDiagonal2 || intersectsTop || intersectsBottom || intersectsLeft || intersectsRight;
+  }
+
+  // Helper to check if two line segments intersect
+  // Source: Adapted from various geometry algorithms (e.g., StackOverflow)
+  static bool _lineSegmentIntersection(Offset p1, Offset p2, Offset p3, Offset p4) {
+    double det = (p2.dx - p1.dx) * (p4.dy - p3.dy) - (p2.dy - p1.dy) * (p4.dx - p3.dx);
+    if (det.abs() < 1e-9) { // Use tolerance for floating point comparison
+      return false; // Parallel or collinear lines
+    } else {
+      double t = ((p3.dx - p1.dx) * (p4.dy - p3.dy) - (p3.dy - p1.dy) * (p4.dx - p3.dx)) / det;
+      double u = -((p2.dx - p1.dx) * (p3.dy - p1.dy) - (p2.dy - p1.dy) * (p3.dx - p1.dx)) / det;
+
+      // Use tolerance for floating point comparison
+      const double epsilon = 1e-9;
+      return t >= -epsilon && t <= 1.0 + epsilon && u >= -epsilon && u <= 1.0 + epsilon; // Intersection point is within both segments (with tolerance)
+    }
+  }
+
 }
 
 /// Custom painter to draw an aiming line with power meter
@@ -517,61 +578,9 @@ class SwordPainter extends CustomPainter {
         oldDelegate.cameraY != cameraY;
   }
 
-  // Simple Line Segment vs. Axis-Aligned Bounding Box (AABB) intersection test
-  // This is a basic check and might not be perfectly accurate for all edge cases,
-  // but it's a good starting point.
-  static bool _lineIntersectsRect(Offset p1, Offset p2, Body rect) {
-    // Check if either endpoint is inside the rectangle
-    if (rect.contains(p1) || rect.contains(p2)) {
-      return true;
-    }
-
-    // Check for intersection with each of the 4 rectangle edges
-    // Using a simplified approach: check if line crosses the rectangle's x and y ranges
-    double minX = min(p1.dx, p2.dx);
-    double maxX = max(p1.dx, p2.dx);
-    double minY = min(p1.dy, p2.dy);
-    double maxY = max(p1.dy, p2.dy);
-
-    // Check if the line's bounding box overlaps the rectangle's bounding box
-    if (maxX < rect.left || minX > rect.right || maxY < rect.top || minY > rect.bottom) {
-      return false; // No overlap possible
-    }
-
-    // More robust checks (e.g., Liang-Barsky or separating axis theorem) could be used here
-    // for better accuracy, especially for lines that pass through without endpoints inside.
-    // For now, we'll consider overlap of bounding boxes as a potential intersection.
-    // This might lead to some false positives if the line passes *near* but not *through*.
-
-    // A slightly better check: Test intersection with diagonals (covers more cases)
-    bool intersectsDiagonal1 = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomRight);
-    bool intersectsDiagonal2 = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomLeft);
-
-    // Also check intersection with the rectangle's sides explicitly (more robust)
-    bool intersectsTop = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.topRight);
-    bool intersectsBottom = _lineSegmentIntersection(p1, p2, rect.bottomLeft, rect.bottomRight);
-    bool intersectsLeft = _lineSegmentIntersection(p1, p2, rect.topLeft, rect.bottomLeft);
-    bool intersectsRight = _lineSegmentIntersection(p1, p2, rect.topRight, rect.bottomRight);
-
-
-    return intersectsDiagonal1 || intersectsDiagonal2 || intersectsTop || intersectsBottom || intersectsLeft || intersectsRight;
-  }
-
-  // Helper to check if two line segments intersect
-  // Source: Adapted from various geometry algorithms (e.g., StackOverflow)
-  static bool _lineSegmentIntersection(Offset p1, Offset p2, Offset p3, Offset p4) {
-    double det = (p2.dx - p1.dx) * (p4.dy - p3.dy) - (p2.dy - p1.dy) * (p4.dx - p3.dx);
-    if (det.abs() < 1e-9) { // Use tolerance for floating point comparison
-      return false; // Parallel or collinear lines
-    } else {
-      double t = ((p3.dx - p1.dx) * (p4.dy - p3.dy) - (p3.dy - p1.dy) * (p4.dx - p3.dx)) / det;
-      double u = -((p2.dx - p1.dx) * (p3.dy - p1.dy) - (p2.dy - p1.dy) * (p3.dx - p1.dx)) / det;
-
-      // Use tolerance for floating point comparison
-      const double epsilon = 1e-9;
-      return t >= -epsilon && t <= 1.0 + epsilon && u >= -epsilon && u <= 1.0 + epsilon; // Intersection point is within both segments (with tolerance)
-    }
-  }
+  // --- Helper methods moved to Weapon class ---
+  // static bool _lineIntersectsRect(...) { ... }
+  // static bool _lineSegmentIntersection(...) { ... }
 
 }
 
