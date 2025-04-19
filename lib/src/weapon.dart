@@ -327,7 +327,7 @@ class LinePainter extends CustomPainter {
           //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
           Paint()..filterQuality = FilterQuality.none,
         );
-      }
+      //} <--- REMOVE THIS EXTRA BRACE
       // Draw power level text
       final textPainter = TextPainter(
         text: TextSpan(
@@ -351,11 +351,17 @@ class LinePainter extends CustomPainter {
         ),
       );
 
+      // Draw arrow at end of the line (relative to the rotated canvas)
+      // Note: 'end' is in screen coordinates, need to adjust for rotation/translation
+      // We want the arrow at the end of the power meter line (length: maxRectWidth)
+      _drawArrow(canvas, Offset(maxRectWidth, 0), angle, powerColor);
+
+
       // Restore canvas to original state
       canvas.restore();
 
-      // Draw arrow at end of the line
-      _drawArrow(canvas, end, angle, powerColor);
+      // Draw arrow at end of the line - MOVED BEFORE canvas.restore()
+      // _drawArrow(canvas, end, angle, powerColor);
     }
 
   }
@@ -413,10 +419,11 @@ class LinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(LinePainter oldDelegate) {
-    return oldDelegate.start != start ||
-        oldDelegate.end != end ||
-        oldDelegate.powerLevel != powerLevel ||
-        oldDelegate.cameraX != cameraX ||
-        oldDelegate.cameraY != cameraY;
+    // Compare old delegate's properties with the current instance's properties
+    return oldDelegate.start != this.start ||
+        oldDelegate.end != this.end ||
+        oldDelegate.powerLevel != this.powerLevel ||
+        oldDelegate.cameraX != this.cameraX ||
+        oldDelegate.cameraY != this.cameraY;
   }
 }
