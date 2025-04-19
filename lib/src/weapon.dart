@@ -10,7 +10,7 @@ import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/player.dart';
 
-enum Weapons { sword, gun }
+enum Weapons { sword, cannon }
 
 class Weapon {
   static ui.Image? shotgunImage; // To store the loaded image
@@ -23,11 +23,12 @@ class Weapon {
   static bool canShoot = true;
   static final cooldown = 300; // milliseconds
 
-  static Weapons kind = Weapons.gun;
+  static Weapons kind = Weapons.sword;
   // Power meter for shooting
   static double power = Weapon.minPower;
   static bool isChargingShot = false;
   static bool show = true;
+  static bool slicing = true;
 
   /// Loads necessary image assets for the weapon.
   static Future<void> loadAssets() async {
@@ -35,12 +36,14 @@ class Weapon {
     final imageProvider = AssetImage('assets/images/shotgun.png');
     imageProvider
         .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((ImageInfo info, bool _) {
-      if (!completer.isCompleted) {
-        completer.complete(info.image);
-        shotgunImage = info.image;
-      }
-    }));
+        .addListener(
+          ImageStreamListener((ImageInfo info, bool _) {
+            if (!completer.isCompleted) {
+              completer.complete(info.image);
+              shotgunImage = info.image;
+            }
+          }),
+        );
     // Consider adding error handling here if the image fails to load
     await completer.future; // Wait for the image to load
   }
@@ -158,6 +161,70 @@ class Weapon {
     //});
   }
 
+  static void slice() {
+    if (kind == Weapons.sword) {
+      slicing = true;
+
+      // finish the slicing function for the sword weapon AI!
+    }
+  }
+
+  static CustomPaint buildCannon(
+    double screenWidth,
+    double screenHeight,
+    Offset mousePosition,
+    Camera camera,
+  ) {
+    return CustomPaint(
+      size: Size(screenWidth, screenHeight),
+      painter: SwordPainter(
+        start: Offset(
+          Player.body.centerX - camera.x,
+          Player.body.centerY - camera.y,
+        ),
+        end: _getLimitedLineEndPoint(
+          Offset(
+            Player.body.centerX - camera.x,
+            Player.body.centerY - camera.y,
+          ),
+          mousePosition,
+          70.0, // Longer aiming line for larger map
+        ),
+        powerLevel: isChargingShot ? power : minPower,
+        cameraX: camera.x,
+        cameraY: camera.y,
+      ),
+    );
+  }
+
+  static CustomPaint buildSword(
+    double screenWidth,
+    double screenHeight,
+    Offset mousePosition,
+    Camera camera,
+  ) {
+    return CustomPaint(
+      size: Size(screenWidth, screenHeight),
+      painter: SwordPainter(
+        start: Offset(
+          Player.body.centerX - camera.x,
+          Player.body.centerY - camera.y,
+        ),
+        end: _getLimitedLineEndPoint(
+          Offset(
+            Player.body.centerX - camera.x,
+            Player.body.centerY - camera.y,
+          ),
+          mousePosition,
+          70.0, // Longer aiming line for larger map
+        ),
+        powerLevel: power,
+        cameraX: camera.x,
+        cameraY: camera.y,
+      ),
+    );
+  }
+
   static Widget build(
     double screenWidth,
     double screenHeight,
@@ -165,26 +232,9 @@ class Weapon {
     Camera camera,
   ) {
     if (!Game.over) {
-      return CustomPaint(
-        size: Size(screenWidth, screenHeight),
-        painter: LinePainter(
-          start: Offset(
-            Player.body.centerX - camera.x,
-            Player.body.centerY - camera.y,
-          ),
-          end: _getLimitedLineEndPoint(
-            Offset(
-              Player.body.centerX - camera.x,
-              Player.body.centerY - camera.y,
-            ),
-            mousePosition,
-            70.0, // Longer aiming line for larger map
-          ),
-          powerLevel: isChargingShot ? power : minPower,
-          cameraX: camera.x,
-          cameraY: camera.y,
-        ),
-      );
+      return kind == Weapons.cannon
+          ? buildCannon(screenWidth, screenHeight, mousePosition, camera)
+          : buildSword(screenWidth, screenHeight, mousePosition, camera);
     } else {
       return Container();
     }
@@ -192,6 +242,180 @@ class Weapon {
 }
 
 /// Custom painter to draw an aiming line with power meter
+class SwordPainter extends CustomPainter {
+  final Offset start;
+  final Offset end;
+  final double powerLevel;
+  final double minPower;
+  final double maxPower;
+  final double cameraX;
+  final double cameraY;
+  //late ui.Image shotgun; // Removed instance variable
+  //static bool loaded = false; // Removed static flag
+
+  SwordPainter({
+    required this.start,
+    required this.end,
+    required this.powerLevel,
+    this.minPower = Weapon.minPower,
+    this.maxPower = Weapon.maxPower,
+    this.cameraX = 0,
+    this.cameraY = 0,
+  }); // Removed constructor body
+
+  // Removed _loadWeaponImage method
+  // Removed _loadShotgun method
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Use the statically loaded image, check if it's null
+    if (Weapon.show) {
+      // Calculate line angle and length
+      final dx = end.dx - start.dx;
+      final dy = end.dy - start.dy;
+      final lineLength = sqrt(dx * dx + dy * dy);
+      final angle = atan2(dy, dx);
+
+      // Calculate power percentage
+      final powerPercentage = (powerLevel - minPower) / (maxPower - minPower);
+
+      // Get power color (green to red gradient based on power)
+      final powerColor =
+          ColorTween(
+            begin: Colors.green,
+            end: Colors.red,
+          ).lerp(powerPercentage) ??
+          Colors.green;
+
+      // Create power meter properties
+      final rectHeight = 25.0;
+      final maxRectWidth = lineLength;
+      final currentRectWidth = maxRectWidth * powerPercentage;
+
+      // Save canvas state before rotation
+      canvas.save();
+
+      // Translate to start point and rotate
+      canvas.translate(start.dx, start.dy);
+      canvas.rotate(angle);
+
+      // Draw power meter background
+      //final rectBackgroundPaint =
+      //    Paint()
+      //      ..color =
+      //          Colors
+      //              .grey //.withValues(alpha: 0.3)
+      //      ..style = PaintingStyle.fill;
+
+      final rectBackground = Rect.fromLTWH(
+        0,
+        -rectHeight / 2,
+        maxRectWidth,
+        rectHeight,
+      );
+      //canvas.drawRect(rectBackground, rectBackgroundPaint);
+
+      //canvas.drawRRect(
+      //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+      //  rectBackgroundPaint,
+      //);
+      // Draw power meter outline
+      final outlinePaint =
+          Paint()
+            ..color = powerColor
+            ..style = PaintingStyle.fill;
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+        outlinePaint,
+      );
+
+      // Draw power meter fill
+      //final rectPaint =
+      //    Paint()
+      //      ..color =
+      //          powerColor //.withValues(alpha: 0.7)
+      //      ..style = PaintingStyle.fill;
+      //
+      //final rect = Rect.fromLTWH(
+      //  0,
+      //  -rectHeight / 2,
+      //  currentRectWidth,
+      //  rectHeight,
+      //);
+      //canvas.drawRRect(
+      //  RRect.fromRectAndRadius(rect, Radius.circular(8)),
+      //  rectPaint,
+      //);
+      // Use the static image directly
+      // No need to check 'loaded' here as it's checked at the start of paint
+      //canvas.drawImageRect(
+      //  Weapon.shotgunImage!, // Use the non-null assertion operator (!)
+      //  //Rect.fromCenter(
+      //  //  center: Offset(0, 0),
+      //  //  width: shotgun!.width.toDouble(),
+      //  //  height: shotgun!.height.toDouble(),
+      //  //),
+      //  Rect.fromLTWH(
+      //    0,
+      //    0,
+      //    Weapon.shotgunImage!.width.toDouble(), // Use static image dimensions
+      //    Weapon.shotgunImage!.height.toDouble(), // Use static image dimensions
+      //  ),
+      //Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
+      ////rectBackground,
+      ////Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
+      //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
+      //Paint()..filterQuality = FilterQuality.none,
+      //);
+      //} <--- REMOVE THIS EXTRA BRACE
+      // Draw power level text
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: powerLevel.toStringAsFixed(1),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          maxRectWidth / 2 - textPainter.width / 2,
+          -textPainter.height / 2,
+        ),
+      );
+
+      // Draw arrow at end of the line (relative to the rotated canvas)
+      // Note: 'end' is in screen coordinates, need to adjust for rotation/translation
+      // We want the arrow at the end of the power meter line (length: maxRectWidth)
+      //_drawArrow(canvas, Offset(maxRectWidth, 0), angle, powerColor);
+
+      // Restore canvas to original state
+      canvas.restore();
+
+      // Draw arrow at end of the line - MOVED BEFORE canvas.restore()
+      // _drawArrow(canvas, end, angle, powerColor);
+    }
+  }
+
+  @override
+  bool shouldRepaint(SwordPainter oldDelegate) {
+    // Compare old delegate's properties with the current instance's properties
+    return oldDelegate.start != start ||
+        oldDelegate.end != end ||
+        oldDelegate.powerLevel != powerLevel ||
+        oldDelegate.cameraX != cameraX ||
+        oldDelegate.cameraY != cameraY;
+  }
+}
+
 class LinePainter extends CustomPainter {
   final Offset start;
   final Offset end;
@@ -309,24 +533,24 @@ class LinePainter extends CustomPainter {
       // Use the static image directly
       // No need to check 'loaded' here as it's checked at the start of paint
       canvas.drawImageRect(
-          Weapon.shotgunImage!, // Use the non-null assertion operator (!)
-          //Rect.fromCenter(
-          //  center: Offset(0, 0),
-          //  width: shotgun!.width.toDouble(),
-          //  height: shotgun!.height.toDouble(),
-          //),
-          Rect.fromLTWH(
-            0,
-            0,
-            Weapon.shotgunImage!.width.toDouble(), // Use static image dimensions
-            Weapon.shotgunImage!.height.toDouble(), // Use static image dimensions
-          ),
-          Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
-          //rectBackground,
-          //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
-          //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
-          Paint()..filterQuality = FilterQuality.none,
-        );
+        Weapon.shotgunImage!, // Use the non-null assertion operator (!)
+        //Rect.fromCenter(
+        //  center: Offset(0, 0),
+        //  width: shotgun!.width.toDouble(),
+        //  height: shotgun!.height.toDouble(),
+        //),
+        Rect.fromLTWH(
+          0,
+          0,
+          Weapon.shotgunImage!.width.toDouble(), // Use static image dimensions
+          Weapon.shotgunImage!.height.toDouble(), // Use static image dimensions
+        ),
+        Rect.fromLTWH(rectBackground.left, rectBackground.top - 16, 96, 96),
+        //rectBackground,
+        //Rect.fromCenter(center: Offset(dx - 32, dy - 32), width: 64, height: 64),
+        //Rect.fromLTWH(dx - 0, dy - 0, 64, 64),
+        Paint()..filterQuality = FilterQuality.none,
+      );
       //} <--- REMOVE THIS EXTRA BRACE
       // Draw power level text
       final textPainter = TextPainter(
@@ -356,14 +580,12 @@ class LinePainter extends CustomPainter {
       // We want the arrow at the end of the power meter line (length: maxRectWidth)
       _drawArrow(canvas, Offset(maxRectWidth, 0), angle, powerColor);
 
-
       // Restore canvas to original state
       canvas.restore();
 
       // Draw arrow at end of the line - MOVED BEFORE canvas.restore()
       // _drawArrow(canvas, end, angle, powerColor);
     }
-
   }
 
   /// Draw a dashed line to show projectile trajectory
@@ -418,12 +640,12 @@ class LinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(LinePainter oldDelegate) {
+  bool shouldRepaint(SwordPainter oldDelegate) {
     // Compare old delegate's properties with the current instance's properties
-    return oldDelegate.start != this.start ||
-        oldDelegate.end != this.end ||
-        oldDelegate.powerLevel != this.powerLevel ||
-        oldDelegate.cameraX != this.cameraX ||
-        oldDelegate.cameraY != this.cameraY;
+    return oldDelegate.start != start ||
+        oldDelegate.end != end ||
+        oldDelegate.powerLevel != powerLevel ||
+        oldDelegate.cameraX != cameraX ||
+        oldDelegate.cameraY != cameraY;
   }
 }
