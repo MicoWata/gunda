@@ -205,7 +205,7 @@ class Weapon {
         final worldTip =
             worldHilt +
             (direction *
-                70.0); // Use the same length as the visual representation
+                120.0); // Use the same length as the visual representation
 
         // Check collision with enemies
         for (int i = Level.enemies.length - 1; i >= 0; i--) {
@@ -320,7 +320,7 @@ class Weapon {
     final aimEndPointScreen = _getLimitedLineEndPoint(
       baseHiltScreen,
       mousePosition, // Mouse position is already in screen coordinates
-      70.0,
+      120.0,
     );
     final aimVectorScreen = aimEndPointScreen - baseHiltScreen;
 
@@ -349,13 +349,13 @@ class Weapon {
     Offset mousePosition,
     Camera camera,
   ) {
-    if (!Game.over) {
-      return kind == Weapons.cannon
-          ? buildCannon(screenWidth, screenHeight, mousePosition, camera)
-          : buildSword(screenWidth, screenHeight, mousePosition, camera);
-    } else {
-      return Container();
-    }
+    //if (!Game.over) {
+    return kind == Weapons.cannon
+        ? buildCannon(screenWidth, screenHeight, mousePosition, camera)
+        : buildSword(screenWidth, screenHeight, mousePosition, camera);
+    //} else {
+    //  return Container();
+    //}
   }
 
   // --- Collision Helper Methods ---
@@ -540,7 +540,7 @@ class SwordPainter extends CustomPainter {
       final rectBackground = Rect.fromLTWH(
         0,
         -rectHeight / 2,
-        maxRectWidth * 2,
+        maxRectWidth,
         rectHeight,
       );
       //canvas.drawRect(rectBackground, rectBackgroundPaint);

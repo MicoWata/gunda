@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
+import 'package:gunda/src/drop.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/engine.dart';
 import 'package:gunda/src/game.dart';
@@ -101,6 +102,8 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
       _updateProjectiles(Size(Game.gameWidth, Game.gameHeight));
       _updateParticles();
 
+      Drop.update();
+      //Level.drops.map((drop) => drop.pick());
       // Handle collisions
       Engine.checkCollisions(Size(Game.gameWidth, Game.gameHeight));
     });
@@ -205,6 +208,9 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                               : Colors.brown, // Normal background
                       child: Stack(
                         children: [
+                          ...Level.drops.map(
+                            (drop) => Drop.build(drop, Game.camera),
+                          ),
                           ...(Level.impactParticles.isNotEmpty
                               ? [
                                 Effect.particles(

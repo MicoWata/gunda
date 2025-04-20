@@ -27,41 +27,62 @@ class Minimap {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Advanced Physics Simulation',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            ...Level.drops.map(
+              (drop) => Text(
+                drop.used
+                    ? "USED"
+                    : "${drop.body.x.toStringAsFixed(0)}, ${drop.body.y.toStringAsFixed(0)}",
+                style: const TextStyle(fontSize: 12, color: Colors.white),
               ),
             ),
+
+            //Text(
+            //  'Projectiles: ${Level.projectiles.length}/${Ball.maxProjectiles}',
+            //  style: const TextStyle(fontSize: 14, color: Colors.white),
+            //),
+            //Text(
+            //  'Particles: ${Level.impactParticles.length}',
+            //  style: const TextStyle(fontSize: 14, color: Colors.white),
+            //),
+            //Text(
+            //  'Enemies: ${Level.enemies.length}',
+            //  style: const TextStyle(fontSize: 14, color: Colors.white),
+            //),
+            //const SizedBox(height: 5),
             Text(
-              'Projectiles: ${Level.projectiles.length}/${Ball.maxProjectiles}',
-              style: const TextStyle(fontSize: 14, color: Colors.white),
+              'W A S D: Move',
+              style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
             Text(
-              'Particles: ${Level.impactParticles.length}',
-              style: const TextStyle(fontSize: 14, color: Colors.white),
+              'Click: Attack',
+              style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
             Text(
-              'Enemies: ${Level.enemies.length}',
-              style: const TextStyle(fontSize: 14, color: Colors.white),
+              'E: Switch Weapon',
+              style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
-            const SizedBox(height: 5),
+            Text(
+              'SPACE: Dash',
+              style: const TextStyle(fontSize: 12, color: Colors.white),
+            ),
+            Text(
+              'ESCAPE: Pause',
+              style: const TextStyle(fontSize: 12, color: Colors.white),
+            ),
             // Debugging information
-            Text(
-              'Map size: ${Game.gameWidth.toInt()}x${Game.gameHeight.toInt()}',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            Text(
-              'Player: (${Player.body.x.toInt()}, ${Player.body.y.toInt()})',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            Text(
-              'Camera: (${camera.x.toInt()}, ${camera.y.toInt()})',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            const SizedBox(height: 5),
+            //Text(
+            //  'Map size: ${Game.gameWidth.toInt()}x${Game.gameHeight.toInt()}',
+            //  style: const TextStyle(fontSize: 12, color: Colors.white),
+            //),
+            //Text(
+            //  'Player: (${Player.body.x.toInt()}, ${Player.body.y.toInt()})',
+            //  style: const TextStyle(fontSize: 12, color: Colors.white),
+            //),
+            //Text(
+            //  'Camera: (${camera.x.toInt()}, ${camera.y.toInt()})',
+            //  style: const TextStyle(fontSize: 12, color: Colors.white),
+            //),
+            const SizedBox(height: 10),
             // Mini-map showing game world and current viewport
             Container(
               width: 120,
@@ -86,15 +107,15 @@ class Minimap {
                 ),
               ),
             ),
-            if (showSlowMotion)
-              const Text(
-                'SLOW MOTION ACTIVE',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.yellow,
-                ),
-              ),
+            //if (showSlowMotion)
+            //  const Text(
+            //    'SLOW MOTION ACTIVE',
+            //    style: TextStyle(
+            //      fontSize: 14,
+            //      fontWeight: FontWeight.bold,
+            //      color: Colors.yellow,
+            //    ),
+            //  ),
           ],
         ),
       ),

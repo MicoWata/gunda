@@ -2,10 +2,10 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:gunda/src/app.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
+import 'package:gunda/src/drop.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/mob.dart';
@@ -26,6 +26,7 @@ class Level {
   static final List<Projectile> projectiles = [];
   static final List<ImpactParticle> impactParticles = [];
   static final List<Obstacle> obstacles = [];
+  static final List<Drop> drops = [];
 
   static bool done = false;
   static int maxMob = 0;
@@ -50,6 +51,7 @@ class Level {
     projectiles.clear();
     impactParticles.clear();
     obstacles.clear();
+    drops.clear();
 
     initializeEnemies();
     initializeObstacles();

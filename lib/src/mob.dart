@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
+import 'package:gunda/src/drop.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/engine.dart';
 import 'package:gunda/src/game.dart';
@@ -101,11 +102,11 @@ class Mob {
       final projectile = Projectile(
         x: enemyCenterX,
         y: enemyCenterY,
-        xVelocity: finalDx * (enemyPowerLevel * 0.8),
-        yVelocity: finalDy * (enemyPowerLevel * 0.8),
-        radius: Ball.projectileRadius * 0.8, // Slightly smaller projectiles
+        xVelocity: finalDx * (enemyPowerLevel * 0.5),
+        yVelocity: finalDy * (enemyPowerLevel * 0.5),
+        radius: Ball.projectileRadius * 1.5, // Slightly smaller projectiles
         color: projectileColor,
-        mass: Ball.mass * 0.7, // Slightly lighter projectiles
+        mass: Ball.mass * 1.0, // Slightly lighter projectiles
         isPlayerProjectile: false, // Enemy projectile
       );
 
@@ -707,6 +708,24 @@ class Enemy {
 
   Enemy({required this.body});
 
+  void die() {
+    if (hp < 1) {
+      dead = true;
+      Level.drops.add(
+        Drop(
+          kind: Drops.heal,
+          body: Body(
+            x: body.x,
+            y: body.y,
+            width: 40,
+            height: 40,
+            color: Colors.redAccent,
+          ),
+        ),
+      );
+    }
+  }
+
   void hurt() {
     hp--;
 
@@ -718,7 +737,7 @@ class Enemy {
 
     if (hp < 1 && !dead) {
       //Game.state.kills++;
-      dead = true;
+      die();
       Level.remaining--;
       Mob.spawn();
       Level.benching--;

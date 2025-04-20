@@ -139,7 +139,7 @@ class Player {
       if (event.logicalKey == LogicalKeyboardKey.keyE) {
         changeWeapon();
       }
-      if (event.logicalKey == LogicalKeyboardKey.keyQ) {
+      if (event.logicalKey == LogicalKeyboardKey.escape) {
         Game.paused = !Game.paused;
       }
 
