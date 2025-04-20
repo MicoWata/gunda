@@ -47,6 +47,7 @@ class Game {
       color: Colors.blue,
       mass: Player.playerMass,
     );
+    App.home = true;
 
     Game.over = false;
     Game.score = 0;
