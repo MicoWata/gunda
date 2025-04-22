@@ -35,9 +35,9 @@ class Level {
   static int benching = allMob - maxMob;
 
   static List<Zone> zones = [
-    Zone('assets/images/level0.txt', 2),
-    Zone('assets/images/level1.txt', 4),
-    Zone('assets/images/level2.txt', 6),
+    Zone('assets/levels/level0.txt', 12),
+    Zone('assets/levels/level1.txt', 16),
+    Zone('assets/levels/level2.txt', 20),
   ];
 
   static void enter() {

@@ -3,23 +3,26 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
 import 'package:gunda/src/body.dart'; // Import Body
-import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart'; // Import Enemy
 import 'package:gunda/src/player.dart';
 
-enum Weapons { sword, cannon }
+enum Weapons { sword, pistol, shotgun, bazooka }
 
 class Weapon {
-  static ui.Image? shotgunImage; // To store the loaded image
+  static ui.Image? pistolImage; // To store the loaded image
+  static ui.Image? shotgunImage;
+  static ui.Image? swordImage;
 
   static const double minPower = 8.0;
   static const double maxPower = 30.0;
   static const double powerIncreaseRate = 0.3;
+  static int ammo = 0;
 
   // Cooldown for shooting
   static bool canShoot = true;
@@ -39,24 +42,6 @@ class Weapon {
   static Offset _currentSliceOffset = Offset.zero;
   static final Set<Enemy> _hitEnemiesThisSlice =
       {}; // Track enemies hit per slice
-
-  /// Loads necessary image assets for the weapon.
-  static Future<void> loadAssets() async {
-    final completer = Completer<ui.Image>();
-    final imageProvider = AssetImage('assets/images/shotgun.png');
-    imageProvider
-        .resolve(const ImageConfiguration())
-        .addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            if (!completer.isCompleted) {
-              completer.complete(info.image);
-              shotgunImage = info.image;
-            }
-          }),
-        );
-    // Consider adding error handling here if the image fails to load
-    await completer.future; // Wait for the image to load
-  }
 
   static Offset _getLimitedLineEndPoint(
     Offset start,
@@ -124,6 +109,7 @@ class Weapon {
         yVelocity: normalizedDy * power,
         radius: Ball.projectileRadius * (power / 8),
         color: projectileColor,
+        canExplode: false,
         mass: Ball.mass,
       );
 
@@ -146,17 +132,137 @@ class Weapon {
         Colors.yellow,
         powerPercentage * 1.5,
       );
-      //});
+
+      canShoot = false;
+      Future.delayed(Duration(milliseconds: cooldown), () {
+        canShoot = true;
+      });
+    }
+  }
+
+  static void spreadShot(Offset mouse) {
+    final playerCenterX = Player.body.centerX;
+    final playerCenterY = Player.body.centerY;
+
+    final dx = mouse.dx - playerCenterX;
+    final dy = mouse.dy - playerCenterY;
+
+    final distance = sqrt(dx * dx + dy * dy);
+
+    if (distance > 0) {
+      final angle = atan2(dy, dx);
+      final speed = 10.0;
+
+      // Spread angles in radians (small deviations)
+      final spreadAngles = [
+        -0.2,
+        0.0,
+        0.2,
+      ]; // you can add more for wider spread
+
+      final colors = [Colors.orange, Colors.red, Colors.blue];
+
+      for (int i = 0; i < spreadAngles.length; i++) {
+        final spreadAngle = angle + spreadAngles[i];
+
+        final vx = cos(spreadAngle) * speed;
+        final vy = sin(spreadAngle) * speed;
+
+        final projectile = Projectile(
+          x: playerCenterX,
+          y: playerCenterY,
+          xVelocity: vx,
+          yVelocity: vy,
+          radius: Ball.projectileRadius,
+          color: colors[i],
+          canExplode: false,
+          mass: Ball.mass,
+        );
+
+        Level.projectiles.add(projectile);
+      }
+
+      final recoilForce = power * Ball.mass / Player.playerMass;
+      Player.body.applyImpulse(
+        -cos(angle) * recoilForce * 2,
+        -sin(angle) * recoilForce * 2,
+      );
+
+      isChargingShot = false;
+
+      Effect.impact(
+        playerCenterX,
+        playerCenterY,
+        Colors.yellow,
+        minPower * 1.5,
+      );
+
+      canShoot = false;
+      Future.delayed(Duration(milliseconds: cooldown), () {
+        canShoot = true;
+      });
+    }
+  }
+
+  static void explosiveShot(Offset mouse) {
+    final playerCenterX = Player.body.centerX;
+    final playerCenterY = Player.body.centerY;
+
+    final dx = mouse.dx - playerCenterX;
+    final dy = mouse.dy - playerCenterY;
+
+    final distance = sqrt(dx * dx + dy * dy);
+
+    if (distance > 0) {
+      final normalizedDx = dx / distance;
+      final normalizedDy = dy / distance;
+
+      final projectileColor = Colors.orange;
+
+      // Create a new projectile with velocity in mouse direction and variable power
+      final projectile = Projectile(
+        x: playerCenterX,
+        y: playerCenterY,
+        xVelocity: normalizedDx * power,
+        yVelocity: normalizedDy * power,
+        radius: Ball.projectileRadius * (power / 8),
+        color: projectileColor,
+        canExplode: true,
+        mass: Ball.mass,
+      );
+
+      final recoilForce = power * Ball.mass / Player.playerMass;
+
+      Player.body.applyImpulse(
+        -normalizedDx * recoilForce * 5,
+        -normalizedDy * recoilForce * 5,
+      );
+
+      Level.projectiles.add(projectile);
+      isChargingShot = false;
+
+      // Create particle effect at launch position
+      Effect.explosion(playerCenterX, playerCenterY, 20, Colors.yellow);
+      Effect.explosionCircles.removeWhere((circle) {
+        circle.update();
+        return circle.isDone;
+      });
 
       // Set cooldown
       canShoot = false;
       Future.delayed(Duration(milliseconds: cooldown), () {
-        //if (mounted) {
-        //setState(() {
         canShoot = true;
-        //});
-        //}
       });
+    }
+  }
+
+  static void slice() {
+    // Start slicing only if using sword and not already slicing
+    if (kind == Weapons.sword && !slicing) {
+      slicing = true;
+      _sliceStartTime = DateTime.now().millisecondsSinceEpoch;
+      _currentSliceOffset = Offset.zero; // Reset offset at start
+      _hitEnemiesThisSlice.clear(); // Clear hit enemies for the new slice
     }
   }
 
@@ -265,50 +371,16 @@ class Weapon {
     //});
   }
 
-  static void slice() {
-    // Start slicing only if using sword and not already slicing
-    if (kind == Weapons.sword && !slicing) {
-      slicing = true;
-      _sliceStartTime = DateTime.now().millisecondsSinceEpoch;
-      _currentSliceOffset = Offset.zero; // Reset offset at start
-      _hitEnemiesThisSlice.clear(); // Clear hit enemies for the new slice
-    }
-  }
-
-  static CustomPaint buildCannon(
-    double screenWidth,
-    double screenHeight,
-    Offset mousePosition,
-    Camera camera,
-  ) {
-    return CustomPaint(
-      size: Size(screenWidth, screenHeight),
-      painter: LinePainter(
-        start: Offset(
-          Player.body.centerX - camera.x,
-          Player.body.centerY - camera.y,
-        ),
-        end: _getLimitedLineEndPoint(
-          Offset(
-            Player.body.centerX - camera.x,
-            Player.body.centerY - camera.y,
-          ),
-          mousePosition,
-          70.0, // Longer aiming line for larger map
-        ),
-        powerLevel: isChargingShot ? power : minPower,
-        cameraX: camera.x,
-        cameraY: camera.y,
-      ),
-    );
-  }
-
   static CustomPaint buildSword(
     double screenWidth,
     double screenHeight,
     Offset mousePosition,
     Camera camera,
   ) {
+    //
+    final playerX = Player.body.centerX - camera.x;
+    final mouseX = mousePosition.dx;
+    final faceLeft = mouseX < playerX;
     // Base position of the sword hilt (player center in screen coordinates)
     final baseHiltScreen = Offset(
       Player.body.centerX - camera.x,
@@ -332,13 +404,114 @@ class Weapon {
 
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
-      painter: SwordPainter(
+      painter: WeaponPainter(
+        weaponImage: AssetManager().getImage('sword'),
         start: currentHiltScreen, // Use the animated hilt position
         end: currentTipScreen, // Use the animated tip position
         powerLevel:
-            power, // Sword doesn't use power level visually like cannon? Maybe remove later.
+            power, // Sword doesn't use power level visually like Pistol? Maybe remove later.
         cameraX: camera.x, // Pass camera for potential future use in painter
         cameraY: camera.y,
+        faceLeft: faceLeft,
+      ),
+    );
+  }
+
+  static CustomPaint buildPistol(
+    double screenWidth,
+    double screenHeight,
+    Offset mousePosition,
+    Camera camera,
+  ) {
+    final playerX = Player.body.centerX - camera.x;
+    final mouseX = mousePosition.dx;
+    final faceLeft = mouseX < playerX;
+    return CustomPaint(
+      size: Size(screenWidth, screenHeight),
+      painter: WeaponPainter(
+        weaponImage: AssetManager().getImage('pistol'),
+        start: Offset(
+          Player.body.centerX - camera.x,
+          Player.body.centerY - camera.y,
+        ),
+        end: _getLimitedLineEndPoint(
+          Offset(
+            Player.body.centerX - camera.x,
+            Player.body.centerY - camera.y,
+          ),
+          mousePosition,
+          70.0, // Longer aiming line for larger map
+        ),
+        powerLevel: isChargingShot ? power : minPower,
+        cameraX: camera.x,
+        cameraY: camera.y,
+        faceLeft: faceLeft,
+      ),
+    );
+  }
+
+  static CustomPaint buildShotgun(
+    double screenWidth,
+    double screenHeight,
+    Offset mousePosition,
+    Camera camera,
+  ) {
+    final playerX = Player.body.centerX - camera.x;
+    final mouseX = mousePosition.dx;
+    final faceLeft = mouseX < playerX;
+    return CustomPaint(
+      size: Size(screenWidth, screenHeight),
+      painter: WeaponPainter(
+        weaponImage: AssetManager().getImage('shotgun'),
+        start: Offset(
+          Player.body.centerX - camera.x,
+          Player.body.centerY - camera.y,
+        ),
+        end: _getLimitedLineEndPoint(
+          Offset(
+            Player.body.centerX - camera.x,
+            Player.body.centerY - camera.y,
+          ),
+          mousePosition,
+          70.0, // Longer aiming line for larger map
+        ),
+        powerLevel: maxPower,
+        cameraX: camera.x,
+        cameraY: camera.y,
+        faceLeft: faceLeft,
+      ),
+    );
+  }
+
+  static CustomPaint buildBazooka(
+    double screenWidth,
+    double screenHeight,
+    Offset mousePosition,
+    Camera camera,
+  ) {
+    final playerX = Player.body.centerX - camera.x;
+    final mouseX = mousePosition.dx;
+    final faceLeft = mouseX < playerX;
+    return CustomPaint(
+      size: Size(screenWidth, screenHeight),
+      painter: WeaponPainter(
+        weaponImage: AssetManager().getImage('shotgun'),
+        start: Offset(
+          Player.body.centerX - camera.x,
+          Player.body.centerY - camera.y,
+        ),
+        end: _getLimitedLineEndPoint(
+          Offset(
+            Player.body.centerX - camera.x,
+            Player.body.centerY - camera.y,
+          ),
+          mousePosition,
+          70.0, // Longer aiming line for larger map
+        ),
+        powerLevel: isChargingShot ? power : minPower,
+        cameraX: camera.x,
+        cameraY: camera.y,
+        faceLeft: faceLeft,
       ),
     );
   }
@@ -350,13 +523,24 @@ class Weapon {
     Camera camera,
   ) {
     //if (!Game.over) {
-    return kind == Weapons.cannon
-        ? buildCannon(screenWidth, screenHeight, mousePosition, camera)
-        : buildSword(screenWidth, screenHeight, mousePosition, camera);
-    //} else {
-    //  return Container();
-    //}
+    switch (Weapon.kind) {
+      case Weapons.sword:
+        return buildSword(screenWidth, screenHeight, mousePosition, camera);
+      case Weapons.pistol:
+        return buildPistol(screenWidth, screenHeight, mousePosition, camera);
+      case Weapons.shotgun:
+        return buildShotgun(screenWidth, screenHeight, mousePosition, camera);
+      case Weapons.bazooka:
+        return buildBazooka(screenWidth, screenHeight, mousePosition, camera);
+    }
   }
+
+  // return kind == Weapons.Pistol
+  //     ? buildPistol(screenWidth, screenHeight, mousePosition, camera)
+  //     : buildSword(screenWidth, screenHeight, mousePosition, camera);
+  //} else {
+  //  return Container();
+  //}
 
   // --- Collision Helper Methods ---
 
@@ -473,7 +657,8 @@ class Weapon {
 }
 
 /// Custom painter to draw an aiming line with power meter
-class SwordPainter extends CustomPainter {
+class WeaponPainter extends CustomPainter {
+  final ui.Image? weaponImage;
   final Offset start;
   final Offset end;
   final double powerLevel;
@@ -481,10 +666,10 @@ class SwordPainter extends CustomPainter {
   final double maxPower;
   final double cameraX;
   final double cameraY;
-  //late ui.Image shotgun; // Removed instance variable
-  //static bool loaded = false; // Removed static flag
+  final bool faceLeft;
 
-  SwordPainter({
+  WeaponPainter({
+    required this.weaponImage,
     required this.start,
     required this.end,
     required this.powerLevel,
@@ -492,10 +677,8 @@ class SwordPainter extends CustomPainter {
     this.maxPower = Weapon.maxPower,
     this.cameraX = 0,
     this.cameraY = 0,
-  }); // Removed constructor body
-
-  // Removed _loadWeaponImage method
-  // Removed _loadShotgun method
+    required this.faceLeft,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -504,79 +687,105 @@ class SwordPainter extends CustomPainter {
       // Calculate line angle and length
       final dx = end.dx - start.dx;
       final dy = end.dy - start.dy;
-      final lineLength = sqrt(dx * dx + dy * dy);
       final angle = atan2(dy, dx);
-
-      // Calculate power percentage
-      final powerPercentage = (powerLevel - minPower) / (maxPower - minPower);
-
-      // Get power color (green to red gradient based on power)
-      final powerColor =
-          ColorTween(
-            begin: Colors.green,
-            end: Colors.red,
-          ).lerp(powerPercentage) ??
-          Colors.green;
-
-      // Create power meter properties
-      final rectHeight = 25.0;
-      final maxRectWidth = lineLength;
 
       // Save canvas state before rotation
       canvas.save();
 
-      // Translate to start point and rotate
+      // Translate to start point
       canvas.translate(start.dx, start.dy);
-      canvas.rotate(angle);
 
-      // Draw power meter background
-      //final rectBackgroundPaint =
+      if (faceLeft) {
+        // Flip horizontally
+        canvas.scale(-1, 1);
+      }
+
+      // Rotate to end point
+      // canvas.rotate(angle);
+
+      final drawRect = Rect.fromCenter(
+        center: Offset.zero,
+        width: 64,
+        height: 64,
+      );
+
+      canvas.drawImageRect(
+        weaponImage!,
+        Rect.fromLTWH(
+          0,
+          0,
+          weaponImage!.width.toDouble(),
+          weaponImage!.height.toDouble(),
+        ),
+        drawRect,
+        Paint(),
+      );
+
+      // final lineLength = sqrt(dx * dx + dy * dy);
+      // // Calculate power percentage
+      // final powerPercentage = (powerLevel - minPower) / (maxPower - minPower);
+
+      // // Get power color (green to red gradient based on power)
+      // final powerColor =
+      //     ColorTween(
+      //       begin: Colors.green,
+      //       end: Colors.red,
+      //     ).lerp(powerPercentage) ??
+      //     Colors.green;
+
+      // // Create power meter properties
+      // final rectHeight = 25.0;
+      // final maxRectWidth = lineLength;
+
+      // // Draw power meter background
+      // final rectBackgroundPaint =
       //    Paint()
       //      ..color =
       //          Colors
       //              .grey //.withValues(alpha: 0.3)
       //      ..style = PaintingStyle.fill;
 
-      final rectBackground = Rect.fromLTWH(
-        0,
-        -rectHeight / 2,
-        maxRectWidth,
-        rectHeight,
-      );
-      //canvas.drawRect(rectBackground, rectBackgroundPaint);
+      // final rectBackground = Rect.fromLTWH(
+      //   0,
+      //   -rectHeight / 2,
+      //   maxRectWidth,
+      //   rectHeight,
+      // );
+      // canvas.drawRect(rectBackground, rectBackgroundPaint);
 
-      //canvas.drawRRect(
+      // canvas.drawRRect(
       //  RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
       //  rectBackgroundPaint,
-      //);
+      // );
       // Draw power meter outline
-      final outlinePaint =
-          Paint()
-            ..color = powerColor
-            ..style = PaintingStyle.fill;
+      // final outlinePaint =
+      //     Paint()
+      //       ..color = powerColor
+      //       ..style = PaintingStyle.fill;
 
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
-        outlinePaint,
-      );
+      // canvas.drawRRect(
+      //   RRect.fromRectAndRadius(rectBackground, Radius.circular(8)),
+      //   outlinePaint,
+      // );
 
       // Draw power meter fill
-      //final rectPaint =
+      // final rectPaint =
       //    Paint()
       //      ..color =
       //          powerColor //.withValues(alpha: 0.7)
       //      ..style = PaintingStyle.fill;
-      //
-      //final rect = Rect.fromLTWH(
+
+      // final rect = Rect.fromLTWH(
       //  0,
       //  -rectHeight / 2,
       //  currentRectWidth,
       //  rectHeight,
-      //);
-      //canvas.drawRRect(
+      // );
+      // canvas.drawRRect(
       //  RRect.fromRectAndRadius(rect, Radius.circular(8)),
       //  rectPaint,
-      //);
+      // );
+
       // Use the static image directly
       // No need to check 'loaded' here as it's checked at the start of paint
       //canvas.drawImageRect(
@@ -636,7 +845,7 @@ class SwordPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(SwordPainter oldDelegate) {
+  bool shouldRepaint(WeaponPainter oldDelegate) {
     // Compare old delegate's properties with the current instance's properties
     return oldDelegate.start != start ||
         oldDelegate.end != end ||
@@ -677,7 +886,7 @@ class LinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Use the statically loaded image, check if it's null
-    if (Weapon.shotgunImage != null && Weapon.show) {
+    if (Weapon.show) {
       // Calculate line angle and length
       final dx = end.dx - start.dx;
       final dy = end.dy - start.dy;

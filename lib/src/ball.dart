@@ -192,8 +192,6 @@ class Ball {
   }
 }
 
-class Sword {}
-
 // Projectile class for physics-based projectiles
 class Projectile {
   double x;
@@ -204,6 +202,7 @@ class Projectile {
   final Color color;
   final double mass;
   bool isActive = true;
+  bool canExplode = false;
   int bounceCount = 0;
 
   // Track if projectile was fired by player or enemy
@@ -220,9 +219,42 @@ class Projectile {
     required this.yVelocity,
     required this.radius,
     required this.color,
+    required this.canExplode,
     this.mass = Ball.mass,
     this.isPlayerProjectile = true, // Default to player projectile
   });
+
+  void explode() {
+    const double explosionRadius = 300;
+    const double explosionForce = 50;
+
+    // Apply area of effect (AOE) force to nearby objects
+    for (final entity in Level.enemies) {
+      final dx = entity.body.centerX - x;
+      final dy = entity.body.centerY - y;
+      final distance = sqrt(dx * dx + dy * dy);
+
+      if (distance < explosionRadius && distance > 0) {
+        final force = explosionForce * (1 - distance / explosionRadius);
+        final nx = dx / distance;
+        final ny = dy / distance;
+
+        entity.body.applyImpulse(nx * force, ny * force);
+
+        if (entity.hp != null) {
+          entity.hurt();
+          if (entity.hp <= 0) {
+            entity.die(); // Or however you remove enemies
+          }
+        }
+      }
+    }
+    // Add visual effect
+    Effect.explosion(x, y, explosionRadius, color);
+
+    // Remove the projectile
+    Level.projectiles.remove(this);
+  }
 
   /// Update projectile position based on velocity
   void update(Size screenSize) {
@@ -278,6 +310,13 @@ class Projectile {
       y = screenSize.height - radius;
       yVelocity = -yVelocity * Ball.projectileWallBounce;
       bounceCount++;
+    }
+
+    if (canExplode && bounceCount > 0) {
+      final impactSpeed = sqrt(xVelocity * xVelocity + yVelocity * yVelocity);
+      if (impactSpeed > 2.0) {
+        explode();
+      }
     }
   }
 

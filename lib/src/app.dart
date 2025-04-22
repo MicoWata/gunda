@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/drop.dart';
@@ -42,9 +43,11 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
-    // Preload assets
-    Weapon.loadAssets(); // Load weapon assets
+    AssetManager().loadAllAssets().then((_) {
+      setState(() {
+        // Assets are ready, start game
+      });
+    });
 
     // Initialize game
     Game.reset();
@@ -138,6 +141,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   }
 
   void _updateParticles() {
+    Game.effect.update();
     for (int i = Level.impactParticles.length - 1; i >= 0; i--) {
       // Update particle and remove if dead
       if (!Level.impactParticles[i].update()) {

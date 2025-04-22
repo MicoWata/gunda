@@ -107,6 +107,7 @@ class Mob {
         radius: Ball.projectileRadius * 1.5, // Slightly smaller projectiles
         color: projectileColor,
         mass: Ball.mass * 1.0, // Slightly lighter projectiles
+        canExplode: false,
         isPlayerProjectile: false, // Enemy projectile
       );
 
@@ -700,7 +701,7 @@ class Enemy {
     height: Mob.size.width,
     color: Colors.pink,
   );
-  int hp = 1;
+  int hp = 3;
   bool dead = false;
   bool canShoot = false;
   int cooldown = 2000;

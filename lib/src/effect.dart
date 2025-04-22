@@ -11,6 +11,7 @@ class Effect {
   bool showSlowMotion = false;
   double slowMotionTimer = 0;
   final double maxSlowMotionTime = 30; // frames
+  static List<StaticExplosionEffect> explosionCircles = [];
 
   static void collide(CollisionInfo info) {
     // Create impact particles at collision point
@@ -63,6 +64,45 @@ class Effect {
     }
   }
 
+  static void explosion(double x, double y, double radius, Color baseColor) {
+    final particleCount = (radius / 3).round().clamp(8, 30);
+
+    for (int i = 0; i < particleCount; i++) {
+      final angle = Game.random.nextDouble() * 2 * pi;
+      final speed = Game.random.nextDouble() * 5 + 2;
+
+      final hsl = HSLColor.fromColor(baseColor);
+      final brightness = (hsl.lightness + Game.random.nextDouble() * 0.3).clamp(
+        0.0,
+        1.0,
+      );
+      final explosionColor = hsl.withLightness(brightness).toColor();
+
+      Level.impactParticles.add(
+        ImpactParticle(
+          x: x,
+          y: y,
+          xVelocity: cos(angle) * speed,
+          yVelocity: sin(angle) * speed,
+          size: 5 + Game.random.nextDouble() * 10,
+          color: explosionColor,
+          lifespan: 40 + Game.random.nextDouble() * 60,
+        ),
+      );
+    }
+
+    // 🌟 Add static circle effect
+    Effect.explosionCircles.add(
+      StaticExplosionEffect(
+        x: x,
+        y: y,
+        radius: radius,
+        color: baseColor,
+        lifespan: 20, // short-lived, just for flash
+      ),
+    );
+  }
+
   static Widget particles(
     double screenWidth,
     double screenHeight,
@@ -72,10 +112,18 @@ class Effect {
       size: Size(screenWidth, screenHeight),
       painter: ParticleSystemPainter(
         particles: Level.impactParticles,
+        explosionCircles: Effect.explosionCircles,
         cameraX: camera.x,
         cameraY: camera.y,
       ),
     );
+  }
+
+  void update() {
+    Effect.explosionCircles.removeWhere((circle) {
+      circle.update();
+      return circle.isDone;
+    });
   }
 }
 
@@ -126,14 +174,64 @@ class ImpactParticle {
   }
 }
 
+class StaticExplosionEffect {
+  double x;
+  double y;
+  double radius;
+  Color color;
+  double opacity = 1.0;
+  int lifespan;
+  int age = 0;
+
+  StaticExplosionEffect({
+    required this.x,
+    required this.y,
+    required this.radius,
+    required this.color,
+    this.lifespan = 15,
+  });
+
+  bool get isDone => age >= lifespan;
+
+  void update() {
+    age++;
+    // Optional fade-out
+    opacity = ((lifespan - age) / lifespan).clamp(0.0, 1.0);
+  }
+
+  // Debug draw using a simple circle shape
+  void draw(Canvas canvas, Camera camera) {
+    final paint =
+        Paint()
+          ..color = color.withOpacity(opacity)
+          ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(x - camera.x, y - camera.y), radius, paint);
+  }
+
+  // Draw using a sprite
+  // void draw(Canvas canvas, Camera camera) {
+  //   final paint = Paint()..color = Colors.white.withOpacity(opacity);
+  //   final dst = Rect.fromCircle(
+  //     center: Offset(x - camera.x, y - camera.y),
+  //     radius: radius,
+  //   );
+  //   final src = Rect.fromLTWH(0, 0, spriteWidth, spriteHeight);
+
+  //   canvas.drawImageRect(spriteImage, src, dst, paint);
+  // }
+}
+
 /// Particle system painter for better performance
 class ParticleSystemPainter extends CustomPainter {
   final List<ImpactParticle> particles;
+  final List<StaticExplosionEffect> explosionCircles;
   final double cameraX;
   final double cameraY;
 
   ParticleSystemPainter({
     required this.particles,
+    required this.explosionCircles,
     this.cameraX = 0,
     this.cameraY = 0,
   });
@@ -172,6 +270,18 @@ class ParticleSystemPainter extends CustomPainter {
         Offset(screenX, screenY),
         particle.size / 2 + 1,
         glowPaint,
+      );
+    }
+    for (final circle in explosionCircles.where((c) => !c.isDone)) {
+      final paint =
+          Paint()
+            ..color = circle.color.withValues(alpha: circle.opacity * 0.5)
+            ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(
+        Offset(circle.x - cameraX, circle.y - cameraY),
+        circle.radius,
+        paint,
       );
     }
   }

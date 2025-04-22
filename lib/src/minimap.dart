@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';

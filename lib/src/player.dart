@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gunda/src/app.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
@@ -51,25 +50,51 @@ class Player {
     }
   }
 
-  static void dash() {
-    Offset mouse = worldMousePosition;
-    double power = 50;
+  // Aimpoint dash
+  // static void dash() {
+  //   Offset mouse = worldMousePosition;
+  //   double power = 50;
 
+  //   final recoilForce = power * 24 / Player.playerMass;
+
+  //   // Calculate direction from player to mouse
+  //   final playerCenterX = Player.body.centerX;
+  //   final playerCenterY = Player.body.centerY;
+
+  //   // Calculate vector from player to world mouse position
+  //   final dx = mouse.dx - playerCenterX;
+  //   final dy = mouse.dy - playerCenterY;
+
+  //   // Normalize the vector
+  //   final distance = sqrt(dx * dx + dy * dy);
+  //   final normalizedDx = dx / distance;
+  //   final normalizedDy = dy / distance;
+
+  //   Player.body.applyImpulse(
+  //     normalizedDx * recoilForce * 2,
+  //     normalizedDy * recoilForce * 2,
+  //   );
+  // }
+
+  // Directional dash
+  static void dash() {
+    double power = 50;
     final recoilForce = power * 24 / Player.playerMass;
 
-    // Calculate direction from player to mouse
-    final playerCenterX = Player.body.centerX;
-    final playerCenterY = Player.body.centerY;
+    // Get current velocity
+    final vx = Player.body.xVelocity;
+    final vy = Player.body.yVelocity;
 
-    // Calculate vector from player to world mouse position
-    final dx = mouse.dx - playerCenterX;
-    final dy = mouse.dy - playerCenterY;
+    final speed = sqrt(vx * vx + vy * vy);
 
-    // Normalize the vector
-    final distance = sqrt(dx * dx + dy * dy);
-    final normalizedDx = dx / distance;
-    final normalizedDy = dy / distance;
+    // Don't dash if the player isn't moving
+    if (speed == 0) return;
 
+    // Normalize the velocity vector
+    final normalizedDx = vx / speed;
+    final normalizedDy = vy / speed;
+
+    // Apply dash impulse in the direction of movement
     Player.body.applyImpulse(
       normalizedDx * recoilForce * 2,
       normalizedDy * recoilForce * 2,
@@ -102,30 +127,44 @@ class Player {
   }
 
   static void attack() {
-    if (Weapon.kind == Weapons.cannon) {
+    if (Weapon.kind == Weapons.pistol ||
+        Weapon.kind == Weapons.shotgun ||
+        Weapon.kind == Weapons.bazooka) {
       shoot();
     } else {
       hit();
     }
   }
 
+  static void shoot() {
+    if (!Game.over && !Game.paused) {
+      if (Weapon.kind == Weapons.pistol && !Weapon.isChargingShot) {
+        Weapon.startChargingShot();
+      } else if (Weapon.kind == Weapons.shotgun) {
+        Weapon.spreadShot(worldMousePosition);
+      } else if (Weapon.kind == Weapons.bazooka) {
+        Weapon.explosiveShot(worldMousePosition);
+      }
+    }
+  }
+
   static void hit() {
-    Weapon.slice();
+    if (!Game.over && !Game.paused) {
+      Weapon.slice();
+    }
   }
 
   static void changeWeapon() {
     switch (Weapon.kind) {
-      case Weapons.cannon:
-        Weapon.kind = Weapons.sword;
       case Weapons.sword:
-        Weapon.kind = Weapons.cannon;
+        Weapon.kind = Weapons.pistol;
+      case Weapons.pistol:
+        Weapon.kind = Weapons.shotgun;
+      case Weapons.shotgun:
+        Weapon.kind = Weapons.bazooka;
+      case Weapons.bazooka:
+        Weapon.kind = Weapons.sword;
     }
-  }
-
-  static void shoot() {
-    if (!Game.over && !Game.paused && !Weapon.isChargingShot) {
-      Weapon.startChargingShot();
-    } //Game.reset();
   }
 
   static void handleKeyEvent(KeyEvent event) {
