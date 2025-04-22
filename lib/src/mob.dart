@@ -701,7 +701,7 @@ class Enemy {
     height: Mob.size.width,
     color: Colors.pink,
   );
-  int hp = 3;
+  int hp = 1;
   bool dead = false;
   bool canShoot = false;
   int cooldown = 2000;
@@ -712,18 +712,20 @@ class Enemy {
   void die() {
     if (hp < 1) {
       dead = true;
-      Level.drops.add(
-        Drop(
-          kind: Drops.heal,
-          body: Body(
-            x: body.x,
-            y: body.y,
-            width: 40,
-            height: 40,
-            color: Colors.redAccent,
+      if (Game.random.nextInt(10) < 8) {
+        Level.drops.add(
+          Drop(
+            kind: Drops.heal,
+            body: Body(
+              x: body.x,
+              y: body.y,
+              width: 40,
+              height: 40,
+              color: Colors.redAccent,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 

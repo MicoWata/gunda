@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gunda/src/body.dart';
@@ -50,33 +49,6 @@ class Player {
     }
   }
 
-  // Aimpoint dash
-  // static void dash() {
-  //   Offset mouse = worldMousePosition;
-  //   double power = 50;
-
-  //   final recoilForce = power * 24 / Player.playerMass;
-
-  //   // Calculate direction from player to mouse
-  //   final playerCenterX = Player.body.centerX;
-  //   final playerCenterY = Player.body.centerY;
-
-  //   // Calculate vector from player to world mouse position
-  //   final dx = mouse.dx - playerCenterX;
-  //   final dy = mouse.dy - playerCenterY;
-
-  //   // Normalize the vector
-  //   final distance = sqrt(dx * dx + dy * dy);
-  //   final normalizedDx = dx / distance;
-  //   final normalizedDy = dy / distance;
-
-  //   Player.body.applyImpulse(
-  //     normalizedDx * recoilForce * 2,
-  //     normalizedDy * recoilForce * 2,
-  //   );
-  // }
-
-  // Directional dash
   static void dash() {
     double power = 50;
     final recoilForce = power * 24 / Player.playerMass;
@@ -99,6 +71,28 @@ class Player {
       normalizedDx * recoilForce * 2,
       normalizedDy * recoilForce * 2,
     );
+    //   Offset mouse = worldMousePosition;
+    //   double power = 50;
+
+    //   final recoilForce = power * 24 / Player.playerMass;
+
+    //   // Calculate direction from player to mouse
+    //   final playerCenterX = Player.body.centerX;
+    //   final playerCenterY = Player.body.centerY;
+
+    //   // Calculate vector from player to world mouse position
+    //   final dx = mouse.dx - playerCenterX;
+    //   final dy = mouse.dy - playerCenterY;
+
+    //   // Normalize the vector
+    //   final distance = sqrt(dx * dx + dy * dy);
+    //   final normalizedDx = dx / distance;
+    //   final normalizedDy = dy / distance;
+
+    //   Player.body.applyImpulse(
+    //     normalizedDx * recoilForce * 2,
+    //     normalizedDy * recoilForce * 2,
+    //   );
   }
 
   static void enter() {

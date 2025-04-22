@@ -28,7 +28,7 @@ class Weapon {
   static bool canShoot = true;
   static final cooldown = 300; // milliseconds
 
-  static Weapons kind = Weapons.sword;
+  static Weapons kind = Weapons.pistol;
   // Power meter for shooting
   static double power = Weapon.minPower;
   static bool isChargingShot = false;
@@ -701,7 +701,7 @@ class WeaponPainter extends CustomPainter {
       }
 
       // Rotate to end point
-      // canvas.rotate(angle);
+      canvas.rotate(angle);
 
       final drawRect = Rect.fromCenter(
         center: Offset.zero,

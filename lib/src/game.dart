@@ -37,6 +37,11 @@ class Game {
     Weapon.isChargingShot = false;
 
     // Initialize player at center of game world
+    //App.home = true;
+
+    Game.over = false;
+    Game.score = 0;
+
     Player.body = Body(
       x: Game.gameWidth / 2 - Player.width / 2,
       y: Game.gameHeight / 2 - Player.height / 2,
@@ -47,10 +52,6 @@ class Game {
       color: Colors.blue,
       mass: Player.playerMass,
     );
-    App.home = true;
-
-    Game.over = false;
-    Game.score = 0;
 
     Game.level = 0;
     Level.enter();

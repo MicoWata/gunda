@@ -15,12 +15,15 @@ import 'package:gunda/src/player.dart';
 class Zone {
   String map;
   int allMob;
+  int rows = 32;
+  int columns = 32;
 
   Zone(this.map, this.allMob);
 }
 
 class Level {
   static late Size size;
+  static late Offset playerStart;
 
   static final List<Enemy> enemies = [];
   static final List<Projectile> projectiles = [];
@@ -35,13 +38,12 @@ class Level {
   static int benching = allMob - maxMob;
 
   static List<Zone> zones = [
-    Zone('assets/levels/level0.txt', 12),
-    Zone('assets/levels/level1.txt', 16),
-    Zone('assets/levels/level2.txt', 20),
+    Zone('assets/levels/level0.txt', 2),
+    Zone('assets/levels/level1.txt', 3),
+    Zone('assets/levels/level2.txt', 4),
   ];
 
   static void enter() {
-    ////setState(() {
     Zone zone = zones[Game.level];
 
     allMob = zone.allMob;
@@ -57,15 +59,12 @@ class Level {
     initializeObstacles();
 
     remaining = allMob;
-
-    //maxMob = 3;
-    //});
   }
 
   static void initializeEnemies() async {
     await TileMap.loadMap();
 
-    var spotsize = 2400 / 32;
+    var spotsize = Game.gameWidth / 32;
 
     enemies.clear();
 
@@ -96,6 +95,12 @@ class Level {
           enemies.add(enemy);
 
           maxMob++;
+        } else if (TileMap.map[y][x] == 9) {
+          playerStart = Offset(x.toDouble(), y.toDouble());
+          Player.body.x =
+              playerStart.dx * Game.gameWidth / Level.zones[Game.level].columns;
+          Player.body.y =
+              playerStart.dy * Game.gameHeight / Level.zones[Game.level].rows;
         }
       }
     }
@@ -155,7 +160,7 @@ class Level {
   }
 
   static void rocks() {
-    var spotsize = 2400 / 32;
+    var spotsize = Game.gameWidth / 32;
 
     for (int x = 0; x < 32; x++) {
       for (int y = 0; y < 32; y++) {
