@@ -11,7 +11,7 @@ class Drop {
   bool used = false;
   Body body;
 
-  Drop({required this.kind, required this.body});
+  Drop({required this.kind, required this.body, this.used = false});
 
   static void update() {
     for (Drop drop in Level.drops) {
@@ -59,4 +59,18 @@ class Drop {
         )
         : Container();
   }
+
+  /// Convert Drop object to a JSON map
+  Map<String, dynamic> toJson() => {
+        'kind': kind.name,
+        'used': used,
+        'body': body.toJson(),
+      };
+
+  /// Create Drop object from a JSON map
+  factory Drop.fromJson(Map<String, dynamic> json) => Drop(
+        kind: Drops.values.firstWhere((e) => e.name == (json['kind'] as String)),
+        body: Body.fromJson(json['body'] as Map<String, dynamic>),
+        used: json['used'] as bool,
+      );
 }

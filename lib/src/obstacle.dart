@@ -52,6 +52,35 @@ class Obstacle {
       ),
     );
   }
+
+  /// Convert Obstacle object to a JSON map
+  Map<String, dynamic> toJson() => {
+        'body': body.toJson(),
+        // Note: BorderRadius, BoxShadow, Color?, double are harder to serialize directly.
+        // For simplicity, we only save the body and recreate visuals based on type/position later,
+        // or add more complex serialization (like a 'type' field) if needed.
+        // Example: Add a 'type' field if using the factory.
+        // 'type': 'wall', // Example
+      };
+
+  /// Create Obstacle object from a JSON map
+  /// Note: This requires a way to determine the visual properties (type, radius, etc.)
+  factory Obstacle.fromJson(Map<String, dynamic> json) {
+    // This is a simplified example. You'd need a 'type' field or similar
+    // saved in toJson to know which factory method to call or how to set visuals.
+    // For now, it just reconstructs a basic obstacle from the body.
+    final body = Body.fromJson(json['body'] as Map<String, dynamic>);
+    // String type = json['type'] ?? 'wall'; // Example if saving type
+    // switch (type) { ... call appropriate factory ... }
+    return Obstacle(
+      x: body.x,
+      y: body.y,
+      width: body.width,
+      height: body.height,
+      color: body.color,
+      // Reconstruct other properties based on type or saved data
+    );
+  }
 }
 
 /// Factory class for creating different types of obstacles
