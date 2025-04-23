@@ -267,6 +267,8 @@ class Player {
   }
 
   static Widget build(Camera camera) {
+    var image = AssetManager().getImage('sword');
+
     return Positioned(
       left: Player.body.x - camera.x,
       top: Player.body.y - camera.y,
@@ -274,35 +276,36 @@ class Player {
         width: Player.body.width,
         height: Player.body.height,
         decoration: BoxDecoration(
-          color: Player.body.color,
+          //color: Player.body.color,
           borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(50),
-              blurRadius: 5,
-              offset: const Offset(2, 2),
-            ),
-          ],
+          //boxShadow: [
+          //  BoxShadow(
+          //    color: Colors.black.withAlpha(50),
+          //    blurRadius: 5,
+          //    offset: const Offset(2, 2),
+          //  ),
+          //],
         ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "Hero",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              //const Text(
+              //  "Hero",
+              //  style: TextStyle(
+              //    color: Colors.white,
+              //    fontWeight: FontWeight.bold,
+              //  ),
+              //),
               //Text(
               //  'v: (${Player.body.xVelocity.toStringAsFixed(1)}, ${Player.body.yVelocity.toStringAsFixed(1)})',
               //  style: const TextStyle(color: Colors.white, fontSize: 10),
               //),
-              Text(
-                Player.lives.toString(),
-                style: TextStyle(color: Colors.white, fontSize: 10),
-              ),
+              //Text(
+              //  Player.lives.toString(),
+              //  style: TextStyle(color: Colors.white, fontSize: 10),
+              //),
+              Image(image: AssetImage('assets/images/player.png')),
             ],
           ),
         ),
