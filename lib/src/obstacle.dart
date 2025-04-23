@@ -21,14 +21,14 @@ class Obstacle {
     this.borderColor,
     this.borderWidth = 0,
   }) : body = Body(
-          x: x,
-          y: y,
-          width: width,
-          height: height,
-          color: color,
-          idle: true, // Obstacles don't move
-          mass: double.infinity, // Infinite mass means they don't move when hit
-        );
+         x: x,
+         y: y,
+         width: width,
+         height: height,
+         color: color,
+         idle: true, // Obstacles don't move
+         mass: double.infinity, // Infinite mass means they don't move when hit
+       );
 
   /// Build the widget representation of this obstacle
   static Widget build(Obstacle obstacle, Camera camera) {
@@ -41,12 +41,13 @@ class Obstacle {
         decoration: BoxDecoration(
           color: obstacle.body.color,
           borderRadius: obstacle.borderRadius,
-          border: obstacle.borderColor != null
-              ? Border.all(
-                  color: obstacle.borderColor!,
-                  width: obstacle.borderWidth,
-                )
-              : null,
+          border:
+              obstacle.borderColor != null
+                  ? Border.all(
+                    color: obstacle.borderColor!,
+                    width: obstacle.borderWidth,
+                  )
+                  : null,
           boxShadow: obstacle.shadow != null ? [obstacle.shadow!] : null,
         ),
       ),
@@ -55,13 +56,13 @@ class Obstacle {
 
   /// Convert Obstacle object to a JSON map
   Map<String, dynamic> toJson() => {
-        'body': body.toJson(),
-        // Note: BorderRadius, BoxShadow, Color?, double are harder to serialize directly.
-        // For simplicity, we only save the body and recreate visuals based on type/position later,
-        // or add more complex serialization (like a 'type' field) if needed.
-        // Example: Add a 'type' field if using the factory.
-        // 'type': 'wall', // Example
-      };
+    'body': body.toJson(),
+    // Note: BorderRadius, BoxShadow, Color?, double are harder to serialize directly.
+    // For simplicity, we only save the body and recreate visuals based on type/position later,
+    // or add more complex serialization (like a 'type' field) if needed.
+    // Example: Add a 'type' field if using the factory.
+    // 'type': 'wall', // Example
+  };
 
   /// Create Obstacle object from a JSON map
   /// Note: This requires a way to determine the visual properties (type, radius, etc.)

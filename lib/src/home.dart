@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
+import 'package:gunda/src/save.dart';
 
 class Home {
   static bool skip = false;
+
+  static Widget start() {
+    return ElevatedButton(
+      onPressed: () {
+        App.home = false;
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      ),
+      child: const Text('New Game', style: TextStyle(fontSize: 20)),
+    );
+  }
+
+  static Widget load() {
+    return ElevatedButton(
+      onPressed: () {
+        Save.loadGame();
+        App.home = false;
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      ),
+      child: const Text('Continue', style: TextStyle(fontSize: 20)),
+    );
+  }
 
   static Widget build() {
     return Container(
@@ -19,20 +45,10 @@ class Home {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                App.home = false;
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-              ),
-              child: const Text('Start', style: TextStyle(fontSize: 20)),
-            ),
+            const SizedBox(height: 50),
+            start(),
+            const SizedBox(height: 50),
+            load(),
           ],
         ),
       ),

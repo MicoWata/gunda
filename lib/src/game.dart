@@ -62,9 +62,6 @@ class Game {
   static void nextLevel() {
     Player.lives = 3;
 
-    Game.over = false;
-    Game.score = 0;
-
     Weapon.power = Weapon.minPower;
     Weapon.isChargingShot = false;
 
@@ -84,7 +81,10 @@ class Game {
       mass: Player.playerMass,
     );
 
+    Game.over = false;
+    Game.score = 0;
     Game.level++;
+
     Level.enter();
   }
 

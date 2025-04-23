@@ -6,6 +6,7 @@ import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart';
+import 'package:gunda/src/save.dart';
 import 'package:gunda/src/weapon.dart';
 import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/spriteanimation.dart';
@@ -190,16 +191,17 @@ class Player {
       if (event.logicalKey == LogicalKeyboardKey.space) {
         dash();
       }
-
       if (event.logicalKey == LogicalKeyboardKey.keyE) {
         changeWeapon();
       }
       if (event.logicalKey == LogicalKeyboardKey.escape) {
         Game.paused = !Game.paused;
       }
-
       if (event.logicalKey == LogicalKeyboardKey.keyK) {
         kill();
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyP) {
+        Save.saveGame();
       }
       if (event.logicalKey == LogicalKeyboardKey.enter) {
         enter();
@@ -303,19 +305,21 @@ class Player {
 
   /// Convert Player static state to a JSON map
   static Map<String, dynamic> toJson() => {
-        'lives': lives,
-        'score': score, // Assuming score is part of player state, adjust if needed
-        'body': body.toJson(), // Serialize the Body object
-        'weapon': Weapon.kind.name, // Save current weapon enum name
-        // Add other relevant static player state if necessary
-      };
+    'lives': lives,
+    'score': score, // Assuming score is part of player state, adjust if needed
+    'body': body.toJson(), // Serialize the Body object
+    'weapon': Weapon.kind.name, // Save current weapon enum name
+    // Add other relevant static player state if necessary
+  };
 
   /// Load Player static state from a JSON map
   static void fromJson(Map<String, dynamic> json) {
     lives = json['lives'] as int;
     score = json['score'] as int; // Adjust if score is stored elsewhere
     body = Body.fromJson(json['body'] as Map<String, dynamic>);
-    Weapon.kind = Weapons.values.firstWhere((e) => e.name == (json['weapon'] as String));
+    Weapon.kind = Weapons.values.firstWhere(
+      (e) => e.name == (json['weapon'] as String),
+    );
     // Load other relevant static player state if necessary
   }
 }

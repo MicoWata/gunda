@@ -21,20 +21,19 @@ class Save {
   factory Save() => _instance;
   Save._internal();
 
-
   /// Get the path to the save file
-  Future<String> get _localPath async {
+  static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
   }
 
-  Future<File> get _localFile async {
+  static Future<File> get _localFile async {
     final path = await _localPath;
     return File('$path/$_saveFileName');
   }
 
   /// Save the current game state to a JSON file
-  Future<void> saveGame() async {
+  static Future<void> saveGame() async {
     // Prevent saving if game is over or paused? Or allow? Currently allows.
     // if (Game.over || Game.paused) return;
 
@@ -70,13 +69,11 @@ class Save {
       // final jsonString = JsonEncoder.withIndent('  ').convert(gameState);
       final jsonString = jsonEncode(gameState);
 
-
       // 3. Write JSON string to the file
       await file.writeAsString(jsonString);
 
       print('Game saved successfully to ${file.path}');
       App.snack('Game Saved!'); // Use the snackbar helper
-
     } catch (e, stacktrace) {
       print('Error saving game: $e');
       print(stacktrace); // Print stacktrace for debugging
@@ -85,7 +82,7 @@ class Save {
   }
 
   /// Load game state from the JSON file
-  Future<bool> loadGame() async {
+  static Future<bool> loadGame() async {
     try {
       final file = await _localFile;
 
@@ -167,17 +164,15 @@ class Save {
       Weapon.slicing = false; // Reset slice state
       // Ensure animation controller is running if it was stopped
       if (!Game.animationController.isAnimating && !Game.paused && !Game.over) {
-         Game.animationController.repeat();
+        Game.animationController.repeat();
       }
 
       // Crucially, update the camera to the loaded player position
       Game.camera.follow(Player.body); // Initial camera sync
 
-
       print('Game loaded successfully from ${file.path}');
       App.snack('Game Loaded!');
       return true;
-
     } catch (e, stacktrace) {
       print('Error loading game: $e');
       print(stacktrace); // Print stacktrace for debugging

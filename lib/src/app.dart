@@ -21,7 +21,7 @@ import 'package:gunda/src/weapon.dart';
 
 class App extends StatefulWidget {
   static late BuildContext appContext;
-  static bool home = false;
+  static bool home = true;
 
   const App({super.key});
 
@@ -45,22 +45,27 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     // Start loading assets
-    AssetManager().loadAllAssets().then((_) {
-      // When loading is complete, update state to rebuild UI
-      if (mounted) { // Check if the widget is still in the tree
-        setState(() {
-          _isLoading = false; // Set loading to false
+    AssetManager()
+        .loadAllAssets()
+        .then((_) {
+          // When loading is complete, update state to rebuild UI
+          if (mounted) {
+            // Check if the widget is still in the tree
+            setState(() {
+              _isLoading = false; // Set loading to false
+            });
+          }
+        })
+        .catchError((error) {
+          // Handle loading errors if necessary
+          print("Error loading assets: $error");
+          if (mounted) {
+            setState(() {
+              _isLoading =
+                  false; // Still stop loading on error, maybe show error message
+            });
+          }
         });
-      }
-    }).catchError((error) {
-       // Handle loading errors if necessary
-       print("Error loading assets: $error");
-       if (mounted) {
-         setState(() {
-           _isLoading = false; // Still stop loading on error, maybe show error message
-         });
-       }
-    });
 
     // Initialize game
     Game.reset();
@@ -213,13 +218,18 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
               //print(position.dy);
             },
 
-            child: _isLoading // Check loading state
-                ? const Center(child: CircularProgressIndicator()) // Show loading indicator
-                : App.home
+            child:
+                _isLoading // Check loading state
+                    ? const Center(
+                      child: CircularProgressIndicator(),
+                    ) // Show loading indicator
+                    : App.home
                     ? Home.build() // Show home screen if App.home is true
-                    : Container( // Show game container if not loading and not home
+                    : Container(
+                      // Show game container if not loading and not home
                       key: _gameAreaKey,
-                      color: Game.effect.showSlowMotion
+                      color:
+                          Game.effect.showSlowMotion
                               ? Colors
                                   .blueGrey[800] // Darker background for slow motion
                               : Colors.brown, // Normal background

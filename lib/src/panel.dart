@@ -45,7 +45,6 @@ class Panel {
               ],
             ),
           ),
-
           // remaining
           Container(
             padding: const EdgeInsets.all(10),
@@ -70,7 +69,6 @@ class Panel {
               ),
             ),
           ),
-
           // benching
           Container(
             padding: const EdgeInsets.all(10),

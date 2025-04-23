@@ -727,7 +727,10 @@ class Enemy {
   int cooldown = 2000;
   Ennemies kind = Ennemies.wild; // Default value
 
-  Enemy({required this.body, this.kind = Ennemies.wild}); // Add kind to constructor if needed
+  Enemy({
+    required this.body,
+    this.kind = Ennemies.wild,
+  }); // Add kind to constructor if needed
 
   void die() {
     if (hp < 1) {
@@ -769,19 +772,22 @@ class Enemy {
 
   /// Convert Enemy object to a JSON map
   Map<String, dynamic> toJson() => {
-        'body': body.toJson(),
-        'hp': hp,
-        'dead': dead,
-        'canShoot': canShoot,
-        'cooldown': cooldown,
-        'kind': kind.name, // Save enum name
-      };
+    'body': body.toJson(),
+    'hp': hp,
+    'dead': dead,
+    'canShoot': canShoot,
+    'cooldown': cooldown,
+    'kind': kind.name, // Save enum name
+  };
 
   /// Create Enemy object from a JSON map
-  factory Enemy.fromJson(Map<String, dynamic> json) => Enemy(
-        body: Body.fromJson(json['body'] as Map<String, dynamic>),
-        kind: Ennemies.values.firstWhere((e) => e.name == (json['kind'] as String)),
-      )
+  factory Enemy.fromJson(Map<String, dynamic> json) =>
+      Enemy(
+          body: Body.fromJson(json['body'] as Map<String, dynamic>),
+          kind: Ennemies.values.firstWhere(
+            (e) => e.name == (json['kind'] as String),
+          ),
+        )
         ..hp = json['hp'] as int
         ..dead = json['dead'] as bool
         ..canShoot = json['canShoot'] as bool
