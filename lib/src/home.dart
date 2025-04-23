@@ -10,11 +10,10 @@ class Home {
   static Widget start() {
     return ElevatedButton(
       onPressed: () async {
-        //Sound.play();
+        //Sound.play(); // Keep this commented out for now
         final player = AudioPlayer();
-        await player.play(
-          DeviceFileSource('sounds/shoot.wav'),
-        ); // will immediately start playing
+        // Use AssetSource for bundled assets
+        await player.play(AssetSource('sounds/shoot.wav'));
         App.home = false;
       },
       style: ElevatedButton.styleFrom(
