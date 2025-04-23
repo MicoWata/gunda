@@ -190,52 +190,6 @@ class Ball {
       //});
     }
   }
-
-  /// Convert Projectile object to a JSON map
-  Map<String, dynamic> toJson() => {
-        'x': x,
-        'y': y,
-        'xVelocity': xVelocity,
-        'yVelocity': yVelocity,
-        'radius': radius,
-        'color': color.value,
-        'mass': mass,
-        'isActive': isActive,
-        'canExplode': canExplode,
-        'bounceCount': bounceCount,
-        'isPlayerProjectile': isPlayerProjectile,
-        'trail': trail.map((offset) => {'dx': offset.dx, 'dy': offset.dy}).toList(),
-      };
-
-  /// Create Projectile object from a JSON map
-  factory Projectile.fromJson(Map<String, dynamic> json) {
-    final projectile = Projectile(
-      x: (json['x'] as num).toDouble(),
-      y: (json['y'] as num).toDouble(),
-      xVelocity: (json['xVelocity'] as num).toDouble(),
-      yVelocity: (json['yVelocity'] as num).toDouble(),
-      radius: (json['radius'] as num).toDouble(),
-      color: Color(json['color'] as int),
-      mass: (json['mass'] as num).toDouble(),
-      canExplode: json['canExplode'] as bool,
-      isPlayerProjectile: json['isPlayerProjectile'] as bool,
-    )
-      ..isActive = json['isActive'] as bool
-      ..bounceCount = json['bounceCount'] as int;
-
-    // Restore trail
-    if (json['trail'] != null) {
-      projectile.trail.addAll(
-        (json['trail'] as List)
-            .map((point) => Offset(
-                  (point['dx'] as num).toDouble(),
-                  (point['dy'] as num).toDouble(),
-                ))
-            .toList(),
-      );
-    }
-    return projectile;
-  }
 }
 
 // Projectile class for physics-based projectiles
@@ -391,6 +345,52 @@ class Projectile {
   void applyImpulse(double forceX, double forceY) {
     xVelocity += forceX / mass;
     yVelocity += forceY / mass;
+  }
+
+  /// Convert Projectile object to a JSON map
+  Map<String, dynamic> toJson() => {
+        'x': x,
+        'y': y,
+        'xVelocity': xVelocity,
+        'yVelocity': yVelocity,
+        'radius': radius,
+        'color': color.value,
+        'mass': mass,
+        'isActive': isActive,
+        'canExplode': canExplode,
+        'bounceCount': bounceCount,
+        'isPlayerProjectile': isPlayerProjectile,
+        'trail': trail.map((offset) => {'dx': offset.dx, 'dy': offset.dy}).toList(),
+      };
+
+  /// Create Projectile object from a JSON map
+  factory Projectile.fromJson(Map<String, dynamic> json) {
+    final projectile = Projectile(
+      x: (json['x'] as num).toDouble(),
+      y: (json['y'] as num).toDouble(),
+      xVelocity: (json['xVelocity'] as num).toDouble(),
+      yVelocity: (json['yVelocity'] as num).toDouble(),
+      radius: (json['radius'] as num).toDouble(),
+      color: Color(json['color'] as int),
+      mass: (json['mass'] as num).toDouble(),
+      canExplode: json['canExplode'] as bool,
+      isPlayerProjectile: json['isPlayerProjectile'] as bool,
+    )
+      ..isActive = json['isActive'] as bool
+      ..bounceCount = json['bounceCount'] as int;
+
+    // Restore trail
+    if (json['trail'] != null) {
+      projectile.trail.addAll(
+        (json['trail'] as List)
+            .map((point) => Offset(
+                  (point['dx'] as num).toDouble(),
+                  (point['dy'] as num).toDouble(),
+                ))
+            .toList(),
+      );
+    }
+    return projectile;
   }
 }
 
