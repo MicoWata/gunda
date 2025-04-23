@@ -1,13 +1,20 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/save.dart';
+import 'package:gunda/src/sound.dart';
 
 class Home {
   static bool skip = false;
 
   static Widget start() {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
+        //Sound.play();
+        final player = AudioPlayer();
+        await player.play(
+          DeviceFileSource('sounds/shoot.wav'),
+        ); // will immediately start playing
         App.home = false;
       },
       style: ElevatedButton.styleFrom(
