@@ -39,14 +39,27 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> with SingleTickerProviderStateMixin {
   final GlobalKey _gameAreaKey = GlobalKey();
+  bool _isLoading = true; // Add loading state flag
 
   @override
   void initState() {
     super.initState();
+    // Start loading assets
     AssetManager().loadAllAssets().then((_) {
-      setState(() {
-        // Assets are ready, start game
-      });
+      // When loading is complete, update state to rebuild UI
+      if (mounted) { // Check if the widget is still in the tree
+        setState(() {
+          _isLoading = false; // Set loading to false
+        });
+      }
+    }).catchError((error) {
+       // Handle loading errors if necessary
+       print("Error loading assets: $error");
+       if (mounted) {
+         setState(() {
+           _isLoading = false; // Still stop loading on error, maybe show error message
+         });
+       }
     });
 
     // Initialize game
@@ -200,13 +213,13 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
               //print(position.dy);
             },
 
-            child:
-                App.home
-                    ? Home.build()
-                    : Container(
+            child: _isLoading // Check loading state
+                ? const Center(child: CircularProgressIndicator()) // Show loading indicator
+                : App.home
+                    ? Home.build() // Show home screen if App.home is true
+                    : Container( // Show game container if not loading and not home
                       key: _gameAreaKey,
-                      color:
-                          Game.effect.showSlowMotion
+                      color: Game.effect.showSlowMotion
                               ? Colors
                                   .blueGrey[800] // Darker background for slow motion
                               : Colors.brown, // Normal background

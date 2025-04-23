@@ -683,8 +683,8 @@ class WeaponPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Use the statically loaded image, check if it's null
-    if (Weapon.show) {
+    // Only paint if the weapon should be shown and the image is loaded
+    if (Weapon.show && weaponImage != null) {
       // Calculate line angle and length
       final dx = end.dx - start.dx;
       final dy = end.dy - start.dy;
@@ -719,7 +719,7 @@ class WeaponPainter extends CustomPainter {
           weaponImage!.height.toDouble(),
         ),
         drawRect,
-        Paint(),
+        Paint(), // Use the non-null asserted image here safely
       );
 
       // final lineLength = sqrt(dx * dx + dy * dy);
