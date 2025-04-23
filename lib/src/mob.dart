@@ -12,6 +12,8 @@ import 'package:gunda/src/level.dart';
 import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
+import 'package:gunda/src/assetmanager.dart';
+import 'package:gunda/src/spriteanimation.dart';
 
 class Mob {
   static double value = 1;
@@ -19,6 +21,24 @@ class Mob {
   static double mass = 1.6;
   static int hp = 1;
   static int cooldown = 500;
+
+  // late SpriteAnimation idleAnimation;
+
+  // void load() {
+  //   idleAnimation = SpriteAnimation(
+  //     AssetManager().getSpriteSequence('player_idle')!,
+  //     0.1,
+  //   );
+  // }
+
+  // void update(double delta) {
+  //   idleAnimation.update(delta);
+  // }
+
+  // void paint(Canvas canvas) {
+  //   final frame = idleAnimation.currentFrame;
+  //   canvas.drawImage(frame, Offset(x, y), Paint());
+  // }
 
   static void _handleEnemyShooting(Enemy enemy, int enemyIndex) {
     // Check if enemy can shoot (based on cooldown)

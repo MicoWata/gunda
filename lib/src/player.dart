@@ -7,6 +7,8 @@ import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/weapon.dart';
+import 'package:gunda/src/assetmanager.dart';
+import 'package:gunda/src/spriteanimation.dart';
 
 class Player {
   static const double width = 80;
@@ -28,6 +30,26 @@ class Player {
   static Offset worldMousePosition = Offset.zero;
 
   static const double playerMass = 10.0;
+
+  late SpriteAnimation idleAnimation;
+
+  // Future<void> load() async {
+  //   final frames = await AssetManager().loadPlayerIdle();
+  //   if (frames == null) {
+  //     throw Exception('player_idle sprite sequence not loaded!');
+  //   }
+
+  //   idleAnimation = SpriteAnimation(frames, 0.1);
+  // }
+
+  void update(double delta) {
+    idleAnimation.update(delta);
+  }
+
+  void paint(Canvas canvas) {
+    final frame = idleAnimation.currentFrame;
+    canvas.drawImage(frame, Offset(body.x, body.y), Paint());
+  }
 
   static void updateMousePosition(PointerEvent event) {
     //setState(() {

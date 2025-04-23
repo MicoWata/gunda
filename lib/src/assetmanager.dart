@@ -23,22 +23,29 @@ class AssetManager {
   }
 
   Future<void> loadImage(String key, String path) async {
+    if (_images.containsKey(key)) return;
     final img = await _loadUiImage(path);
     _images[key] = img;
   }
 
-  Future<void> loadSpriteSequence(
+  Future<List<ui.Image>> loadSpriteSequence(
     String key,
     String folderPath,
     int frameCount,
   ) async {
+    if (_spriteSheets.containsKey(key)) {
+      return _spriteSheets[key]!;
+    }
+
     final frames = <ui.Image>[];
     for (int i = 0; i < frameCount; i++) {
       final path = '$folderPath/$i.png';
       final img = await _loadUiImage(path);
       frames.add(img);
     }
+
     _spriteSheets[key] = frames;
+    return frames;
   }
 
   Future<void> loadSound(String key, String fileName) async {
@@ -60,10 +67,12 @@ class AssetManager {
 
   Future<void> loadAllAssets() async {
     await Future.wait([
+      loadImage('sword', 'assets/images/sword.png'),
       loadImage('pistol', 'assets/images/pistol.png'),
       loadImage('shotgun', 'assets/images/shotgun.png'),
-      loadImage('sword', 'assets/images/sword.png'),
-      // loadSpriteSequence('explosion', 'assets/sprites/explosion', 6),
+      loadImage('bazooka', 'assets/images/bazooka.png'),
+      // loadSpriteSequence('player_idle', 'sprites/player', 1),
+      // loadSpriteSequence('demon_idle', 'assets/sprites/demon/idle.png', 1),
       // loadSound('shoot', 'shoot.wav'),
     ]);
   }

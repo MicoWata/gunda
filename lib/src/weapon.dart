@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -495,7 +497,7 @@ class Weapon {
     return CustomPaint(
       size: Size(screenWidth, screenHeight),
       painter: WeaponPainter(
-        weaponImage: AssetManager().getImage('shotgun'),
+        weaponImage: AssetManager().getImage('bazooka'),
         start: Offset(
           Player.body.centerX - camera.x,
           Player.body.centerY - camera.y,
@@ -508,7 +510,7 @@ class Weapon {
           mousePosition,
           70.0, // Longer aiming line for larger map
         ),
-        powerLevel: isChargingShot ? power : minPower,
+        powerLevel: maxPower,
         cameraX: camera.x,
         cameraY: camera.y,
         faceLeft: faceLeft,
@@ -522,7 +524,6 @@ class Weapon {
     Offset mousePosition,
     Camera camera,
   ) {
-    //if (!Game.over) {
     switch (Weapon.kind) {
       case Weapons.sword:
         return buildSword(screenWidth, screenHeight, mousePosition, camera);
@@ -687,7 +688,7 @@ class WeaponPainter extends CustomPainter {
       // Calculate line angle and length
       final dx = end.dx - start.dx;
       final dy = end.dy - start.dy;
-      final angle = atan2(dy, dx);
+      final angle = faceLeft ? -atan2(dy, dx) : atan2(dy, dx);
 
       // Save canvas state before rotation
       canvas.save();
@@ -696,8 +697,8 @@ class WeaponPainter extends CustomPainter {
       canvas.translate(start.dx, start.dy);
 
       if (faceLeft) {
-        // Flip horizontally
         canvas.scale(-1, 1);
+        canvas.rotate(math.pi);
       }
 
       // Rotate to end point

@@ -55,6 +55,8 @@ class Game {
 
     Game.level = 0;
     Level.enter();
+
+    // player.load();
   }
 
   static void nextLevel() {
