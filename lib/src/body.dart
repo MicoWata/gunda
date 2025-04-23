@@ -78,7 +78,8 @@ class Body {
     'width': width,
     'height': height,
     'color': color.value, // Save color as integer value
-    'mass': mass,
+    // Handle Infinity for JSON compatibility
+    'mass': mass == double.infinity ? "Infinity" : mass,
     'idle': idle,
   };
 
@@ -91,7 +92,10 @@ class Body {
     width: (json['width'] as num).toDouble(), // Ensure double type
     height: (json['height'] as num).toDouble(), // Ensure double type
     color: Color(json['color'] as int), // Ensure int type
-    mass: (json['mass'] as num).toDouble(), // Ensure double type
+    // Handle "Infinity" string when loading mass
+    mass: json['mass'] == "Infinity"
+        ? double.infinity
+        : (json['mass'] as num).toDouble(),
     idle: json['idle'] as bool, // Ensure bool type
   );
 }
