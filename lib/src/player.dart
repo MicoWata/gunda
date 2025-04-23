@@ -425,7 +425,7 @@ class _PlayerPainter extends CustomPainter {
       final errorPaint = Paint()..color = Colors.red;
       canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), errorPaint);
       // You might want to log an error here as well
-      print("Error: Player image 'hero' not found in AssetManager.");
+      //print("Error: Player image 'hero' not found in AssetManager.");
     }
   }
 

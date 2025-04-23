@@ -13,7 +13,6 @@ import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
 import 'package:gunda/src/assetmanager.dart';
-import 'package:gunda/src/spriteanimation.dart';
 
 class Mob {
   static double value = 1;
@@ -654,6 +653,15 @@ class Mob {
 
           enemy.dead = false;
           enemy.hp = hp;
+
+          int roll = Game.random.nextInt(2);
+
+          enemy.kind = switch (roll) {
+            0 => Ennemies.dumb,
+            1 => Ennemies.wild,
+            2 => Ennemies.mad,
+            _ => Ennemies.dumb,
+          };
 
           return;
         }

@@ -72,10 +72,19 @@ class Level {
 
     for (int x = 0; x < 32; x++) {
       for (int y = 0; y < 32; y++) {
-        if (TileMap.map[y][x] == 2) {
+        int mob = TileMap.map[y][x];
+
+        if (mob == 2 || mob == 3 || mob == 4) {
           final hue = Game.random.nextInt(360);
           final color =
               HSVColor.fromAHSV(1.0, hue.toDouble(), 0.7, 0.9).toColor();
+
+          Ennemies kind = switch (mob) {
+            2 => Ennemies.dumb,
+            3 => Ennemies.wild,
+            4 => Ennemies.mad,
+            _ => Ennemies.dumb,
+          };
 
           Enemy enemy = Enemy(
             body: Body(
@@ -90,6 +99,7 @@ class Level {
               color: color,
               mass: Mob.mass, // Slightly lighter than target
             ),
+            kind: kind,
           );
 
           enemies.add(enemy);
