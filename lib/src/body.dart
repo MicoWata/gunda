@@ -57,7 +57,10 @@ class Body {
 
   /// Checks if a point is inside the body's bounds.
   bool contains(Offset point) {
-    return point.dx >= left && point.dx <= right && point.dy >= top && point.dy <= bottom;
+    return point.dx >= left &&
+        point.dx <= right &&
+        point.dy >= top &&
+        point.dy <= bottom;
   }
 
   /// Apply impulse (change in momentum) to the rectangle
@@ -68,27 +71,27 @@ class Body {
 
   /// Convert Body object to a JSON map
   Map<String, dynamic> toJson() => {
-        'x': x,
-        'y': y,
-        'xVelocity': xVelocity,
-        'yVelocity': yVelocity,
-        'width': width,
-        'height': height,
-        'color': color.value, // Save color as integer value
-        'mass': mass,
-        'idle': idle,
-      };
+    'x': x,
+    'y': y,
+    'xVelocity': xVelocity,
+    'yVelocity': yVelocity,
+    'width': width,
+    'height': height,
+    'color': color.value, // Save color as integer value
+    'mass': mass,
+    'idle': idle,
+  };
 
   /// Create Body object from a JSON map
   factory Body.fromJson(Map<String, dynamic> json) => Body(
-        x: (json['x'] as num).toDouble(), // Ensure double type
-        y: (json['y'] as num).toDouble(), // Ensure double type
-        xVelocity: (json['xVelocity'] as num).toDouble(), // Ensure double type
-        yVelocity: (json['yVelocity'] as num).toDouble(), // Ensure double type
-        width: (json['width'] as num).toDouble(), // Ensure double type
-        height: (json['height'] as num).toDouble(), // Ensure double type
-        color: Color(json['color'] as int), // Ensure int type
-        mass: (json['mass'] as num).toDouble(), // Ensure double type
-        idle: json['idle'] as bool, // Ensure bool type
-      );
+    x: (json['x'] as num).toDouble(), // Ensure double type
+    y: (json['y'] as num).toDouble(), // Ensure double type
+    xVelocity: (json['xVelocity'] as num).toDouble(), // Ensure double type
+    yVelocity: (json['yVelocity'] as num).toDouble(), // Ensure double type
+    width: (json['width'] as num).toDouble(), // Ensure double type
+    height: (json['height'] as num).toDouble(), // Ensure double type
+    color: Color(json['color'] as int), // Ensure int type
+    mass: (json['mass'] as num).toDouble(), // Ensure double type
+    idle: json['idle'] as bool, // Ensure bool type
+  );
 }
