@@ -14,7 +14,7 @@ class Game {
   static final Random random = Random();
   static final Effect effect = Effect();
   static Camera camera = Camera(viewportWidth: 0, viewportHeight: 0);
-  static bool paused = false;
+  static bool paused = true;
   static bool over = false;
   static bool next = false;
   static bool start = true;
@@ -23,6 +23,7 @@ class Game {
   static const double gameHeight = 2400;
   static late AnimationController animationController;
   static int level = 0;
+  static int frame = 0;
 
   static void reset() {
     //isGameOver = false;
@@ -89,6 +90,7 @@ class Game {
   }
 
   static void update() {
+    frame++;
     // Handle power level updates for charging shot
     if (Weapon.isChargingShot) {
       Weapon.updateChargingPower();

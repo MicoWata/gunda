@@ -14,6 +14,10 @@ import 'package:gunda/src/weapon.dart';
 import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/spriteanimation.dart';
 
+enum Animations { idle, walk, dead }
+
+enum Directions { left, right }
+
 class Player {
   static const double width = 80;
   static const double height = 100;
@@ -36,6 +40,8 @@ class Player {
   static const double playerMass = 10.0;
 
   late SpriteAnimation idleAnimation;
+  static Animations animation = Animations.idle;
+  static Directions direction = Directions.right;
 
   // Future<void> load() async {
   //   final frames = await AssetManager().loadPlayerIdle();
@@ -267,7 +273,19 @@ class Player {
   }
 
   static Widget build(Camera camera) {
-    var image = AssetManager().getImage('sword');
+    if (body.xVelocity > 0.01 ||
+        body.yVelocity > 0.01 ||
+        body.xVelocity < -0.01 ||
+        body.yVelocity < -0.01) {
+      animation = Animations.walk;
+    } else {
+      animation = Animations.idle;
+    }
+    if (body.xVelocity > 0.01) {
+      direction = Directions.right;
+    } else if (body.xVelocity < -0.01) {
+      direction = Directions.left;
+    }
 
     return Positioned(
       left: Player.body.x - camera.x,
@@ -307,7 +325,10 @@ class Player {
               //),
               //Image(image: AssetImage('assets/images/player.png')), // Replaced with CustomPaint
               CustomPaint(
-                size: Size(Player.body.width, Player.body.height), // Use player body size
+                size: Size(
+                  Player.body.width,
+                  Player.body.height,
+                ), // Use player body size
                 painter: _PlayerPainter(),
               ),
             ],
@@ -342,22 +363,63 @@ class Player {
 class _PlayerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final playerImage = AssetManager().getImage('hero'); // Get the preloaded image
+    final playerImage = AssetManager().getImage(
+      'hero',
+    ); // Get the preloaded image
 
     if (playerImage != null) {
       // Define the source rectangle (top-left 48x48 pixels)
-      final srcRect = Rect.fromLTWH(0, 0, 48, 48);
+      double x = 12;
+      double y = 6;
 
+      if (Player.animation == Animations.idle) {
+        y = 6;
+        if (Game.frame % 64 > 32) {
+          x = 3;
+        } else {
+          x = 15;
+        }
+      } else if (Player.animation == Animations.walk) {
+        y = 30;
+        double xoffset = 3;
+        if (Game.frame % 64 < 8) {
+          x = 0 + xoffset;
+        } else if (Game.frame % 64 < 16) {
+          x = 12 + xoffset;
+        } else if (Game.frame % 64 < 24) {
+          x = 24 + xoffset;
+        } else if (Game.frame % 64 < 32) {
+          x = 36 + xoffset;
+        } else if (Game.frame % 64 < 40) {
+          x = 48 + xoffset;
+        } else if (Game.frame % 64 < 48) {
+          x = 60 + xoffset;
+        } else if (Game.frame % 64 < 56) {
+          x = 72 + xoffset;
+        } else {
+          x = 84 + xoffset;
+        }
+      }
+
+      final srcRect = Rect.fromLTWH(x, y, 12, 16);
+
+      double dx = 0;
+      if (Player.direction == Directions.left) {
+        dx = -78;
+      }
       // Define the destination rectangle (the full size of the CustomPaint area)
-      final dstRect = Rect.fromLTWH(0, 0, size.width, size.height);
-
+      final dstRect = Rect.fromLTWH(dx, 0, size.width, size.height);
+      canvas.save();
+      canvas.scale(Player.direction == Directions.right ? 1 : -1, 1);
       // Draw the specified portion of the image onto the canvas
       canvas.drawImageRect(
         playerImage,
         srcRect,
         dstRect,
-        Paint()..filterQuality = FilterQuality.none, // Use nearest neighbor scaling
+        Paint()
+          ..filterQuality = FilterQuality.none, // Use nearest neighbor scaling
       );
+      canvas.restore();
     } else {
       // Optional: Draw a placeholder if the image isn't loaded
       final errorPaint = Paint()..color = Colors.red;

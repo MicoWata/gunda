@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
+import 'package:gunda/src/game.dart';
 import 'package:gunda/src/save.dart';
 
 class Home {
@@ -8,12 +9,8 @@ class Home {
   static Widget start() {
     return ElevatedButton(
       onPressed: () async {
-        //Sound.play(); // Keep this commented out for now
-        //final player = AudioPlayer();
-        // Use AssetSource for bundled assets
-        //App.soundManager.playSound('pew');
-        //await Sound.player.play(AssetSource('sounds/shoot.wav'));
         App.home = false;
+        Game.paused = false;
       },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
@@ -27,6 +24,7 @@ class Home {
       onPressed: () {
         Save.loadGame();
         App.home = false;
+        Game.paused = false;
       },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),

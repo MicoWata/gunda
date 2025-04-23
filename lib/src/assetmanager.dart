@@ -71,6 +71,7 @@ class AssetManager {
       loadImage('pistol', 'assets/images/pistol.png'),
       loadImage('shotgun', 'assets/images/shotgun.png'),
       loadImage('bazooka', 'assets/images/bazooka.png'),
+      loadImage('hero', 'assets/sprites/player.png'),
       // loadSpriteSequence('player_idle', 'sprites/player', 1),
       // loadSpriteSequence('demon_idle', 'assets/sprites/demon/idle.png', 1),
       // loadSound('shoot', 'shoot.wav'),
