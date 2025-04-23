@@ -305,7 +305,11 @@ class Player {
               //  Player.lives.toString(),
               //  style: TextStyle(color: Colors.white, fontSize: 10),
               //),
-              Image(image: AssetImage('assets/images/player.png')),
+              //Image(image: AssetImage('assets/images/player.png')), // Replaced with CustomPaint
+              CustomPaint(
+                size: Size(Player.body.width, Player.body.height), // Use player body size
+                painter: _PlayerPainter(),
+              ),
             ],
           ),
         ),
@@ -331,5 +335,43 @@ class Player {
       (e) => e.name == (json['weapon'] as String),
     );
     // Load other relevant static player state if necessary
+  }
+}
+
+/// Custom Painter to draw a specific portion of the player sprite
+class _PlayerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final playerImage = AssetManager().getImage('hero'); // Get the preloaded image
+
+    if (playerImage != null) {
+      // Define the source rectangle (top-left 48x48 pixels)
+      final srcRect = Rect.fromLTWH(0, 0, 48, 48);
+
+      // Define the destination rectangle (the full size of the CustomPaint area)
+      final dstRect = Rect.fromLTWH(0, 0, size.width, size.height);
+
+      // Draw the specified portion of the image onto the canvas
+      canvas.drawImageRect(
+        playerImage,
+        srcRect,
+        dstRect,
+        Paint()..filterQuality = FilterQuality.none, // Use nearest neighbor scaling
+      );
+    } else {
+      // Optional: Draw a placeholder if the image isn't loaded
+      final errorPaint = Paint()..color = Colors.red;
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), errorPaint);
+      // You might want to log an error here as well
+      print("Error: Player image 'hero' not found in AssetManager.");
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // Repaint only if necessary (e.g., if the sprite frame changes)
+    // For a static sprite portion, returning false is efficient.
+    // If animation is added later, this condition will need to change.
+    return false;
   }
 }
