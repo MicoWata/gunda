@@ -15,6 +15,7 @@ class SoundManager {
   Future<void> preloadSounds() async {
     final sounds = {
       'pew': 'sounds/pew1.mp3',
+      //'song': 'music/song2.wav',
       //'explosion': 'sounds/explosion.mp3',
       //'jump': 'sounds/jump.mp3',
       //'coin': 'sounds/coin.mp3',

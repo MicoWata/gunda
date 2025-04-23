@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
@@ -152,6 +153,7 @@ class Mob {
         ),
         (enemyPowerLevel / Weapon.maxPower) * 0.8, // Smaller effect than player
       );
+      App.soundManager.playSoundNew('sounds/pew1.mp3');
       //});
     }
   }

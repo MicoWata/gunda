@@ -202,7 +202,7 @@ class Weapon {
       );
 
       canShoot = false;
-      Future.delayed(Duration(milliseconds: cooldown), () {
+      Future.delayed(Duration(milliseconds: cooldown * 4), () {
         canShoot = true;
       });
       App.soundManager.playSoundNew('sounds/pew1.mp3');
@@ -255,7 +255,7 @@ class Weapon {
 
       // Set cooldown
       canShoot = false;
-      Future.delayed(Duration(milliseconds: cooldown), () {
+      Future.delayed(Duration(milliseconds: cooldown * 6), () {
         canShoot = true;
       });
       App.soundManager.playSoundNew('sounds/pew1.mp3');

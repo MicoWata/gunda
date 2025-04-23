@@ -65,7 +65,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         })
         .catchError((error) {
           // Handle loading errors if necessary
-          print("Error loading assets: $error");
+          //print("Error loading assets: $error");
           if (mounted) {
             setState(() {
               _isLoading =
@@ -87,6 +87,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     )..addListener(_updatePosition);
 
     Game.animationController.repeat();
+    App.soundManager.playSong('music/song2.wav');
   }
 
   @override
