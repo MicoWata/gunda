@@ -1,12 +1,15 @@
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/save.dart';
+import 'package:gunda/src/sound.dart';
 import 'package:gunda/src/weapon.dart';
 import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/spriteanimation.dart';
@@ -153,7 +156,11 @@ class Player {
     }
   }
 
-  static void shoot() {
+  static Future<void> shoot() async {
+    //await Sound.player.play(AssetSource('sounds/shoot.wav'));
+
+    //App.soundManager.playSoundNew('sounds/pew1.mp3');
+
     if (!Game.over && !Game.paused) {
       if (Weapon.kind == Weapons.pistol && !Weapon.isChargingShot) {
         Weapon.startChargingShot();

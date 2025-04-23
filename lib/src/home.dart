@@ -1,8 +1,6 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/save.dart';
-import 'package:gunda/src/sound.dart';
 
 class Home {
   static bool skip = false;
@@ -11,9 +9,10 @@ class Home {
     return ElevatedButton(
       onPressed: () async {
         //Sound.play(); // Keep this commented out for now
-        final player = AudioPlayer();
+        //final player = AudioPlayer();
         // Use AssetSource for bundled assets
-        await player.play(AssetSource('sounds/shoot.wav'));
+        //App.soundManager.playSound('pew');
+        //await Sound.player.play(AssetSource('sounds/shoot.wav'));
         App.home = false;
       },
       style: ElevatedButton.styleFrom(

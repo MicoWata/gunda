@@ -10,9 +10,9 @@ class AssetManager {
 
   final Map<String, ui.Image> _images = {};
   final Map<String, List<ui.Image>> _spriteSheets = {};
-  final Map<String, AudioPlayer> _sounds = {};
+  static final Map<String, AudioPlayer> _sounds = {};
 
-  final AudioCache _audioCache = AudioCache(prefix: 'assets/sounds/');
+  static final AudioCache _audioCache = AudioCache(prefix: 'assets/sounds/');
 
   Future<ui.Image> _loadUiImage(String path) async {
     final ByteData data = await rootBundle.load(path);
@@ -48,7 +48,7 @@ class AssetManager {
     return frames;
   }
 
-  Future<void> loadSound(String key, String fileName) async {
+  static Future<void> loadSound(String key, String fileName) async {
     final player = await _audioCache.loadAsFile(fileName);
     _sounds[key] = AudioPlayer()..setSourceDeviceFile(player.path);
   }
@@ -57,7 +57,7 @@ class AssetManager {
 
   List<ui.Image>? getSpriteSequence(String key) => _spriteSheets[key];
 
-  Future<void> playSound(String key) async {
+  static Future<void> playSound(String key) async {
     final sound = _sounds[key];
     if (sound != null) {
       await sound.stop(); // to allow replaying instantly

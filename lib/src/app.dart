@@ -17,11 +17,13 @@ import 'package:gunda/src/panel.dart';
 import 'package:gunda/src/pause.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/shader.dart';
+import 'package:gunda/src/sound.dart';
 import 'package:gunda/src/weapon.dart';
 
 class App extends StatefulWidget {
   static late BuildContext appContext;
   static bool home = true;
+  static final SoundManager soundManager = SoundManager();
 
   const App({super.key});
 
@@ -41,9 +43,14 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   final GlobalKey _gameAreaKey = GlobalKey();
   bool _isLoading = true; // Add loading state flag
 
+  Future<void> _initAudio() async {
+    await App.soundManager.preloadSounds();
+  }
+
   @override
   void initState() {
     super.initState();
+    _initAudio();
     // Start loading assets
     AssetManager()
         .loadAllAssets()
@@ -85,6 +92,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     Game.animationController.dispose();
+    App.soundManager.dispose();
     //RawKeyboard.instance.removeListener(Player.handleKeyEvent);
     super.dispose();
   }

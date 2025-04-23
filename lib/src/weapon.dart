@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/camera.dart';
@@ -140,6 +141,7 @@ class Weapon {
         canShoot = true;
       });
     }
+    App.soundManager.playSoundNew('sounds/pew1.mp3');
   }
 
   static void spreadShot(Offset mouse) {
@@ -203,6 +205,7 @@ class Weapon {
       Future.delayed(Duration(milliseconds: cooldown), () {
         canShoot = true;
       });
+      App.soundManager.playSoundNew('sounds/pew1.mp3');
     }
   }
 
@@ -255,6 +258,7 @@ class Weapon {
       Future.delayed(Duration(milliseconds: cooldown), () {
         canShoot = true;
       });
+      App.soundManager.playSoundNew('sounds/pew1.mp3');
     }
   }
 
