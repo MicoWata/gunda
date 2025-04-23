@@ -28,14 +28,15 @@ class SoundManager {
   
   // Play a specific sound
   Future<void> playSound(String soundName) async {
-    if (_players.containsKey(soundName)) {
-      // If sound is already playing, stop it and restart
-      final player = _players[soundName]!;
-      await player.stop();
+    final player = _players[soundName];
+    if (player != null) {
+      // Seek to the beginning and then play (resume effectively starts from the seek position)
+      // Using resume() after seek(Duration.zero) is a common pattern to restart.
+      await player.seek(Duration.zero);
       await player.resume();
     } else {
       // Handle sound not found
-      print('Sound $soundName not preloaded');
+      print('Sound $soundName not preloaded or failed to load.');
     }
   }
   
