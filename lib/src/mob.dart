@@ -647,8 +647,8 @@ class Mob {
           enemy.body.y = enemyY;
           enemy.body.xVelocity = Game.random.nextDouble() * 2 - 1;
           enemy.body.yVelocity = Game.random.nextDouble() * 2 - 1;
-          enemy.body.width = Mob.size.width * 0.8;
-          enemy.body.height = Mob.size.height * 0.8;
+          enemy.body.width = Player.body.width;
+          enemy.body.height = Player.body.height;
           enemy.body.color = color;
           enemy.body.mass = Mob.mass;
 
@@ -662,6 +662,19 @@ class Mob {
   }
 
   static Widget build(Enemy enemy, Camera camera) {
+    if (enemy.body.xVelocity > 0.01 ||
+        enemy.body.yVelocity > 0.01 ||
+        enemy.body.xVelocity < -0.01 ||
+        enemy.body.yVelocity < -0.01) {
+      enemy.animation = Animations.walk;
+    } else {
+      enemy.animation = Animations.idle;
+    }
+    if (enemy.body.xVelocity > 0.01) {
+      enemy.direction = Directions.right;
+    } else if (enemy.body.xVelocity < -0.01) {
+      enemy.direction = Directions.left;
+    }
     if (!enemy.dead) {
       return Positioned(
         left: enemy.body.x - camera.x,
@@ -669,36 +682,43 @@ class Mob {
         child: Container(
           width: enemy.body.width,
           height: enemy.body.height,
-          decoration: BoxDecoration(
-            color: enemy.body.color,
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 4,
-                offset: const Offset(2, 2),
-              ),
-            ],
-          ),
+          //decoration: BoxDecoration(
+          //  //color: enemy.body.color,
+          //  borderRadius: BorderRadius.circular(6),
+          //  boxShadow: [
+          //    BoxShadow(
+          //      color: Colors.black.withValues(alpha: 0.3),
+          //      blurRadius: 4,
+          //      offset: const Offset(2, 2),
+          //    ),
+          //  ],
+          //),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(
-                  'Enemy',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
-                ),
-                Text(
-                  enemy.hp.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
+                //Text(
+                //  'Enemy',
+                //  style: const TextStyle(
+                //    color: Colors.white,
+                //    fontWeight: FontWeight.bold,
+                //    fontSize: 10,
+                //  ),
+                //),
+                //Text(
+                //  enemy.hp.toString(),
+                //  style: const TextStyle(
+                //    color: Colors.white,
+                //    fontWeight: FontWeight.bold,
+                //    fontSize: 10,
+                //  ),
+                //),
+                CustomPaint(
+                  size: Size(
+                    Player.body.width,
+                    Player.body.height,
+                  ), // Use player body size
+                  painter: _MobPainter(enemy: enemy),
                 ),
               ],
             ),
@@ -726,6 +746,9 @@ class Enemy {
   bool canShoot = false;
   int cooldown = 2000;
   Ennemies kind = Ennemies.wild; // Default value
+
+  Animations animation = Animations.idle;
+  Directions direction = Directions.right;
 
   Enemy({
     required this.body,
@@ -792,4 +815,94 @@ class Enemy {
         ..dead = json['dead'] as bool
         ..canShoot = json['canShoot'] as bool
         ..cooldown = json['cooldown'] as int;
+}
+
+class _MobPainter extends CustomPainter {
+  Enemy enemy;
+
+  _MobPainter({required this.enemy});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    String image = 'zombie';
+
+    if (enemy.kind == Ennemies.wild) {
+      image = 'shooter';
+    } else if (enemy.kind == Ennemies.mad) {
+      image = 'demon';
+    }
+
+    final playerImage = AssetManager().getImage(
+      image,
+    ); // Get the preloaded image
+
+    if (playerImage != null) {
+      // Define the source rectangle (top-left 48x48 pixels)
+      double x = 12;
+      double y = 6;
+
+      if (enemy.animation == Animations.idle) {
+        y = 6;
+        if (Game.frame % 64 > 32) {
+          x = 3;
+        } else {
+          x = 15;
+        }
+      } else if (enemy.animation == Animations.walk) {
+        y = 30;
+        double xoffset = 3;
+        if (Game.frame % 64 < 8) {
+          x = 0 + xoffset;
+        } else if (Game.frame % 64 < 16) {
+          x = 12 + xoffset;
+        } else if (Game.frame % 64 < 24) {
+          x = 24 + xoffset;
+        } else if (Game.frame % 64 < 32) {
+          x = 36 + xoffset;
+        } else if (Game.frame % 64 < 40) {
+          x = 48 + xoffset;
+        } else if (Game.frame % 64 < 48) {
+          x = 60 + xoffset;
+        } else if (Game.frame % 64 < 56) {
+          x = 72 + xoffset;
+        } else {
+          x = 84 + xoffset;
+        }
+      }
+
+      final srcRect = Rect.fromLTWH(x, y, 12, 16);
+
+      double dx = 0;
+      if (enemy.direction == Directions.left) {
+        dx = -78;
+      }
+      // Define the destination rectangle (the full size of the CustomPaint area)
+      final dstRect = Rect.fromLTWH(dx, 0, size.width, size.height);
+      canvas.save();
+      canvas.scale(enemy.direction == Directions.right ? 1 : -1, 1);
+      // Draw the specified portion of the image onto the canvas
+      canvas.drawImageRect(
+        playerImage,
+        srcRect,
+        dstRect,
+        Paint()
+          ..filterQuality = FilterQuality.none, // Use nearest neighbor scaling
+      );
+      canvas.restore();
+    } else {
+      // Optional: Draw a placeholder if the image isn't loaded
+      final errorPaint = Paint()..color = Colors.red;
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), errorPaint);
+      // You might want to log an error here as well
+      //print("Error: Player image 'hero' not found in AssetManager.");
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // Repaint only if necessary (e.g., if the sprite frame changes)
+    // For a static sprite portion, returning false is efficient.
+    // If animation is added later, this condition will need to change.
+    return false;
+  }
 }

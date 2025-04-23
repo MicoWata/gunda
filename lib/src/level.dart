@@ -85,8 +85,8 @@ class Level {
                   Game.random.nextDouble() * 2 - 1, // Random initial velocity
               yVelocity:
                   Game.random.nextDouble() * 2 - 1, // Random initial velocity
-              width: Mob.size.width, // Slightly smaller than target
-              height: Mob.size.height, // Slightly smaller than target
+              width: Player.body.width, // Slightly smaller than target
+              height: Player.body.height, // Slightly smaller than target
               color: color,
               mass: Mob.mass, // Slightly lighter than target
             ),
