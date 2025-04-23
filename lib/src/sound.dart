@@ -6,8 +6,10 @@ class SoundManager {
   factory SoundManager() => _instance;
   SoundManager._internal();
 
-  // Map to keep track of preloaded sounds
+  // Map to keep track of preloaded short sounds
   final Map<String, AudioPlayer> _players = {};
+  // Player for looping background music/song
+  AudioPlayer? _songPlayer;
 
   // Preload sounds for efficient playback
   Future<void> preloadSounds() async {
@@ -40,7 +42,27 @@ class SoundManager {
     }
   }
 
-  // Play a sound with a unique instance (always plays, even if same sound)
+  // Play a long sound (song) in a loop
+  Future<void> playSong(String assetPath) async {
+    // Stop any existing song first
+    await stopSong();
+
+    _songPlayer = AudioPlayer();
+    // Configure player to loop
+    await _songPlayer!.setReleaseMode(ReleaseMode.loop);
+    await _songPlayer!.play(AssetSource(assetPath));
+  }
+
+  // Stop the currently playing song
+  Future<void> stopSong() async {
+    if (_songPlayer != null) {
+      await _songPlayer!.stop();
+      await _songPlayer!.dispose();
+      _songPlayer = null;
+    }
+  }
+
+  // Play a short sound with a unique instance (always plays, even if same sound)
   Future<void> playSoundNew(String assetPath) async {
     final player = AudioPlayer();
     await player.play(AssetSource(assetPath));
@@ -66,6 +88,7 @@ class SoundManager {
 
   // Dispose all players when app is closed
   void dispose() {
+    stopSong(); // Stop and dispose the song player
     for (final player in _players.values) {
       player.dispose();
     }
