@@ -111,23 +111,23 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     // Update weapon state (like slice animation)
     Weapon.update();
 
-    // Update player movement based on input
-    Player.updatePlayerMovement();
+    // Update weapon state (like slice animation) - might need to run even if paused for visuals
+    Weapon.update();
 
-    // Update position
-    setState(() {
-      if (Game.paused) return;
+    // Only update game logic if not paused
+    if (!Game.paused) {
+      // Handle game state updates (like slow motion timer)
+      Game.update();
+
+      // Update player movement based on input
+      Player.updatePlayerMovement();
 
       // Update positions and handle collisions
       Engine.updatePlayerPhysics();
 
-      // Make sure camera follows player (this is the most important part)
-      // This must happen after player update and before we render the frame
+      // Make sure camera follows player
       Game.camera.follow(Player.body);
 
-      //_updateTargetPhysics();
-      //_updateTargetAI();
-      //
       // Update enemy positions and behaviors
       Mob.update();
 
@@ -135,14 +135,23 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
       _updateProjectiles(Size(Game.gameWidth, Game.gameHeight));
       _updateParticles();
 
+      // Update drops
       Drop.update();
-      //Level.drops.map((drop) => drop.pick());
+
       // Handle collisions
       Engine.checkCollisions(Size(Game.gameWidth, Game.gameHeight));
+    }
+
+    // Always call setState to trigger UI rebuilds,
+    // ensuring changes like toggling pause are reflected.
+    setState(() {
+      // Game logic updates are now handled conditionally above.
+      // This call ensures the UI rebuilds based on the current state.
     });
   }
 
   void _updateProjectiles(Size screenSize) {
+
     for (int i = Level.projectiles.length - 1; i >= 0; i--) {
       Projectile projectile = Level.projectiles[i];
 
