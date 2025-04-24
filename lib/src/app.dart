@@ -25,6 +25,7 @@ class App extends StatefulWidget {
   static late BuildContext appContext;
   static bool home = true;
   static final SoundManager soundManager = SoundManager();
+  static bool reset = false;
 
   const App({super.key});
 
@@ -102,56 +103,52 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   }
 
   void _updatePosition() {
-    // Don't update if game is over
-    if (Game.over) return;
-
-    // Handle game state updates (like slow motion timer)
-    Game.update();
-
-    // Update weapon state (like slice animation)
-    Weapon.update();
-
-    // Update weapon state (like slice animation) - might need to run even if paused for visuals
-    Weapon.update();
-
-    // Only update game logic if not paused
-    if (!Game.paused) {
-      // Handle game state updates (like slow motion timer)
-      Game.update();
-
-      // Update player movement based on input
-      Player.updatePlayerMovement();
-
-      // Update positions and handle collisions
-      Engine.updatePlayerPhysics();
-
-      // Make sure camera follows player
-      Game.camera.follow(Player.body);
-
-      // Update enemy positions and behaviors
-      Mob.update();
-
-      // Update projectiles and particles
-      _updateProjectiles(Size(Game.gameWidth, Game.gameHeight));
-      _updateParticles();
-
-      // Update drops
-      Drop.update();
-
-      // Handle collisions
-      Engine.checkCollisions(Size(Game.gameWidth, Game.gameHeight));
-    }
-
-    // Always call setState to trigger UI rebuilds,
-    // ensuring changes like toggling pause are reflected.
     setState(() {
+      if (App.reset) {
+        Game.reset();
+        App.home = true;
+        App.reset = false;
+      }
+      if (Game.over) return;
+
+      Game.update();
+      Weapon.update();
+
+      if (!Game.paused) {
+        // Handle game state updates (like slow motion timer)
+        //Game.update();
+
+        // Update player movement based on input
+        Player.updatePlayerMovement();
+
+        // Update positions and handle collisions
+        Engine.updatePlayerPhysics();
+
+        // Make sure camera follows player
+        Game.camera.follow(Player.body);
+
+        // Update enemy positions and behaviors
+        Mob.update();
+
+        // Update projectiles and particles
+        _updateProjectiles(Size(Game.gameWidth, Game.gameHeight));
+        _updateParticles();
+
+        // Update drops
+        Drop.update();
+
+        // Handle collisions
+        Engine.checkCollisions(Size(Game.gameWidth, Game.gameHeight));
+      }
+
+      // Always call setState to trigger UI rebuilds,
+      // ensuring changes like toggling pause are reflected.
       // Game logic updates are now handled conditionally above.
       // This call ensures the UI rebuilds based on the current state.
     });
   }
 
   void _updateProjectiles(Size screenSize) {
-
     for (int i = Level.projectiles.length - 1; i >= 0; i--) {
       Projectile projectile = Level.projectiles[i];
 
@@ -246,6 +243,10 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                     ) // Show loading indicator
                     : App.home
                     ? Home.build() // Show home screen if App.home is true
+                    : Game.paused
+                    ? Pause()
+                    : Game.over
+                    ? Menu()
                     : Container(
                       // Show game container if not loading and not home
                       key: _gameAreaKey,
@@ -306,8 +307,8 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                             Game.effect.showSlowMotion,
                           ),
                           // Game over overlay
-                          if (Game.paused) Pause(),
-                          if (Game.over) Menu.buildGameOverOverlay(),
+                          //if (Game.paused) Pause(),
+                          //if (Game.over) Menu.buildGameOverOverlay(),
                           //if (Level.remaining == 0) Game.buildGameOverOverlay(),
                           DirtyPixel(),
                         ],

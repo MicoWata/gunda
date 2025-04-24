@@ -17,6 +17,7 @@ class Game {
   static bool over = false;
   static bool next = false;
   static bool start = true;
+  static bool playSong = false;
   static int score = 0;
   static const double gameWidth = 2400;
   static const double gameHeight = 2400;
@@ -28,6 +29,7 @@ class Game {
     //isGameOver = false;
     //lives = Player.maxHearts;
     Player.lives = 3;
+    Weapon.kind = Weapons.shotgun;
 
     //Level.projectiles.clear();
     //Level.impactParticles.clear();
@@ -36,9 +38,9 @@ class Game {
     Weapon.power = Weapon.minPower;
     Weapon.isChargingShot = false;
 
-    // Initialize player at center of game world
     //App.home = true;
 
+    Game.paused = true;
     Game.over = false;
     Game.score = 0;
 
@@ -102,47 +104,5 @@ class Game {
         Game.effect.showSlowMotion = false;
       }
     }
-  }
-
-  static Widget buildGameOverOverlay() {
-    return Container(
-      color: Colors.black.withValues(alpha: 0.7),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              Level.remaining > 0 ? 'GAME OVER' : 'VICTORY',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            //Text(
-            //  'Final Score: ${Game.score}',
-            //  style: const TextStyle(color: Colors.white, fontSize: 24),
-            //),
-            const SizedBox(height: 30),
-            Text(
-              Level.remaining > 0
-                  ? 'ENTER TO RESTART'
-                  : Player.lives > 0
-                  ? Game.level < Level.zones.length - 1
-                      ? 'ENTER NEXT LEVEL'
-                      : 'ENTER TO RESTART'
-                  : 'ENTER TO RESTART',
-              //: 'ENTER NEXT LEVEL',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

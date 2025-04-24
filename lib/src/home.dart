@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/save.dart';
@@ -33,6 +34,18 @@ class Home {
     );
   }
 
+  static Widget close() {
+    return ElevatedButton(
+      onPressed: () {
+        SystemNavigator.pop();
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      ),
+      child: const Text('Exit', style: TextStyle(fontSize: 20)),
+    );
+  }
+
   static Widget build() {
     return Container(
       color: Colors.teal,
@@ -50,8 +63,10 @@ class Home {
             ),
             const SizedBox(height: 50),
             start(),
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
             load(),
+            const SizedBox(height: 40),
+            close(),
           ],
         ),
       ),
