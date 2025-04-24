@@ -22,7 +22,7 @@ import 'package:gunda/src/weapon.dart';
 
 class App extends StatefulWidget {
   static late BuildContext appContext;
-  static bool home = false;
+  static bool home = true;
   static final SoundManager soundManager = SoundManager();
 
   const App({super.key});
