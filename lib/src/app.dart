@@ -10,6 +10,7 @@ import 'package:gunda/src/engine.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/home.dart';
 import 'package:gunda/src/level.dart';
+import 'package:gunda/src/menu.dart';
 import 'package:gunda/src/minimap.dart';
 import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/obstacle.dart';
@@ -87,7 +88,9 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     )..addListener(_updatePosition);
 
     Game.animationController.repeat();
-    App.soundManager.playSong('music/song2.wav');
+    if (Game.playSong) {
+      App.soundManager.playSong('music/song2.wav');
+    }
   }
 
   @override
@@ -294,8 +297,8 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                             Game.effect.showSlowMotion,
                           ),
                           // Game over overlay
-                          if (Game.paused) Pause.buildGameOverOverlay(),
-                          if (Game.over) Game.buildGameOverOverlay(),
+                          if (Game.paused) Pause(),
+                          if (Game.over) Menu.buildGameOverOverlay(),
                           //if (Level.remaining == 0) Game.buildGameOverOverlay(),
                           DirtyPixel(),
                         ],
