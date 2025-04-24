@@ -1,8 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/game.dart';
 
-class Pause {
-  static Widget buildGameOverOverlay() {
+class Pause extends StatefulWidget {
+  const Pause({Key? key}) : super(key: key);
+
+  @override
+  State<Pause> createState() => _PauseState();
+}
+
+class _PauseState extends State<Pause> {
+  Widget keepup() {
+    return ElevatedButton(
+      onPressed: () {
+        // Update state and trigger rebuild
+        setState(() {
+          Game.paused = false;
+        });
+        App.snack('HE');
+      },
+      style: ButtonStyle(
+        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+          const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        ),
+      ),
+      child: const Text('Continue', style: TextStyle(fontSize: 20)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Game.paused
         ? Center(
           child: Column(
@@ -17,18 +44,7 @@ class Pause {
                 ),
               ),
               const SizedBox(height: 50),
-              ElevatedButton(
-                onPressed: () {
-                  Game.paused = false;
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 15,
-                  ),
-                ),
-                child: const Text('Continue', style: TextStyle(fontSize: 20)),
-              ),
+              keepup(),
             ],
           ),
         )
