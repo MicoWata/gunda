@@ -49,8 +49,12 @@ class Camera {
     y = newY;
   }
 
+  /// Adjusts the camera to view the entire game map.
   void zoomOut() {
-    // let's write a zoomOut function AI!
+    x = 0;
+    y = 0;
+    viewportWidth = Game.gameWidth;
+    viewportHeight = Game.gameHeight;
   }
 
   /// Check if a world rectangle is visible in the viewport
