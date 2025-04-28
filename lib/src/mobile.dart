@@ -109,22 +109,41 @@ class Mobile {
     );
   }
 
-  // let's improve the action buttons appearance so they look more retro gaming physical buttons AI!
+  // Builds an action button with a retro physical appearance.
   static Widget action(IconData icon, Actions action, double size) {
+    // Define the visual size of the button itself
+    final double buttonSize = size * 0.7;
+
     return GestureDetector(
-      onTapDown:
-          (_) => switch (action) {
-            Actions.dash => Player.dash(),
-            Actions.weapon => Player.changeWeapon(),
-            Actions.pause => Game.paused = true,
-          },
-      //onTapUp: (_) => pressedDirections.remove(direction),
-      //onTapCancel: () => pressedDirections.remove(direction),
+      onTapDown: (_) => switch (action) {
+        Actions.dash => Player.dash(),
+        Actions.weapon => Player.changeWeapon(),
+        Actions.pause => Game.paused = true,
+      },
       child: Container(
-        width: size * 0.7,
-        height: size * 0.7,
-        color: Colors.purple, // Button background
-        child: Icon(icon, color: Colors.white, size: size * 0.5),
+        width: buttonSize,
+        height: buttonSize,
+        decoration: BoxDecoration(
+          color: Colors.deepPurple, // A slightly richer color
+          borderRadius: BorderRadius.circular(buttonSize * 0.2), // Rounded corners
+          border: Border.all(
+            color: Colors.black.withOpacity(0.7), // Darker border
+            width: 2.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 2,
+              offset: const Offset(2, 2), // Shadow for a raised effect
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white.withOpacity(0.9), // Slightly muted white icon
+          size: buttonSize * 0.6, // Adjust icon size relative to button
+        ),
       ),
     );
   }
