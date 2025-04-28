@@ -16,7 +16,7 @@ import 'package:gunda/src/spriteanimation.dart';
 
 enum Animations { idle, walk, dead }
 
-enum Directions { left, right }
+enum Directions { left, right, up, down }
 
 class Player {
   static const double width = 80;
@@ -32,7 +32,7 @@ class Player {
   static const double friction = 0.9;
   static const double minMovementThreshold = 0.1;
 
-  static final Set<LogicalKeyboardKey> _pressedKeys = {};
+  static final Set<LogicalKeyboardKey> pressedKeys = {};
 
   static Offset mousePosition = Offset.zero;
   static Offset worldMousePosition = Offset.zero;
@@ -199,7 +199,7 @@ class Player {
 
   static void handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent) {
-      _pressedKeys.add(event.logicalKey);
+      pressedKeys.add(event.logicalKey);
 
       if (event.logicalKey == LogicalKeyboardKey.space) {
         dash();
@@ -228,22 +228,62 @@ class Player {
       //  Weapon.releaseShot(worldMousePosition);
       //}
 
-      _pressedKeys.remove(event.logicalKey);
+      pressedKeys.remove(event.logicalKey);
     }
   }
 
   static void updatePlayerMovement() {
     // Apply acceleration based on pressed keys
-    if (_pressedKeys.contains(LogicalKeyboardKey.keyW)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyW)) {
       Player.body.yVelocity -= acceleration;
     }
-    if (_pressedKeys.contains(LogicalKeyboardKey.keyS)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyS)) {
       Player.body.yVelocity += acceleration;
     }
-    if (_pressedKeys.contains(LogicalKeyboardKey.keyA)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyA)) {
       Player.body.xVelocity -= acceleration;
     }
-    if (_pressedKeys.contains(LogicalKeyboardKey.keyD)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyD)) {
+      Player.body.xVelocity += acceleration;
+    }
+
+    // Apply friction to player
+    Player.body.xVelocity *= friction;
+    Player.body.yVelocity *= friction;
+
+    // Limit player speed
+    final currentSpeed = sqrt(
+      Player.body.xVelocity * Player.body.xVelocity +
+          Player.body.yVelocity * Player.body.yVelocity,
+    );
+
+    if (currentSpeed > maxSpeed) {
+      final ratio = maxSpeed / currentSpeed;
+      Player.body.xVelocity *= ratio;
+      Player.body.yVelocity *= ratio;
+    }
+
+    // Stop very small movements
+    if (Player.body.xVelocity.abs() < minMovementThreshold) {
+      Player.body.xVelocity = 0;
+    }
+    if (Player.body.yVelocity.abs() < minMovementThreshold) {
+      Player.body.yVelocity = 0;
+    }
+  }
+
+  static void moveMobile(Directions direction) {
+    // Apply acceleration based on pressed keys
+    if (direction == Directions.up) {
+      Player.body.yVelocity -= acceleration;
+    }
+    if (direction == Directions.down) {
+      Player.body.yVelocity += acceleration;
+    }
+    if (direction == Directions.left) {
+      Player.body.xVelocity -= acceleration;
+    }
+    if (direction == Directions.right) {
       Player.body.xVelocity += acceleration;
     }
 

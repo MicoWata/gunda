@@ -20,49 +20,70 @@ class Mobile {
   static Widget left(double width) {
     // Add buttons for player movement
     const double buttonSize = 50.0;
-    const double moveImpulse = Player.acceleration * 15; // Adjust impulse strength as needed
+    const double moveImpulse =
+        Player.acceleration * 15; // Adjust impulse strength as needed
 
     return SizedBox(
       width: width,
       height: Game.camera.viewportHeight,
       child: Container(
-        color: Colors.blueGrey.withOpacity(0.5), // Make it semi-transparent
+        color: Colors.blueGrey, // Make it semi-transparent
         child: Center(
           child: SizedBox(
-            width: buttonSize * 3,
-            height: buttonSize * 3,
+            //width: buttonSize * 3,
+            //height: buttonSize * 3,
             child: GridView.count(
               crossAxisCount: 3,
-              shrinkWrap: true, // Important to prevent GridView from expanding infinitely
-              physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+              shrinkWrap:
+                  true, // Important to prevent GridView from expanding infinitely
+              physics:
+                  const NeverScrollableScrollPhysics(), // Disable scrolling
               children: [
                 Container(), // Top-left empty
-                IconButton(
-                  icon: const Icon(Icons.arrow_upward),
-                  iconSize: buttonSize * 0.8,
-                  color: Colors.white,
-                  onPressed: () => Player.body.yVelocity -= moveImpulse,
+                Container(
+                  color: Colors.purple,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_upward),
+
+                    highlightColor: Colors.blue,
+                    //hoverColor: Colors.blueAccent,
+                    //iconSize: buttonSize,
+                    color: Colors.white,
+                    onPressed: () => Player.moveMobile(Directions.up),
+                  ),
                 ),
                 Container(), // Top-right empty
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  iconSize: buttonSize * 0.8,
-                  color: Colors.white,
-                  onPressed: () => Player.body.xVelocity -= moveImpulse,
+                Container(
+                  color: Colors.purple,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    highlightColor: Colors.blue,
+                    //iconSize: buttonSize * 0.8,
+                    color: Colors.white,
+                    onPressed: () => Player.moveMobile(Directions.left),
+                  ),
                 ),
                 Container(), // Middle empty (or maybe a dash button later?)
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  iconSize: buttonSize * 0.8,
-                  color: Colors.white,
-                  onPressed: () => Player.body.xVelocity += moveImpulse,
+                Container(
+                  color: Colors.purple,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    highlightColor: Colors.blue,
+                    //iconSize: buttonSize * 0.8,
+                    color: Colors.white,
+                    onPressed: () => Player.moveMobile(Directions.right),
+                  ),
                 ),
                 Container(), // Bottom-left empty
-                IconButton(
-                  icon: const Icon(Icons.arrow_downward),
-                  iconSize: buttonSize * 0.8,
-                  color: Colors.white,
-                  onPressed: () => Player.body.yVelocity += moveImpulse,
+                Container(
+                  color: Colors.purple,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_downward),
+                    //iconSize: buttonSize * 0.8,
+                    color: Colors.white,
+                    highlightColor: Colors.blue,
+                    onPressed: () => Player.moveMobile(Directions.down),
+                  ),
                 ),
                 Container(), // Bottom-right empty
               ],
@@ -132,7 +153,10 @@ class Mobile {
 
     return Container(
       color: Colors.purple,
-      child: Row(children: [left(width), middle(child), right(width)]),
+      child:
+          App.mobile
+              ? Row(children: [left(width), middle(child), right(width)])
+              : child,
     );
   }
 }
