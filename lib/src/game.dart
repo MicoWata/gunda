@@ -29,7 +29,7 @@ class Game {
     //isGameOver = false;
     //lives = Player.maxHearts;
     Player.lives = 3;
-    Weapon.kind = Weapons.shotgun;
+    Weapon.kind = Weapons.bazooka;
 
     //Level.projectiles.clear();
     //Level.impactParticles.clear();

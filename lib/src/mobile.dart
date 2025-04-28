@@ -1,16 +1,15 @@
 import 'dart:io' show Platform;
 
-import 'dart:io' show Platform;
-
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/player.dart'; // Import Player
 
+enum Actions { dash, weapon, pause }
+
 class Mobile {
   // Set to track currently pressed mobile direction buttons
-  static final Set<Directions> _pressedDirections = {};
+  static final Set<Directions> pressedDirections = {};
 
   double screenWidth = 0;
   double screenHeight = 0;
@@ -31,52 +30,76 @@ class Mobile {
       child: Container(
         color: Colors.blueGrey, // Make it semi-transparent
         child: Center(
-          child: SizedBox(
-            //width: buttonSize * 3,
-            //height: buttonSize * 3,
-            child: GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap:
-                  true, // Important to prevent GridView from expanding infinitely
-              physics:
-                  const NeverScrollableScrollPhysics(), // Disable scrolling
-              children: [
-                Container(), // Top-left empty
-                _buildMoveButton(Icons.arrow_upward, Directions.up, buttonVisualSize),
-                Container(), // Top-right empty
-                _buildMoveButton(Icons.arrow_back, Directions.left, buttonVisualSize),
-                Container(), // Middle empty
-                _buildMoveButton(Icons.arrow_forward, Directions.right, buttonVisualSize),
-                Container(), // Bottom-left empty
-                _buildMoveButton(Icons.arrow_downward, Directions.down, buttonVisualSize),
-                Container(), // Bottom-right empty
-              ],
-            ),
+          child: Row(
+            children: [
+              SizedBox(width: width * 0.25),
+              SizedBox(
+                width: width * 0.7,
+                //height: buttonSize * 3,
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  shrinkWrap:
+                      true, // Important to prevent GridView from expanding infinitely
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Disable scrolling
+                  children: [
+                    Container(), // Top-left empty
+                    _buildMoveButton(
+                      Icons.arrow_upward,
+                      Directions.up,
+                      buttonVisualSize,
+                    ),
+                    Container(), // Top-right empty
+                    _buildMoveButton(
+                      Icons.arrow_back,
+                      Directions.left,
+                      buttonVisualSize,
+                    ),
+                    Container(), // Middle empty
+                    _buildMoveButton(
+                      Icons.arrow_forward,
+                      Directions.right,
+                      buttonVisualSize,
+                    ),
+                    Container(), // Bottom-left empty
+                    _buildMoveButton(
+                      Icons.arrow_downward,
+                      Directions.down,
+                      buttonVisualSize,
+                    ),
+                    Container(), // Bottom-right empty
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
+  static void tap(Directions direction) {
+    pressedDirections.add(direction);
+  }
+
   // Helper widget to build a movement button with GestureDetector
-  static Widget _buildMoveButton(IconData icon, Directions direction, double size) {
+  static Widget _buildMoveButton(
+    IconData icon,
+    Directions direction,
+    double size,
+  ) {
     return GestureDetector(
-      onTapDown: (_) => _pressedDirections.add(direction),
-      onTapUp: (_) => _pressedDirections.remove(direction),
-      onTapCancel: () => _pressedDirections.remove(direction),
+      onTapDown: (_) => tap(direction),
+      onTapUp: (_) => pressedDirections.remove(direction),
+      onTapCancel: () => pressedDirections.remove(direction),
       child: Container(
         width: size,
         height: size,
-        color: Colors.purple.withOpacity(0.7), // Button background
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: size * 0.7,
-        ),
+        color: Colors.purple, // Button background
+        child: Icon(icon, color: Colors.white, size: size * 0.7),
       ),
     );
   }
-
 
   static Widget middle(Widget child) {
     return SizedBox(
@@ -86,11 +109,49 @@ class Mobile {
     );
   }
 
+  static Widget action(IconData icon, Actions action) {
+    double size = 85;
+
+    return GestureDetector(
+      onTapDown:
+          (_) => switch (action) {
+            Actions.dash => Player.dash(),
+            Actions.weapon => Player.changeWeapon(),
+            Actions.pause => Game.paused = true,
+          },
+      //onTapUp: (_) => pressedDirections.remove(direction),
+      //onTapCancel: () => pressedDirections.remove(direction),
+      child: Container(
+        width: size,
+        height: size,
+        color: Colors.purple, // Button background
+        child: Icon(icon, color: Colors.white, size: size * 0.7),
+      ),
+    );
+  }
+
   static Widget right(double width) {
     return SizedBox(
       width: width,
       height: Game.camera.viewportHeight,
-      child: Container(color: Colors.blueGrey),
+      child: Container(
+        color: Colors.blueGrey,
+        child: Row(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                action(Icons.change_circle, Actions.weapon),
+                SizedBox(height: 20, width: width * 0.9),
+                action(Icons.directions_run, Actions.dash),
+                SizedBox(height: 20),
+                action(Icons.pause, Actions.pause),
+              ],
+            ),
+            //SizedBox(width: width * 0.1),
+          ],
+        ),
+      ),
     );
   }
 
@@ -139,7 +200,13 @@ class Mobile {
       color: Colors.purple,
       child:
           App.mobile
-              ? Row(children: [left(width), middle(child), right(width)])
+              ? Row(
+                children: [
+                  left(width * 1.5),
+                  middle(child),
+                  right(width * 0.5),
+                ],
+              )
               : child,
     );
   }

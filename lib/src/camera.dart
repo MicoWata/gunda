@@ -10,13 +10,9 @@ class Camera {
   /// The y position of the camera in the game world
   double y = 0;
 
-  /// The width of the camera viewport
   double viewportWidth;
-
-  /// The height of the camera viewport
   double viewportHeight;
 
-  /// How quickly the camera follows the target (1.0 = instant)
   double followSpeed = 0.15; // Balanced for larger map
 
   /// Constructor for camera

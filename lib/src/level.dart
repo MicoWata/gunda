@@ -36,6 +36,8 @@ class Level {
   static int allMob = 0;
   static int remaining = allMob;
   static int benching = allMob - maxMob;
+  static int rows = 0;
+  static int columns = 0;
 
   static List<Zone> zones = [
     Zone('assets/levels/level0.txt', 2),
@@ -255,27 +257,10 @@ class TileMap {
         rows
             .map((row) => row.trim().split(' ').map(int.parse).toList())
             .toList();
-  }
 
-  //static Point<int> getTilePosition(double screenX, double screenY) {
-  //  return Point<int>(
-  //    (screenX ~/ TileMap.tileSize),
-  //    (screenY ~/ TileMap.tileSize),
-  //  );
-  //}
-  //
-  //static Point<double> getScreenPosition(int tileX, int tileY) {
-  //  return Point<double>(tileX * TileMap.tileSize, tileY * TileMap.tileSize);
-  //}
-  //
-  //static bool isValidTile(int x, int y) {
-  //  return y >= 0 && y < map.length && x >= 0 && x < map[0].length;
-  //}
-  //
-  //static int getTileType(int x, int y) {
-  //  if (!isValidTile(x, y)) return -1;
-  //  return map[y][x];
-  //}
+    Level.rows = map.length;
+    Level.columns = map[0].length;
+  }
 }
 
 class GridPainter extends CustomPainter {

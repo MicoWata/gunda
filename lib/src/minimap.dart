@@ -168,21 +168,21 @@ class _MinimapPainter extends CustomPainter {
     );
 
     // Draw viewport rectangle (camera view)
-    final viewportPaint =
-        Paint()
-          ..color = Colors.white.withValues(alpha: 0.5)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1;
-
-    canvas.drawRect(
-      Rect.fromLTWH(
-        cameraX * scaleX,
-        cameraY * scaleY,
-        viewportWidth * scaleX,
-        viewportHeight * scaleY,
-      ),
-      viewportPaint,
-    );
+    //final viewportPaint =
+    //    Paint()
+    //      ..color = Colors.white.withValues(alpha: 0.5)
+    //      ..style = PaintingStyle.stroke
+    //      ..strokeWidth = 1;
+    //
+    //canvas.drawRect(
+    //  Rect.fromLTWH(
+    //    cameraX * scaleX,
+    //    cameraY * scaleY,
+    //    viewportWidth * scaleX,
+    //    viewportHeight * scaleY,
+    //  ),
+    //  viewportPaint,
+    //);
 
     // Draw player position
     final playerPaint =

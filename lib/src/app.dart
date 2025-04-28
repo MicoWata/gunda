@@ -13,6 +13,7 @@ import 'package:gunda/src/level.dart';
 import 'package:gunda/src/menu.dart';
 import 'package:gunda/src/minimap.dart';
 import 'package:gunda/src/mob.dart';
+import 'package:gunda/src/mobile.dart';
 import 'package:gunda/src/obstacle.dart';
 import 'package:gunda/src/panel.dart';
 import 'package:gunda/src/pause.dart';
@@ -26,6 +27,7 @@ class App extends StatefulWidget {
   static bool home = true;
   static final SoundManager soundManager = SoundManager();
   static bool reset = false;
+  static bool mobile = false;
 
   const App({super.key});
 
@@ -89,9 +91,12 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     )..addListener(_updatePosition);
 
     Game.animationController.repeat();
+
     if (Game.playSong) {
       App.soundManager.playSong('music/song2.wav');
     }
+
+    Mobile.start();
   }
 
   @override
@@ -205,13 +210,20 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     App.appContext = context;
 
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final screenHeight = MediaQuery.sizeOf(context).height;
+    var screenWidth = MediaQuery.sizeOf(context).width;
+    var screenHeight = MediaQuery.sizeOf(context).height;
 
-    Game.camera.viewportWidth = screenWidth;
-    Game.camera.viewportHeight = screenHeight;
+    if (!App.mobile) {
+      Game.camera.viewportWidth = screenWidth;
+      Game.camera.viewportHeight = screenHeight;
 
-    Level.size = Size(screenWidth, screenHeight);
+      Level.size = Size(screenWidth, screenHeight);
+    } else {
+      screenWidth = screenHeight;
+      Game.camera.viewportWidth = screenWidth;
+      Game.camera.viewportHeight = screenHeight;
+      Level.size = Size(screenWidth, screenHeight);
+    }
 
     return Scaffold(
       body: Focus(
@@ -222,101 +234,121 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         },
         child: MouseRegion(
           onHover: Player.updateMousePosition,
-          child: GestureDetector(
-            onTapDown: (details) {
-              //var position = details.globalPosition;
-              _mouseDown();
-              //print(position.dx);
-              //print(position.dy);
-            },
-            onTapUp: (details) {
-              //var position = details.globalPosition;
-              _mouseUp();
-              //print(position.dx);
-              //print(position.dy);
-            },
+          child: Mobile.build(
+            context,
+            //Center(
+            //child: SizedBox(
+            //width: screenWidth,
+            //height: screenHeight,
+            //child:
+            GestureDetector(
+              //onTapDown: (TapDownDetails details) {
+              //  // This gives you the position relative to the screen
+              //  Offset tapPosition = details.globalPosition;
+              //
+              //  print('Tap detected at: ${tapPosition.dx}, ${tapPosition.dy}');
+              //},
+              onTapDown: (details) {
+                Player.tapDirection = details.localPosition;
+                if (App.mobile) {
+                  Player.tapPosition(Player.tapDirection);
+                }
+                Player.click();
+                //print(position.dx);
+                //print(position.dy);
+              },
+              onTapUp: (details) {
+                //var position = details.globalPosition;
+                _mouseUp();
+                //print(position.dx);
+                //print(position.dy);
+              },
 
-            child:
-                _isLoading // Check loading state
-                    ? const Center(
-                      child: CircularProgressIndicator(),
-                    ) // Show loading indicator
-                    : App.home
-                    ? Home.build() // Show home screen if App.home is true
-                    : Game.paused
-                    ? Pause()
-                    : Game.over
-                    ? Menu()
-                    : Container(
-                      // Show game container if not loading and not home
-                      key: _gameAreaKey,
-                      color:
-                          Game.effect.showSlowMotion
-                              ? Colors
-                                  .blueGrey[800] // Darker background for slow motion
-                              : Colors.brown, // Normal background
-                      child: Stack(
-                        children: [
-                          ...Level.drops.map(
-                            (drop) => Drop.build(drop, Game.camera),
-                          ),
-                          ...(Level.impactParticles.isNotEmpty
-                              ? [
-                                Effect.particles(
-                                  screenWidth,
-                                  screenHeight,
-                                  Game.camera,
-                                ),
-                              ]
-                              : []),
-                          ...(Level.projectiles.isNotEmpty
-                              ? [
-                                Ball.buildCombinedTrails(
-                                  screenWidth,
-                                  screenHeight,
-                                  Game.camera,
-                                ),
-                              ]
-                              : []),
-                          ...Level.projectiles.map(
-                            (projectile) =>
-                                Ball.buildBall(projectile, Game.camera),
-                          ),
-                          ...Level.enemies.map(
-                            (enemy) => Mob.build(enemy, Game.camera),
-                          ),
-                          ...Level.obstacles.map(
-                            (obstacle) => Obstacle.build(obstacle, Game.camera),
-                          ),
-                          Player.build(Game.camera),
-                          Weapon.build(
-                            screenWidth,
-                            screenHeight,
-                            Player.mousePosition,
-                            Game.camera,
-                          ),
-                          Panel.build(),
-                          if (Game.effect.showSlowMotion)
-                            Container(
-                              width: screenWidth,
-                              height: screenHeight,
-                              color: Colors.blue.withAlpha(25),
+              child:
+                  _isLoading // Check loading state
+                      ? const Center(
+                        child: CircularProgressIndicator(),
+                      ) // Show loading indicator
+                      : App.home
+                      ? Home.build() // Show home screen if App.home is true
+                      : Game.paused
+                      ? Pause()
+                      : Game.over
+                      ? Menu()
+                      : Container(
+                        // Show game container if not loading and not home
+                        key: _gameAreaKey,
+                        color:
+                            Game.effect.showSlowMotion
+                                ? Colors
+                                    .blueGrey[800] // Darker background for slow motion
+                                : Colors.brown, // Normal background
+                        child: Stack(
+                          children: [
+                            ...Level.drops.map(
+                              (drop) => Drop.build(drop, Game.camera),
                             ),
-                          Minimap.build(
-                            Game.camera,
-                            Game.effect.showSlowMotion,
-                          ),
-                          // Game over overlay
-                          //if (Game.paused) Pause(),
-                          //if (Game.over) Menu.buildGameOverOverlay(),
-                          //if (Level.remaining == 0) Game.buildGameOverOverlay(),
-                          DirtyPixel(),
-                        ],
+                            ...(Level.impactParticles.isNotEmpty
+                                ? [
+                                  Effect.particles(
+                                    screenWidth,
+                                    screenHeight,
+                                    Game.camera,
+                                  ),
+                                ]
+                                : []),
+                            ...(Level.projectiles.isNotEmpty
+                                ? [
+                                  Ball.buildCombinedTrails(
+                                    screenWidth,
+                                    screenHeight,
+                                    Game.camera,
+                                  ),
+                                ]
+                                : []),
+                            ...Level.projectiles.map(
+                              (projectile) =>
+                                  Ball.buildBall(projectile, Game.camera),
+                            ),
+                            ...Level.enemies.map(
+                              (enemy) => Mob.build(enemy, Game.camera),
+                            ),
+                            ...Level.obstacles.map(
+                              (obstacle) =>
+                                  Obstacle.build(obstacle, Game.camera),
+                            ),
+                            Player.build(Game.camera),
+                            Weapon.build(
+                              screenWidth,
+                              screenHeight,
+                              Player.mousePosition,
+                              Game.camera,
+                            ),
+                            Panel.build(),
+                            if (Game.effect.showSlowMotion)
+                              Container(
+                                width: screenWidth,
+                                height: screenHeight,
+                                color: Colors.blue.withAlpha(25),
+                              ),
+                            Minimap.build(
+                              Game.camera,
+                              Game.effect.showSlowMotion,
+                            ),
+                            // Game over overlay
+                            //if (Game.paused) Pause(),
+                            //if (Game.over) Menu.buildGameOverOverlay(),
+                            //if (Level.remaining == 0) Game.buildGameOverOverlay(),
+                            DirtyPixel(),
+                          ],
+                        ),
                       ),
-                    ),
+            ),
           ),
         ),
       ),
+      //  ),
+      //),
     );
   }
 }

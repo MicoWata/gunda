@@ -44,6 +44,7 @@ class Player {
   static Animations animation = Animations.idle;
   static Directions direction = Directions.right;
 
+  static Offset tapDirection = Offset.zero;
   // Future<void> load() async {
   //   final frames = await AssetManager().loadPlayerIdle();
   //   if (frames == null) {
@@ -64,14 +65,24 @@ class Player {
 
   static void updateMousePosition(PointerEvent event) {
     //setState(() {
-    Player.mousePosition = event.position;
+    if (!App.mobile) {
+      Player.mousePosition = event.position;
 
-    // Convert screen coordinates to world coordinates by adding camera position
-    Player.worldMousePosition = Offset(
-      Game.camera.x + event.position.dx,
-      Game.camera.y + event.position.dy,
-    );
+      Player.worldMousePosition = Offset(
+        Game.camera.x + event.position.dx,
+        Game.camera.y + event.position.dy,
+      );
+    } else {}
     //});
+  }
+
+  static void tapPosition(Offset position) {
+    Player.mousePosition = Player.tapDirection;
+
+    Player.worldMousePosition = Offset(
+      Game.camera.x + Player.mousePosition.dx,
+      Game.camera.y + Player.mousePosition.dy,
+    );
   }
 
   static void kill() {
@@ -164,10 +175,6 @@ class Player {
   }
 
   static Future<void> shoot() async {
-    //await Sound.player.play(AssetSource('sounds/shoot.wav'));
-
-    //App.soundManager.playSoundNew('sounds/pew1.mp3');
-
     if (!Game.over && !Game.paused) {
       if (Weapon.kind == Weapons.pistol && !Weapon.isChargingShot) {
         Weapon.startChargingShot();
@@ -235,25 +242,35 @@ class Player {
 
   static void updatePlayerMovement() {
     // Apply acceleration based on pressed keys OR mobile buttons
-    if (pressedKeys.contains(LogicalKeyboardKey.keyW) || Mobile._pressedDirections.contains(Directions.up)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyW) ||
+        Mobile.pressedDirections.contains(Directions.up)) {
       Player.body.yVelocity -= acceleration;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.keyS) || Mobile._pressedDirections.contains(Directions.down)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyS) ||
+        Mobile.pressedDirections.contains(Directions.down)) {
       Player.body.yVelocity += acceleration;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.keyA) || Mobile._pressedDirections.contains(Directions.left)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyA) ||
+        Mobile.pressedDirections.contains(Directions.left)) {
       Player.body.xVelocity -= acceleration;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.keyD) || Mobile._pressedDirections.contains(Directions.right)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyD) ||
+        Mobile.pressedDirections.contains(Directions.right)) {
       Player.body.xVelocity += acceleration;
     }
 
     // Apply friction to player (only if no acceleration is applied in that axis)
     // This prevents friction from immediately counteracting the acceleration
-    bool acceleratingX = (pressedKeys.contains(LogicalKeyboardKey.keyA) || Mobile._pressedDirections.contains(Directions.left)) ||
-                         (pressedKeys.contains(LogicalKeyboardKey.keyD) || Mobile._pressedDirections.contains(Directions.right));
-    bool acceleratingY = (pressedKeys.contains(LogicalKeyboardKey.keyW) || Mobile._pressedDirections.contains(Directions.up)) ||
-                         (pressedKeys.contains(LogicalKeyboardKey.keyS) || Mobile._pressedDirections.contains(Directions.down));
+    bool acceleratingX =
+        (pressedKeys.contains(LogicalKeyboardKey.keyA) ||
+            Mobile.pressedDirections.contains(Directions.left)) ||
+        (pressedKeys.contains(LogicalKeyboardKey.keyD) ||
+            Mobile.pressedDirections.contains(Directions.right));
+    bool acceleratingY =
+        (pressedKeys.contains(LogicalKeyboardKey.keyW) ||
+            Mobile.pressedDirections.contains(Directions.up)) ||
+        (pressedKeys.contains(LogicalKeyboardKey.keyS) ||
+            Mobile.pressedDirections.contains(Directions.down));
 
     if (!acceleratingX) {
       Player.body.xVelocity *= friction;

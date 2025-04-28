@@ -20,23 +20,23 @@ class Engine {
           Player.body.yVelocity * Player.body.yVelocity,
     );
 
-    if (((Player.body.x <= 0 ||
-                Player.body.x >= screenSize.width - Player.body.width) &&
-            Player.body.xVelocity.abs() > 5.0) ||
-        ((Player.body.y <= 0 ||
-                Player.body.y >= screenSize.height - Player.body.height) &&
-            Player.body.yVelocity.abs() > 5.0)) {
-      // Reduce lives on high-speed impact with walls
-      if (playerSpeed > 6.0 && !Game.over) {
-        Player.lives = Player.lives - 1;
-
-        // Check for game over
-        if (Player.lives < 1) {
-          Game.over = true;
-          //Game.animationController.stop();
-        }
-      }
-    }
+    //if (((Player.body.x <= 0 ||
+    //            Player.body.x >= screenSize.width - Player.body.width) &&
+    //        Player.body.xVelocity.abs() > 5.0) ||
+    //    ((Player.body.y <= 0 ||
+    //            Player.body.y >= screenSize.height - Player.body.height) &&
+    //        Player.body.yVelocity.abs() > 5.0)) {
+    //  // Reduce lives on high-speed impact with walls
+    //  //if (playerSpeed > 6.0 && !Game.over) {
+    //  //  Player.lives = Player.lives - 1;
+    //  //
+    //  //  // Check for game over
+    //  //  if (Player.lives < 1) {
+    //  //    Game.over = true;
+    //  //    //Game.animationController.stop();
+    //  //  }
+    //  //}
+    //}
 
     // Check for projectile collisions with enemies and player
     for (int i = Level.projectiles.length - 1; i >= 0; i--) {
