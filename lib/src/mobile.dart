@@ -109,9 +109,8 @@ class Mobile {
     );
   }
 
-  static Widget action(IconData icon, Actions action) {
-    double size = 85;
-
+  // let's improve the action buttons appearance so they look more retro gaming physical buttons AI!
+  static Widget action(IconData icon, Actions action, double size) {
     return GestureDetector(
       onTapDown:
           (_) => switch (action) {
@@ -122,10 +121,10 @@ class Mobile {
       //onTapUp: (_) => pressedDirections.remove(direction),
       //onTapCancel: () => pressedDirections.remove(direction),
       child: Container(
-        width: size,
-        height: size,
+        width: size * 0.7,
+        height: size * 0.7,
         color: Colors.purple, // Button background
-        child: Icon(icon, color: Colors.white, size: size * 0.7),
+        child: Icon(icon, color: Colors.white, size: size * 0.5),
       ),
     );
   }
@@ -137,15 +136,17 @@ class Mobile {
       child: Container(
         color: Colors.blueGrey,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            //SizedBox(width: width * 0.1),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                action(Icons.change_circle, Actions.weapon),
-                SizedBox(height: 20, width: width * 0.9),
-                action(Icons.directions_run, Actions.dash),
+                action(Icons.change_circle, Actions.weapon, width),
                 SizedBox(height: 20),
-                action(Icons.pause, Actions.pause),
+                action(Icons.directions_run, Actions.dash, width),
+                SizedBox(height: 20),
+                action(Icons.pause, Actions.pause, width),
               ],
             ),
             //SizedBox(width: width * 0.1),
@@ -194,7 +195,7 @@ class Mobile {
     var screenWidth = MediaQuery.sizeOf(context).width;
     var screenHeight = MediaQuery.sizeOf(context).height;
 
-    double width = (screenWidth - screenHeight) / 2;
+    double width = (screenWidth / 2) / 2;
 
     return Container(
       color: Colors.purple,
