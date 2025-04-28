@@ -13,7 +13,7 @@ class Camera {
   double viewportWidth;
   double viewportHeight;
 
-  double followSpeed = 0.15; // Balanced for larger map
+  double followSpeed = 0.15;
 
   /// Constructor for camera
   Camera({required this.viewportWidth, required this.viewportHeight});
@@ -47,6 +47,10 @@ class Camera {
     // Apply the clamped position
     x = newX;
     y = newY;
+  }
+
+  void zoomOut() {
+    // let's write a zoomOut function AI!
   }
 
   /// Check if a world rectangle is visible in the viewport
