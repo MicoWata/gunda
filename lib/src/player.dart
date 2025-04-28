@@ -9,10 +9,11 @@ import 'package:gunda/src/level.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/mob.dart';
 import 'package:gunda/src/save.dart';
-import 'package:gunda/src/sound.dart';
+//import 'package:gunda/src/sound.dart'; // Assuming SoundManager handles sounds now
 import 'package:gunda/src/weapon.dart';
 import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/spriteanimation.dart';
+import 'package:gunda/src/mobile.dart'; // Import Mobile to access _pressedDirections
 
 enum Animations { idle, walk, dead }
 
@@ -233,21 +234,33 @@ class Player {
   }
 
   static void updatePlayerMovement() {
-    // Apply acceleration based on pressed keys
-    if (pressedKeys.contains(LogicalKeyboardKey.keyW)) {
+    // Apply acceleration based on pressed keys OR mobile buttons
+    if (pressedKeys.contains(LogicalKeyboardKey.keyW) || Mobile._pressedDirections.contains(Directions.up)) {
       Player.body.yVelocity -= acceleration;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.keyS)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyS) || Mobile._pressedDirections.contains(Directions.down)) {
       Player.body.yVelocity += acceleration;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.keyA)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyA) || Mobile._pressedDirections.contains(Directions.left)) {
       Player.body.xVelocity -= acceleration;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.keyD)) {
+    if (pressedKeys.contains(LogicalKeyboardKey.keyD) || Mobile._pressedDirections.contains(Directions.right)) {
       Player.body.xVelocity += acceleration;
     }
 
-    // Apply friction to player
+    // Apply friction to player (only if no acceleration is applied in that axis)
+    // This prevents friction from immediately counteracting the acceleration
+    bool acceleratingX = (pressedKeys.contains(LogicalKeyboardKey.keyA) || Mobile._pressedDirections.contains(Directions.left)) ||
+                         (pressedKeys.contains(LogicalKeyboardKey.keyD) || Mobile._pressedDirections.contains(Directions.right));
+    bool acceleratingY = (pressedKeys.contains(LogicalKeyboardKey.keyW) || Mobile._pressedDirections.contains(Directions.up)) ||
+                         (pressedKeys.contains(LogicalKeyboardKey.keyS) || Mobile._pressedDirections.contains(Directions.down));
+
+    if (!acceleratingX) {
+      Player.body.xVelocity *= friction;
+    }
+    if (!acceleratingY) {
+      Player.body.yVelocity *= friction;
+    }
     Player.body.xVelocity *= friction;
     Player.body.yVelocity *= friction;
 
@@ -272,45 +285,9 @@ class Player {
     }
   }
 
-  static void moveMobile(Directions direction) {
-    // Apply acceleration based on pressed keys
-    if (direction == Directions.up) {
-      Player.body.yVelocity -= acceleration;
-    }
-    if (direction == Directions.down) {
-      Player.body.yVelocity += acceleration;
-    }
-    if (direction == Directions.left) {
-      Player.body.xVelocity -= acceleration;
-    }
-    if (direction == Directions.right) {
-      Player.body.xVelocity += acceleration;
-    }
-
-    // Apply friction to player
-    Player.body.xVelocity *= friction;
-    Player.body.yVelocity *= friction;
-
-    // Limit player speed
-    final currentSpeed = sqrt(
-      Player.body.xVelocity * Player.body.xVelocity +
-          Player.body.yVelocity * Player.body.yVelocity,
-    );
-
-    if (currentSpeed > maxSpeed) {
-      final ratio = maxSpeed / currentSpeed;
-      Player.body.xVelocity *= ratio;
-      Player.body.yVelocity *= ratio;
-    }
-
-    // Stop very small movements
-    if (Player.body.xVelocity.abs() < minMovementThreshold) {
-      Player.body.xVelocity = 0;
-    }
-    if (Player.body.yVelocity.abs() < minMovementThreshold) {
-      Player.body.yVelocity = 0;
-    }
-  }
+  // static void moveMobile(Directions direction) { // This function is no longer needed as movement is handled in updatePlayerMovement
+  //   // ... (keep old code commented or remove)
+  // }
 
   static Widget build(Camera camera) {
     if (body.xVelocity > 0.01 ||

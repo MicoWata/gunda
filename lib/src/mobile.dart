@@ -3,11 +3,15 @@ import 'dart:io' show Platform;
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/player.dart'; // Import Player
 
 class Mobile {
+  // Set to track currently pressed mobile direction buttons
+  static final Set<Directions> _pressedDirections = {};
+
   double screenWidth = 0;
   double screenHeight = 0;
 
@@ -18,10 +22,8 @@ class Mobile {
   }
 
   static Widget left(double width) {
-    // Add buttons for player movement
-    const double buttonSize = 50.0;
-    const double moveImpulse =
-        Player.acceleration * 15; // Adjust impulse strength as needed
+    // Visual size for the buttons
+    const double buttonVisualSize = 60.0;
 
     return SizedBox(
       width: width,
@@ -40,51 +42,13 @@ class Mobile {
                   const NeverScrollableScrollPhysics(), // Disable scrolling
               children: [
                 Container(), // Top-left empty
-                Container(
-                  color: Colors.purple,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_upward),
-
-                    highlightColor: Colors.blue,
-                    //hoverColor: Colors.blueAccent,
-                    //iconSize: buttonSize,
-                    color: Colors.white,
-                    onPressed: () => Player.moveMobile(Directions.up),
-                  ),
-                ),
+                _buildMoveButton(Icons.arrow_upward, Directions.up, buttonVisualSize),
                 Container(), // Top-right empty
-                Container(
-                  color: Colors.purple,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    highlightColor: Colors.blue,
-                    //iconSize: buttonSize * 0.8,
-                    color: Colors.white,
-                    onPressed: () => Player.moveMobile(Directions.left),
-                  ),
-                ),
-                Container(), // Middle empty (or maybe a dash button later?)
-                Container(
-                  color: Colors.purple,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    highlightColor: Colors.blue,
-                    //iconSize: buttonSize * 0.8,
-                    color: Colors.white,
-                    onPressed: () => Player.moveMobile(Directions.right),
-                  ),
-                ),
+                _buildMoveButton(Icons.arrow_back, Directions.left, buttonVisualSize),
+                Container(), // Middle empty
+                _buildMoveButton(Icons.arrow_forward, Directions.right, buttonVisualSize),
                 Container(), // Bottom-left empty
-                Container(
-                  color: Colors.purple,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_downward),
-                    //iconSize: buttonSize * 0.8,
-                    color: Colors.white,
-                    highlightColor: Colors.blue,
-                    onPressed: () => Player.moveMobile(Directions.down),
-                  ),
-                ),
+                _buildMoveButton(Icons.arrow_downward, Directions.down, buttonVisualSize),
                 Container(), // Bottom-right empty
               ],
             ),
@@ -93,6 +57,26 @@ class Mobile {
       ),
     );
   }
+
+  // Helper widget to build a movement button with GestureDetector
+  static Widget _buildMoveButton(IconData icon, Directions direction, double size) {
+    return GestureDetector(
+      onTapDown: (_) => _pressedDirections.add(direction),
+      onTapUp: (_) => _pressedDirections.remove(direction),
+      onTapCancel: () => _pressedDirections.remove(direction),
+      child: Container(
+        width: size,
+        height: size,
+        color: Colors.purple.withOpacity(0.7), // Button background
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: size * 0.7,
+        ),
+      ),
+    );
+  }
+
 
   static Widget middle(Widget child) {
     return SizedBox(
