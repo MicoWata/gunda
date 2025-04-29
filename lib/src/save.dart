@@ -1,8 +1,9 @@
 import 'dart:convert'; // For jsonEncode/Decode
-import 'dart:io'; // For File operations
-
+// Remove dart:io and path_provider imports
+// import 'dart:io'; // For File operations
+// import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart'; // Required for Color
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import 'package:gunda/src/app.dart'; // For App.snack
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
@@ -21,24 +22,16 @@ class Save {
   factory Save() => _instance;
   Save._internal();
 
-  /// Get the path to the save file
-  static Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
+  // Remove file system path/file getters
 
-  static Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/$_saveFileName');
-  }
-
-  /// Save the current game state to a JSON file
+  /// Save the current game state using SharedPreferences
   static Future<void> saveGame() async {
     // Prevent saving if game is over or paused? Or allow? Currently allows.
     // if (Game.over || Game.paused) return;
 
     try {
-      final file = await _localFile;
+      // Get SharedPreferences instance
+      final prefs = await SharedPreferences.getInstance();
 
       // 1. Gather all game state data
       final gameState = {
@@ -69,10 +62,10 @@ class Save {
       // final jsonString = JsonEncoder.withIndent('  ').convert(gameState);
       final jsonString = jsonEncode(gameState);
 
-      // 3. Write JSON string to the file
-      await file.writeAsString(jsonString);
+      // 3. Write JSON string to SharedPreferences
+      await prefs.setString(_saveFileName, jsonString);
 
-      print('Game saved successfully to ${file.path}');
+      print('Game saved successfully using SharedPreferences.');
       App.snack('Game Saved!'); // Use the snackbar helper
     } catch (e, stacktrace) {
       print('Error saving game: $e');
@@ -81,20 +74,26 @@ class Save {
     }
   }
 
-  /// Load game state from the JSON file
+  /// Load game state from SharedPreferences
   static Future<bool> loadGame() async {
     try {
-      final file = await _localFile;
+      // Get SharedPreferences instance
+      final prefs = await SharedPreferences.getInstance();
 
-      // Check if save file exists
-      if (!await file.exists()) {
-        print('Save file not found.');
-        App.snack('No save file found.');
+      // Check if save data exists
+      if (!prefs.containsKey(_saveFileName)) {
+        print('Save data not found in SharedPreferences.');
+        App.snack('No save data found.');
         return false;
       }
 
-      // Read JSON string from file
-      final jsonString = await file.readAsString();
+      // Read JSON string from SharedPreferences
+      final jsonString = prefs.getString(_saveFileName);
+      if (jsonString == null) {
+        print('Failed to retrieve save data string.');
+        App.snack('Error reading save data.');
+        return false; // Handle null case
+      }
 
       // Decode JSON string to a map
       final gameState = jsonDecode(jsonString) as Map<String, dynamic>;
@@ -170,7 +169,7 @@ class Save {
       // Crucially, update the camera to the loaded player position
       Game.camera.follow(Player.body); // Initial camera sync
 
-      print('Game loaded successfully from ${file.path}');
+      print('Game loaded successfully from SharedPreferences.');
       App.snack('Game Loaded!');
       return true;
     } catch (e, stacktrace) {

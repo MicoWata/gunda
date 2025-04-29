@@ -12,7 +12,8 @@ class AssetManager {
   final Map<String, List<ui.Image>> _spriteSheets = {};
   static final Map<String, AudioPlayer> _sounds = {};
 
-  static final AudioCache _audioCache = AudioCache(prefix: 'assets/sounds/');
+  // Remove AudioCache instance
+  // static final AudioCache _audioCache = AudioCache(prefix: 'assets/sounds/');
 
   Future<ui.Image> _loadUiImage(String path) async {
     final ByteData data = await rootBundle.load(path);
@@ -49,8 +50,14 @@ class AssetManager {
   }
 
   static Future<void> loadSound(String key, String fileName) async {
-    final player = await _audioCache.loadAsFile(fileName);
-    _sounds[key] = AudioPlayer()..setSourceDeviceFile(player.path);
+    // Directly prepare the player with AssetSource
+    final player = AudioPlayer();
+    // Assuming fileName is relative to assets/sounds/ based on previous prefix
+    await player.setSource(AssetSource('sounds/$fileName'));
+    // Keep player ready but don't play yet
+    await player.setVolume(1.0); // Ensure volume is set if needed
+    await player.setReleaseMode(ReleaseMode.stop); // Stop after playing once
+    _sounds[key] = player;
   }
 
   ui.Image? getImage(String key) => _images[key];
