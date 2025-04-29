@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
@@ -26,14 +27,14 @@ class Minimap {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ...Level.drops.map(
-              (drop) => Text(
-                drop.used
-                    ? "USED"
-                    : "${drop.body.x.toStringAsFixed(0)}, ${drop.body.y.toStringAsFixed(0)}",
-                style: const TextStyle(fontSize: 12, color: Colors.white),
-              ),
-            ),
+            //...Level.drops.map(
+            //  (drop) => Text(
+            //    drop.used
+            //        ? "USED"
+            //        : "${drop.body.x.toStringAsFixed(0)}, ${drop.body.y.toStringAsFixed(0)}",
+            //    style: const TextStyle(fontSize: 12, color: Colors.white),
+            //  ),
+            //),
 
             //Text(
             //  'Projectiles: ${Level.projectiles.length}/${Ball.maxProjectiles}',
@@ -48,26 +49,34 @@ class Minimap {
             //  style: const TextStyle(fontSize: 14, color: Colors.white),
             //),
             //const SizedBox(height: 5),
-            Text(
-              'W A S D: Move',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            Text(
-              'Click: Attack',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            Text(
-              'E: Switch Weapon',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            Text(
-              'SPACE: Dash',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
-            Text(
-              'ESCAPE: Pause',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-            ),
+            App.mobile
+                ? Container()
+                : Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Click: Attack',
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                    Text(
+                      'W A S D: Move',
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                    Text(
+                      'E: Switch Weapon',
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                    Text(
+                      'SPACE: Dash',
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                    Text(
+                      'ESCAPE: Pause',
+                      style: const TextStyle(fontSize: 12, color: Colors.white),
+                    ),
+                  ],
+                ),
             // Debugging information
             //Text(
             //  'Map size: ${Game.gameWidth.toInt()}x${Game.gameHeight.toInt()}',

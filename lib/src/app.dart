@@ -92,10 +92,6 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
     Game.animationController.repeat();
 
-    if (Game.playSong) {
-      App.soundManager.playSong('music/song2.wav');
-    }
-
     Mobile.start();
   }
 
@@ -219,9 +215,10 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
 
       Level.size = Size(screenWidth, screenHeight);
     } else {
-      screenWidth = screenHeight;
+      screenWidth /= 2;
       Game.camera.viewportWidth = screenWidth;
       Game.camera.viewportHeight = screenHeight;
+
       Level.size = Size(screenWidth, screenHeight);
     }
 
@@ -236,32 +233,20 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
           onHover: Player.updateMousePosition,
           child: Mobile.build(
             context,
-            //Center(
-            //child: SizedBox(
-            //width: screenWidth,
-            //height: screenHeight,
-            //child:
             GestureDetector(
-              //onTapDown: (TapDownDetails details) {
-              //  // This gives you the position relative to the screen
-              //  Offset tapPosition = details.globalPosition;
-              //
-              //  print('Tap detected at: ${tapPosition.dx}, ${tapPosition.dy}');
-              //},
               onTapDown: (details) {
                 Player.tapDirection = details.localPosition;
                 if (App.mobile) {
                   Player.tapPosition(Player.tapDirection);
                 }
                 Player.click();
-                //print(position.dx);
-                //print(position.dy);
               },
               onTapUp: (details) {
-                //var position = details.globalPosition;
+                Player.tapDirection = details.localPosition;
+                if (App.mobile) {
+                  Player.tapPosition(Player.tapDirection);
+                }
                 _mouseUp();
-                //print(position.dx);
-                //print(position.dy);
               },
 
               child:

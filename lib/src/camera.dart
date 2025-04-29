@@ -53,8 +53,8 @@ class Camera {
   void zoomOut() {
     x = 0;
     y = 0;
-    viewportWidth = Game.gameWidth;
-    viewportHeight = Game.gameHeight;
+    viewportWidth = Game.gameWidth * 8;
+    viewportHeight = Game.gameHeight * 8;
   }
 
   /// Check if a world rectangle is visible in the viewport

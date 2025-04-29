@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
 import 'package:gunda/src/effect.dart';
@@ -17,7 +18,7 @@ class Game {
   static bool over = false;
   static bool next = false;
   static bool start = true;
-  static bool playSong = false;
+  static bool playSong = true;
   static int score = 0;
   static const double gameWidth = 2400;
   static const double gameHeight = 2400;
@@ -26,6 +27,10 @@ class Game {
   static int frame = 0;
 
   static void reset() {
+    //if (App.mobile) {
+    //  gameWidth * 2;
+    //  gameHeight * 2;
+    //}
     //isGameOver = false;
     //lives = Player.maxHearts;
     Player.lives = 3;
@@ -49,8 +54,8 @@ class Game {
       y: Game.gameHeight / 2 - Player.height / 2,
       xVelocity: 0,
       yVelocity: 0,
-      width: Player.width,
-      height: Player.height,
+      width: App.mobile ? Player.width : Player.width,
+      height: App.mobile ? Player.height : Player.height,
       color: Colors.blue,
       mass: Player.playerMass,
     );
@@ -58,6 +63,7 @@ class Game {
     Game.level = 0;
     Level.enter();
 
+    Game.camera.zoomOut();
     // player.load();
   }
 

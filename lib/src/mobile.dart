@@ -28,52 +28,55 @@ class Mobile {
       width: width,
       height: Game.camera.viewportHeight,
       child: Container(
-        color: Colors.blueGrey, // Make it semi-transparent
-        child: Center(
-          child: Row(
-            children: [
-              SizedBox(width: width * 0.25),
-              SizedBox(
-                width: width * 0.7,
-                //height: buttonSize * 3,
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap:
-                      true, // Important to prevent GridView from expanding infinitely
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Disable scrolling
-                  children: [
-                    Container(), // Top-left empty
-                    _buildMoveButton(
-                      Icons.arrow_upward,
-                      Directions.up,
-                      buttonVisualSize,
-                    ),
-                    Container(), // Top-right empty
-                    _buildMoveButton(
-                      Icons.arrow_back,
-                      Directions.left,
-                      buttonVisualSize,
-                    ),
-                    Container(), // Middle empty
-                    _buildMoveButton(
-                      Icons.arrow_forward,
-                      Directions.right,
-                      buttonVisualSize,
-                    ),
-                    Container(), // Bottom-left empty
-                    _buildMoveButton(
-                      Icons.arrow_downward,
-                      Directions.down,
-                      buttonVisualSize,
-                    ),
-                    Container(), // Bottom-right empty
-                  ],
+        //color: Colors.black54, // Make it semi-transparent
+        child:
+            Game.paused
+                ? Container()
+                : Center(
+                  child: Row(
+                    children: [
+                      SizedBox(width: width * 0.25),
+                      SizedBox(
+                        width: width * 0.7,
+                        //height: buttonSize * 3,
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          shrinkWrap:
+                              true, // Important to prevent GridView from expanding infinitely
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Disable scrolling
+                          children: [
+                            Container(), // Top-left empty
+                            _buildMoveButton(
+                              Icons.arrow_upward,
+                              Directions.up,
+                              buttonVisualSize,
+                            ),
+                            Container(), // Top-right empty
+                            _buildMoveButton(
+                              Icons.arrow_back,
+                              Directions.left,
+                              buttonVisualSize,
+                            ),
+                            Container(), // Middle empty
+                            _buildMoveButton(
+                              Icons.arrow_forward,
+                              Directions.right,
+                              buttonVisualSize,
+                            ),
+                            Container(), // Bottom-left empty
+                            _buildMoveButton(
+                              Icons.arrow_downward,
+                              Directions.down,
+                              buttonVisualSize,
+                            ),
+                            Container(), // Bottom-right empty
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -95,37 +98,66 @@ class Mobile {
       child: Container(
         width: size,
         height: size,
-        color: Colors.purple, // Button background
+        decoration: BoxDecoration(
+          color: Colors.deepPurple, // A slightly richer color
+          borderRadius: BorderRadius.circular(size * 0.2), // Rounded corners
+          border: Border.all(
+            color: Colors.black.withOpacity(0.7), // Darker border
+            width: 2.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 2,
+              offset: const Offset(2, 2), // Shadow for a raised effect
+            ),
+          ],
+        ),
         child: Icon(icon, color: Colors.white, size: size * 0.7),
       ),
     );
   }
 
   static Widget middle(Widget child) {
-    return SizedBox(
-      width: Game.camera.viewportWidth,
-      height: Game.camera.viewportHeight,
-      child: child,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.deepPurple, // A slightly richer color
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(2, 2), // Shadow for a raised effect
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: Game.camera.viewportWidth,
+        height: Game.camera.viewportHeight * 0.9,
+        child: child,
+      ),
     );
   }
 
-  // Builds an action button with a retro physical appearance.
   static Widget action(IconData icon, Actions action, double size) {
-    // Define the visual size of the button itself
     final double buttonSize = size * 0.7;
 
     return GestureDetector(
-      onTapDown: (_) => switch (action) {
-        Actions.dash => Player.dash(),
-        Actions.weapon => Player.changeWeapon(),
-        Actions.pause => Game.paused = true,
-      },
+      onTapDown:
+          (_) => switch (action) {
+            Actions.dash => Player.dash(),
+            Actions.weapon => Player.changeWeapon(),
+            Actions.pause => Game.paused = true,
+          },
       child: Container(
         width: buttonSize,
         height: buttonSize,
         decoration: BoxDecoration(
           color: Colors.deepPurple, // A slightly richer color
-          borderRadius: BorderRadius.circular(buttonSize * 0.2), // Rounded corners
+          borderRadius: BorderRadius.circular(
+            buttonSize * 0.2,
+          ), // Rounded corners
           border: Border.all(
             color: Colors.black.withOpacity(0.7), // Darker border
             width: 2.0,
@@ -153,21 +185,23 @@ class Mobile {
       width: width,
       height: Game.camera.viewportHeight,
       child: Container(
-        color: Colors.blueGrey,
+        //color: Colors.black54,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             //SizedBox(width: width * 0.1),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                action(Icons.change_circle, Actions.weapon, width),
-                SizedBox(height: 20),
-                action(Icons.directions_run, Actions.dash, width),
-                SizedBox(height: 20),
-                action(Icons.pause, Actions.pause, width),
-              ],
-            ),
+            Game.paused
+                ? Container()
+                : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    action(Icons.change_circle, Actions.weapon, width),
+                    SizedBox(height: 20),
+                    action(Icons.directions_run, Actions.dash, width),
+                    SizedBox(height: 20),
+                    action(Icons.pause, Actions.pause, width),
+                  ],
+                ),
             //SizedBox(width: width * 0.1),
           ],
         ),
@@ -217,7 +251,7 @@ class Mobile {
     double width = (screenWidth / 2) / 2;
 
     return Container(
-      color: Colors.purple,
+      color: Colors.purple.shade900,
       child:
           App.mobile
               ? Row(

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gunda/src/app.dart';
 import 'package:gunda/src/ball.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/camera.dart';
@@ -249,6 +250,10 @@ class TileMap {
   static List<List<int>> map = [];
 
   static Future<void> loadMap() async {
+    if (App.mobile) {
+      tileSize = 32;
+    }
+
     final String source = Level.zones[Game.level].map;
     //final String source = 'assets/images/level1.txt';
     final String mapData = await rootBundle.loadString(source);

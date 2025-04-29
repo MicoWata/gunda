@@ -17,7 +17,7 @@ import 'package:gunda/src/assetmanager.dart';
 
 class Mob {
   static double value = 1;
-  static Size size = Size(100, 80);
+  static Size size = Size(TileMap.tileSize, TileMap.tileSize * 0.8);
   static double mass = 1.6;
   static int hp = 1;
   static int cooldown = 500;

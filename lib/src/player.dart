@@ -20,8 +20,8 @@ enum Animations { idle, walk, dead }
 enum Directions { left, right, up, down }
 
 class Player {
-  static const double width = 80;
-  static const double height = 100;
+  static double height = TileMap.tileSize;
+  static double width = height * 0.8;
 
   static int maxHearts = 3;
   static int lives = 3;

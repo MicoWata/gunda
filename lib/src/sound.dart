@@ -50,6 +50,7 @@ class SoundManager {
 
     _songPlayer = AudioPlayer();
     // Configure player to loop
+    _songPlayer!.setVolume(1.2);
     await _songPlayer!.setReleaseMode(ReleaseMode.loop);
     await _songPlayer!.play(AssetSource(assetPath));
   }

@@ -12,6 +12,9 @@ class Home {
       onPressed: () async {
         App.home = false;
         Game.paused = false;
+        if (Game.playSong) {
+          App.soundManager.playSong('music/song2.wav');
+        }
       },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
