@@ -241,11 +241,9 @@ class Projectile {
 
         entity.body.applyImpulse(nx * force, ny * force);
 
-        if (entity.hp != null) {
-          entity.hurt();
-          if (entity.hp <= 0) {
-            entity.die(); // Or however you remove enemies
-          }
+        entity.hurt(1);
+        if (entity.hp <= 0) {
+          entity.die(); // Or however you remove enemies
         }
       }
     }

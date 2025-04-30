@@ -145,120 +145,124 @@ class Weapon {
   }
 
   static void spreadShot(Offset mouse) {
-    final playerCenterX = Player.body.centerX;
-    final playerCenterY = Player.body.centerY;
+    if (canShoot) {
+      final playerCenterX = Player.body.centerX;
+      final playerCenterY = Player.body.centerY;
 
-    final dx = mouse.dx - playerCenterX;
-    final dy = mouse.dy - playerCenterY;
+      final dx = mouse.dx - playerCenterX;
+      final dy = mouse.dy - playerCenterY;
 
-    final distance = sqrt(dx * dx + dy * dy);
+      final distance = sqrt(dx * dx + dy * dy);
 
-    if (distance > 0) {
-      final angle = atan2(dy, dx);
-      final speed = 10.0;
+      if (distance > 0) {
+        final angle = atan2(dy, dx);
+        final speed = 10.0;
 
-      // Spread angles in radians (small deviations)
-      final spreadAngles = [
-        -0.2,
-        0.0,
-        0.2,
-      ]; // you can add more for wider spread
+        // Spread angles in radians (small deviations)
+        final spreadAngles = [
+          -0.2,
+          0.0,
+          0.2,
+        ]; // you can add more for wider spread
 
-      final colors = [Colors.orange, Colors.red, Colors.blue];
+        final colors = [Colors.orange, Colors.red, Colors.blue];
 
-      for (int i = 0; i < spreadAngles.length; i++) {
-        final spreadAngle = angle + spreadAngles[i];
+        for (int i = 0; i < spreadAngles.length; i++) {
+          final spreadAngle = angle + spreadAngles[i];
 
-        final vx = cos(spreadAngle) * speed;
-        final vy = sin(spreadAngle) * speed;
+          final vx = cos(spreadAngle) * speed;
+          final vy = sin(spreadAngle) * speed;
 
-        final projectile = Projectile(
-          x: playerCenterX,
-          y: playerCenterY,
-          xVelocity: vx,
-          yVelocity: vy,
-          radius: Ball.projectileRadius,
-          color: colors[i],
-          canExplode: false,
-          mass: Ball.mass,
+          final projectile = Projectile(
+            x: playerCenterX,
+            y: playerCenterY,
+            xVelocity: vx,
+            yVelocity: vy,
+            radius: Ball.projectileRadius,
+            color: colors[i],
+            canExplode: false,
+            mass: Ball.mass,
+          );
+
+          Level.projectiles.add(projectile);
+        }
+
+        final recoilForce = power * Ball.mass / Player.playerMass;
+        Player.body.applyImpulse(
+          -cos(angle) * recoilForce * 2,
+          -sin(angle) * recoilForce * 2,
         );
 
-        Level.projectiles.add(projectile);
+        isChargingShot = false;
+
+        Effect.impact(
+          playerCenterX,
+          playerCenterY,
+          Colors.yellow,
+          minPower * 1.5,
+        );
+
+        canShoot = false;
+        Future.delayed(Duration(milliseconds: cooldown * 4), () {
+          canShoot = true;
+        });
+        App.soundManager.playSoundNew('sounds/pew1.mp3');
       }
-
-      final recoilForce = power * Ball.mass / Player.playerMass;
-      Player.body.applyImpulse(
-        -cos(angle) * recoilForce * 2,
-        -sin(angle) * recoilForce * 2,
-      );
-
-      isChargingShot = false;
-
-      Effect.impact(
-        playerCenterX,
-        playerCenterY,
-        Colors.yellow,
-        minPower * 1.5,
-      );
-
-      canShoot = false;
-      Future.delayed(Duration(milliseconds: cooldown * 4), () {
-        canShoot = true;
-      });
-      App.soundManager.playSoundNew('sounds/pew1.mp3');
     }
   }
 
   static void explosiveShot(Offset mouse) {
-    final playerCenterX = Player.body.centerX;
-    final playerCenterY = Player.body.centerY;
+    if (canShoot) {
+      final playerCenterX = Player.body.centerX;
+      final playerCenterY = Player.body.centerY;
 
-    final dx = mouse.dx - playerCenterX;
-    final dy = mouse.dy - playerCenterY;
+      final dx = mouse.dx - playerCenterX;
+      final dy = mouse.dy - playerCenterY;
 
-    final distance = sqrt(dx * dx + dy * dy);
+      final distance = sqrt(dx * dx + dy * dy);
 
-    if (distance > 0) {
-      final normalizedDx = dx / distance;
-      final normalizedDy = dy / distance;
+      if (distance > 0) {
+        final normalizedDx = dx / distance;
+        final normalizedDy = dy / distance;
 
-      final projectileColor = Colors.orange;
+        final projectileColor = Colors.orange;
 
-      // Create a new projectile with velocity in mouse direction and variable power
-      final projectile = Projectile(
-        x: playerCenterX,
-        y: playerCenterY,
-        xVelocity: normalizedDx * power,
-        yVelocity: normalizedDy * power,
-        radius: Ball.projectileRadius * (power / 8),
-        color: projectileColor,
-        canExplode: true,
-        mass: Ball.mass,
-      );
+        // Create a new projectile with velocity in mouse direction and variable power
+        final projectile = Projectile(
+          x: playerCenterX,
+          y: playerCenterY,
+          xVelocity: normalizedDx * power,
+          yVelocity: normalizedDy * power,
+          radius: Ball.projectileRadius * (power / 8),
+          color: projectileColor,
+          canExplode: true,
+          mass: Ball.mass,
+        );
 
-      final recoilForce = power * Ball.mass / Player.playerMass;
+        final recoilForce = power * Ball.mass / Player.playerMass;
 
-      Player.body.applyImpulse(
-        -normalizedDx * recoilForce * 5,
-        -normalizedDy * recoilForce * 5,
-      );
+        Player.body.applyImpulse(
+          -normalizedDx * recoilForce * 5,
+          -normalizedDy * recoilForce * 5,
+        );
 
-      Level.projectiles.add(projectile);
-      isChargingShot = false;
+        Level.projectiles.add(projectile);
+        isChargingShot = false;
 
-      // Create particle effect at launch position
-      Effect.explosion(playerCenterX, playerCenterY, 20, Colors.yellow);
-      Effect.explosionCircles.removeWhere((circle) {
-        circle.update();
-        return circle.isDone;
-      });
+        // Create particle effect at launch position
+        Effect.explosion(playerCenterX, playerCenterY, 20, Colors.yellow);
+        Effect.explosionCircles.removeWhere((circle) {
+          circle.update();
+          return circle.isDone;
+        });
 
-      // Set cooldown
-      canShoot = false;
-      Future.delayed(Duration(milliseconds: cooldown * 6), () {
-        canShoot = true;
-      });
-      App.soundManager.playSoundNew('sounds/pew1.mp3');
+        // Set cooldown
+        canShoot = false;
+        Future.delayed(Duration(milliseconds: cooldown * 6), () {
+          canShoot = true;
+        });
+        App.soundManager.playSoundNew('sounds/pew1.mp3');
+      }
     }
   }
 
@@ -354,7 +358,7 @@ class Weapon {
                 0.8, // Impact size/intensity
               );
 
-              enemy.hurt();
+              enemy.hurt(1);
             }
           }
         }

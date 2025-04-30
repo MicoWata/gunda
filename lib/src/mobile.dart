@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb; // Import kIsWeb
+import 'package:flutter/foundation.dart' as foundation; // Import kIsWeb
 import 'package:flutter/material.dart';
 import 'package:gunda/src/app.dart';
 import 'package:gunda/src/game.dart';
@@ -14,9 +14,21 @@ class Mobile {
   double screenHeight = 0;
 
   static void start() {
-    // Use kIsWeb to determine if running on web
-    // App.mobile should be true if NOT on web (i.e., on mobile)
-    App.mobile = !kIsWeb;
+    if (foundation.defaultTargetPlatform == TargetPlatform.android ||
+        foundation.defaultTargetPlatform == TargetPlatform.iOS) {
+      App.mobile = true;
+    }
+    if (foundation.kIsWeb &&
+        (foundation.defaultTargetPlatform == TargetPlatform.android ||
+            foundation.defaultTargetPlatform == TargetPlatform.iOS)) {
+      App.mobile = true;
+    }
+    if (foundation.kIsWeb ||
+        foundation.defaultTargetPlatform == TargetPlatform.windows ||
+        foundation.defaultTargetPlatform == TargetPlatform.linux ||
+        foundation.defaultTargetPlatform == TargetPlatform.macOS) {
+      App.mobile = false;
+    }
   }
 
   static Widget left(double width) {

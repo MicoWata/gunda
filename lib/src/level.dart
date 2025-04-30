@@ -102,6 +102,11 @@ class Level {
               color: color,
               mass: Mob.mass, // Slightly lighter than target
             ),
+            hp: switch (Game.challenge) {
+              Challenge.baby => 1,
+              Challenge.normie => 2,
+              Challenge.boss => 3,
+            },
             kind: kind,
           );
 

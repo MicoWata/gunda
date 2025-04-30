@@ -6,15 +6,17 @@ import 'package:gunda/src/save.dart';
 
 class Home {
   static bool skip = false;
+  static bool challenge = false;
 
   static Widget start() {
     return ElevatedButton(
       onPressed: () async {
-        App.home = false;
-        Game.paused = false;
-        if (Game.playSong) {
-          App.soundManager.playSong('music/song2.wav');
-        }
+        challenge = true;
+        //App.home = false;
+        //Game.paused = false;
+        //if (Game.playSong) {
+        //  App.soundManager.playSong('music/song2.wav');
+        //}
       },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
@@ -49,30 +51,84 @@ class Home {
     );
   }
 
+  static Widget welcome() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'GUNDA',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 30),
+          start(),
+          const SizedBox(height: 20),
+          load(),
+          const SizedBox(height: 20),
+          close(),
+        ],
+      ),
+    );
+  }
+
+  static Widget choice(Challenge level) {
+    String text = "Baby";
+
+    if (level == Challenge.normie) {
+      text = "Normie";
+    } else if (level == Challenge.boss) {
+      text = "Boss";
+    }
+
+    return ElevatedButton(
+      onPressed: () async {
+        App.home = false;
+        Game.paused = false;
+        Game.challenge = level;
+
+        if (Game.playSong) {
+          App.soundManager.playSong('music/song2.wav');
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      ),
+      child: Text(text, style: TextStyle(fontSize: 20)),
+    );
+  }
+
+  static Widget difficulty() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'CHALLENGE',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 30),
+          choice(Challenge.baby),
+          const SizedBox(height: 20),
+          choice(Challenge.normie),
+          const SizedBox(height: 20),
+          choice(Challenge.boss),
+        ],
+      ),
+    );
+  }
+
   static Widget build() {
     return Container(
-      color: Colors.teal,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'GUNDA',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 50),
-            start(),
-            const SizedBox(height: 40),
-            load(),
-            const SizedBox(height: 40),
-            close(),
-          ],
-        ),
-      ),
+      color: Colors.deepPurple,
+      child: challenge ? difficulty() : welcome(),
     );
   }
 }

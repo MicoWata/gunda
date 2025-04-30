@@ -654,7 +654,12 @@ class Mob {
           enemy.body.mass = Mob.mass;
 
           enemy.dead = false;
-          enemy.hp = hp;
+
+          enemy.hp = switch (Game.challenge) {
+            Challenge.baby => 1,
+            Challenge.normie => 2,
+            Challenge.boss => 3,
+          };
 
           int roll = Game.random.nextInt(2);
 
@@ -689,7 +694,7 @@ class Mob {
       return Positioned(
         left: enemy.body.x - camera.x,
         top: enemy.body.y - camera.y,
-        child: Container(
+        child: SizedBox(
           width: enemy.body.width,
           height: enemy.body.height,
           //decoration: BoxDecoration(
@@ -762,6 +767,7 @@ class Enemy {
 
   Enemy({
     required this.body,
+    required this.hp,
     this.kind = Ennemies.wild,
   }); // Add kind to constructor if needed
 
@@ -785,7 +791,7 @@ class Enemy {
     }
   }
 
-  void hurt() {
+  void hurt(int damage) {
     hp--;
 
     var r = body.color.r / 4;
@@ -817,11 +823,11 @@ class Enemy {
   factory Enemy.fromJson(Map<String, dynamic> json) =>
       Enemy(
           body: Body.fromJson(json['body'] as Map<String, dynamic>),
+          hp: json['hp'] as int,
           kind: Ennemies.values.firstWhere(
             (e) => e.name == (json['kind'] as String),
           ),
         )
-        ..hp = json['hp'] as int
         ..dead = json['dead'] as bool
         ..canShoot = json['canShoot'] as bool
         ..cooldown = json['cooldown'] as int;

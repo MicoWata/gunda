@@ -88,7 +88,7 @@ class Player {
   static void kill() {
     for (Enemy mob in Level.enemies) {
       if (mob.hp > 0) {
-        mob.hurt();
+        mob.hurt(1);
       }
     }
   }

@@ -9,6 +9,8 @@ import 'package:gunda/src/level.dart';
 import 'package:gunda/src/player.dart';
 import 'package:gunda/src/weapon.dart';
 
+enum Challenge { baby, normie, boss }
+
 class Game {
   static Player player = Player();
   static final Random random = Random();
@@ -18,13 +20,14 @@ class Game {
   static bool over = false;
   static bool next = false;
   static bool start = true;
-  static bool playSong = true;
+  static bool playSong = false;
   static int score = 0;
   static const double gameWidth = 2400;
   static const double gameHeight = 2400;
   static late AnimationController animationController;
   static int level = 0;
   static int frame = 0;
+  static Challenge challenge = Challenge.baby;
 
   static void reset() {
     //if (App.mobile) {
@@ -34,7 +37,7 @@ class Game {
     //isGameOver = false;
     //lives = Player.maxHearts;
     Player.lives = 3;
-    Weapon.kind = Weapons.bazooka;
+    Weapon.kind = Weapons.pistol;
 
     //Level.projectiles.clear();
     //Level.impactParticles.clear();

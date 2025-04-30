@@ -50,7 +50,7 @@ class Engine {
           if (!enemy.dead && projectile.collidesWith(enemy.body)) {
             // Handle player projectile collision with enemy
             Ball.handleProjectileEnemyCollision(projectile, enemy.body, i, j);
-            enemy.hurt();
+            enemy.hurt(1);
             break; // Projectile is removed, move to next one
           }
         }
