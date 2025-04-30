@@ -279,53 +279,54 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                                 : Colors.brown, // Normal background
                         child: Stack(
                           children: [
-                            ...Level.drops.map(
-                              (drop) => Drop.build(drop, Game.camera),
-                            ),
-                            ...(Level.impactParticles.isNotEmpty
-                                ? [
-                                  Effect.particles(
-                                    screenWidth,
-                                    screenHeight,
-                                    Game.camera,
-                                  ),
-                                ]
-                                : []),
-                            ...(Level.projectiles.isNotEmpty
-                                ? [
-                                  Ball.buildCombinedTrails(
-                                    screenWidth,
-                                    screenHeight,
-                                    Game.camera,
-                                  ),
-                                ]
-                                : []),
-                            ...Level.projectiles.map(
-                              (projectile) =>
-                                  Ball.buildBall(projectile, Game.camera),
-                            ),
-                            ...Level.enemies.map(
-                              (enemy) => Mob.build(enemy, Game.camera),
-                            ),
-                            ...Level.obstacles.map(
-                              (obstacle) =>
-                                  Obstacle.build(obstacle, Game.camera),
-                            ),
-                            Player.build(Game.camera),
-                            Weapon.build(
+                            // Temporarily comment out dynamic elements for debugging
+                            // ...Level.drops.map(
+                            //   (drop) => Drop.build(drop, Game.camera),
+                            // ),
+                            // ...(Level.impactParticles.isNotEmpty
+                            //     ? [
+                            //       Effect.particles(
+                            //         screenWidth,
+                            //         screenHeight,
+                            //         Game.camera,
+                            //       ),
+                            //     ]
+                            //     : []),
+                            // ...(Level.projectiles.isNotEmpty
+                            //     ? [
+                            //       Ball.buildCombinedTrails(
+                            //         screenWidth,
+                            //         screenHeight,
+                            //         Game.camera,
+                            //       ),
+                            //     ]
+                            //     : []),
+                            // ...Level.projectiles.map(
+                            //   (projectile) =>
+                            //       Ball.buildBall(projectile, Game.camera),
+                            // ),
+                            // ...Level.enemies.map(
+                            //   (enemy) => Mob.build(enemy, Game.camera),
+                            // ),
+                            // ...Level.obstacles.map(
+                            //   (obstacle) =>
+                            //       Obstacle.build(obstacle, Game.camera),
+                            // ),
+                            Player.build(Game.camera), // Keep Player
+                            Weapon.build( // Keep Weapon
                               screenWidth,
                               screenHeight,
                               Player.mousePosition,
                               Game.camera,
                             ),
-                            Panel.build(),
+                            Panel.build(), // Keep Panel
                             if (Game.effect.showSlowMotion)
                               Container(
                                 width: screenWidth,
                                 height: screenHeight,
                                 color: Colors.blue.withAlpha(25),
                               ),
-                            Minimap.build(
+                            Minimap.build( // Keep Minimap
                               Game.camera,
                               Game.effect.showSlowMotion,
                             ),
@@ -333,7 +334,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                             //if (Game.paused) Pause(),
                             //if (Game.over) Menu.buildGameOverOverlay(),
                             //if (Level.remaining == 0) Game.buildGameOverOverlay(),
-                            DirtyPixel(),
+                            DirtyPixel(), // Keep Shader
                           ],
                         ),
                       ),
