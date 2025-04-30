@@ -12,22 +12,42 @@ class Camera {
 
   double viewportWidth;
   double viewportHeight;
+  double zoomLevel = 1.0; // Initial zoom level
+  static const double minZoom = 0.25; // Minimum zoom out
+  static const double maxZoom = 4.0; // Maximum zoom in
+  static const double zoomSensitivity = 0.1; // Adjust sensitivity as needed
 
   double followSpeed = 0.15;
 
   /// Constructor for camera
   Camera({required this.viewportWidth, required this.viewportHeight});
 
-  /// Update the camera position to follow the target with smooth movement
-  /// but prevent seeing beyond the walls with a fixed camera strategy
-  void follow(Body target) {
-    // Step 1: Fixed approach - strictly define camera viewport limits
-    final maxX = Game.gameWidth - viewportWidth;
-    final maxY = Game.gameHeight - viewportHeight;
+  /// Adjust the camera's zoom level based on scroll delta
+  void zoom(double delta) {
+    // Determine zoom direction and apply zoom factor
+    // Negative delta usually means scrolling up (zoom in), positive means scrolling down (zoom out)
+    double zoomFactor = 1.0 - delta * zoomSensitivity * 0.01; // Adjust multiplier for desired sensitivity
 
-    // Step 2: Calculate ideal target position (center on player)
-    final targetX = target.centerX - viewportWidth / 2;
-    final targetY = target.centerY - viewportHeight / 2;
+    // Update zoom level and clamp it
+    zoomLevel *= zoomFactor;
+    zoomLevel = zoomLevel.clamp(minZoom, maxZoom);
+  }
+
+  /// Update the camera position to follow the target with smooth movement
+  /// but prevent seeing beyond the walls with a fixed camera strategy, considering zoom.
+  void follow(Body target) {
+    // Calculate effective viewport size based on zoom
+    final effectiveViewportWidth = viewportWidth / zoomLevel;
+    final effectiveViewportHeight = viewportHeight / zoomLevel;
+
+    // Step 1: Define camera viewport limits based on effective size
+    // Ensure maxX/maxY are not negative if zoomed out beyond map size
+    final maxX = max(0.0, Game.gameWidth - effectiveViewportWidth);
+    final maxY = max(0.0, Game.gameHeight - effectiveViewportHeight);
+
+    // Step 2: Calculate ideal target position (center on player relative to effective viewport)
+    final targetX = target.centerX - effectiveViewportWidth / 2;
+    final targetY = target.centerY - effectiveViewportHeight / 2;
 
     // Step 3: The critical part - strictly limit the camera target position
     // Calculate how much to move toward target (but not passing map boundaries)
@@ -49,16 +69,13 @@ class Camera {
     y = newY;
   }
 
-  /// Adjusts the camera to view the entire game map.
-  void zoomOut() {
-    x = 0;
-    y = 0;
-    viewportWidth = Game.gameWidth * 8;
-    viewportHeight = Game.gameHeight * 8;
-  }
+  // Removed zoomOut() as it's replaced by the new zoom() method
 
-  /// Check if a world rectangle is visible in the viewport
+  /// Check if a world rectangle is visible in the viewport, considering zoom
   bool isVisible(double worldX, double worldY, double width, double height) {
+    // Calculate the effective viewport boundaries in world coordinates
+    final effectiveViewportWidth = viewportWidth / zoomLevel;
+    final effectiveViewportHeight = viewportHeight / zoomLevel;
     return worldX + width > x &&
         worldX < x + viewportWidth &&
         worldY + height > y &&
@@ -75,9 +92,13 @@ class Camera {
     double worldX,
     double worldY,
     double width,
+    double width,
     double height,
   ) {
     final screenPos = worldToScreen(worldX, worldY);
-    return Rect.fromLTWH(screenPos.dx, screenPos.dy, width, height);
+    // Scale width and height by zoom level
+    final scaledWidth = width * zoomLevel;
+    final scaledHeight = height * zoomLevel;
+    return Rect.fromLTWH(screenPos.dx, screenPos.dy, scaledWidth, scaledHeight);
   }
 }

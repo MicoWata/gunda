@@ -229,13 +229,21 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
           _press(event);
           return KeyEventResult.ignored;
         },
-        child: MouseRegion(
-          onHover: Player.updateMousePosition,
-          child: Mobile.build(
-            context,
-            GestureDetector(
-              onTapDown: (details) {
-                Player.tapDirection = details.localPosition;
+        child: Listener( // Wrap with Listener to catch scroll events
+          onPointerSignal: (pointerSignal) {
+            if (pointerSignal is PointerScrollEvent) {
+              // Use the vertical scroll delta for zooming
+              Game.camera.zoom(pointerSignal.scrollDelta.dy);
+              // No need to call setState explicitly here if _updatePosition already does
+            }
+          },
+          child: MouseRegion(
+            onHover: Player.updateMousePosition,
+            child: Mobile.build(
+              context,
+              GestureDetector(
+                onTapDown: (details) {
+                  Player.tapDirection = details.localPosition;
                 if (App.mobile) {
                   Player.tapPosition(Player.tapDirection);
                 }
