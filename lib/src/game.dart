@@ -66,7 +66,8 @@ class Game {
     Game.level = 0;
     Level.enter();
 
-    Game.camera.zoomOut();
+    // Reset zoom level instead of calling removed zoomOut()
+    Game.camera.zoomLevel = 1.0;
     // player.load();
   }
 

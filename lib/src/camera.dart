@@ -1,3 +1,5 @@
+import 'dart:math'; // Import for max function
+
 import 'package:flutter/material.dart';
 import 'package:gunda/src/body.dart';
 import 'package:gunda/src/game.dart';

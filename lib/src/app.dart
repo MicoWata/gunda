@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart'; // Import for PointerScrollEvent
 import 'package:flutter/material.dart';
 import 'package:gunda/src/assetmanager.dart';
 import 'package:gunda/src/ball.dart';
@@ -337,7 +338,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                         ),
                       ),
             ),
-          ),
+          ), // Add missing parenthesis for Mobile.build
         ),
       ),
       //  ),
