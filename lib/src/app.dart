@@ -338,7 +338,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                         ),
                       ),
             ),
-          ), // Add missing parenthesis for Mobile.build
+          ), // This parenthesis seems extra, removing it.
         ),
       ),
       //  ),
