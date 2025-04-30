@@ -224,7 +224,123 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     }
 
     return Scaffold(
-      body: Container(color: Colors.red), // Temporarily simplified body for debugging
+      body: Focus(
+        autofocus: true,
+        onKeyEvent: (FocusNode node, KeyEvent event) {
+          _press(event);
+          return KeyEventResult.ignored;
+        },
+        child: Listener( // Wrap with Listener to catch scroll events
+          onPointerSignal: (pointerSignal) {
+            if (pointerSignal is PointerScrollEvent) {
+              // Use the vertical scroll delta for zooming
+              Game.camera.zoom(pointerSignal.scrollDelta.dy);
+              // No need to call setState explicitly here if _updatePosition already does
+            }
+          },
+          child: MouseRegion(
+            onHover: Player.updateMousePosition,
+            child: Mobile.build(
+              context,
+              GestureDetector(
+                onTapDown: (details) {
+                  Player.tapDirection = details.localPosition;
+                if (App.mobile) {
+                  Player.tapPosition(Player.tapDirection);
+                }
+                Player.click();
+              },
+              onTapUp: (details) {
+                Player.tapDirection = details.localPosition;
+                if (App.mobile) {
+                  Player.tapPosition(Player.tapDirection);
+                }
+                _mouseUp();
+              },
+
+              child:
+                  _isLoading // Check loading state
+                      ? const Center(
+                        child: CircularProgressIndicator(),
+                      ) // Show loading indicator
+                      : App.home
+                      ? Home.build() // Show home screen if App.home is true
+                      : Game.paused
+                      ? Pause()
+                      : Game.over
+                      ? Menu()
+                      : Container(
+                        // Show game container if not loading and not home
+                        key: _gameAreaKey,
+                        color:
+                            Game.effect.showSlowMotion
+                                ? Colors
+                                    .blueGrey[800] // Darker background for slow motion
+                                : Colors.brown, // Normal background
+                        child: Stack(
+                          children: [
+                            ...Level.drops.map(
+                              (drop) => Drop.build(drop, Game.camera),
+                            ),
+                            ...(Level.impactParticles.isNotEmpty
+                                ? [
+                                  Effect.particles(
+                                    screenWidth,
+                                    screenHeight,
+                                    Game.camera,
+                                  ),
+                                ]
+                                : []),
+                            ...(Level.projectiles.isNotEmpty
+                                ? [
+                                  Ball.buildCombinedTrails(
+                                    screenWidth,
+                                    screenHeight,
+                                    Game.camera,
+                                  ),
+                                ]
+                                : []),
+                            ...Level.projectiles.map(
+                              (projectile) =>
+                                  Ball.buildBall(projectile, Game.camera),
+                            ),
+                            ...Level.enemies.map(
+                              (enemy) => Mob.build(enemy, Game.camera),
+                            ),
+                            ...Level.obstacles.map(
+                              (obstacle) =>
+                                  Obstacle.build(obstacle, Game.camera),
+                            ),
+                            Player.build(Game.camera),
+                            Weapon.build(
+                              screenWidth,
+                              screenHeight,
+                              Player.mousePosition,
+                              Game.camera,
+                            ),
+                            Panel.build(),
+                            if (Game.effect.showSlowMotion)
+                              Container(
+                                width: screenWidth,
+                                height: screenHeight,
+                                color: Colors.blue.withAlpha(25),
+                              ),
+                            Minimap.build(
+                              Game.camera,
+                              Game.effect.showSlowMotion,
+                            ),
+                            // Game over overlay
+                            //if (Game.paused) Pause(),
+                            //if (Game.over) Menu.buildGameOverOverlay(),
+                            //if (Level.remaining == 0) Game.buildGameOverOverlay(),
+                            DirtyPixel(),
+                          ],
+                        ),
+                      ),
+            ),
+          ), // Closes Mobile.build
+        ),
+      ),
       //  ),
       //),
     );
