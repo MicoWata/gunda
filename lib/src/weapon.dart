@@ -358,7 +358,7 @@ class Weapon {
                 0.8, // Impact size/intensity
               );
 
-              enemy.hurt(1);
+              enemy.hurt(3);
             }
           }
         }
