@@ -28,7 +28,11 @@ class Camera {
   void zoom(double delta) {
     // Determine zoom direction and apply zoom factor
     // Negative delta usually means scrolling up (zoom in), positive means scrolling down (zoom out)
-    double zoomFactor = 1.0 - delta * zoomSensitivity * 0.01; // Adjust multiplier for desired sensitivity
+    double zoomFactor =
+        1.0 -
+        delta *
+            zoomSensitivity *
+            0.01; // Adjust multiplier for desired sensitivity
 
     // Update zoom level and clamp it
     zoomLevel *= zoomFactor;

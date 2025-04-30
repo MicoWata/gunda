@@ -93,8 +93,8 @@ class Minimap {
             const SizedBox(height: 10),
             // Mini-map showing game world and current viewport
             Container(
-              width: 120,
-              height: 120,
+              width: App.mobile ? 60 : 120,
+              height: App.mobile ? 60 : 120,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.white),
                 color: Colors.black.withValues(alpha: 0.3),

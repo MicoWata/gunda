@@ -22,8 +22,8 @@ class Game {
   static bool start = true;
   static bool playSong = false;
   static int score = 0;
-  static const double gameWidth = 2400;
-  static const double gameHeight = 2400;
+  static double gameWidth = 2400;
+  static double gameHeight = 2400;
   static late AnimationController animationController;
   static int level = 0;
   static int frame = 0;

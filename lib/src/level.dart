@@ -51,6 +51,12 @@ class Level {
 
     allMob = zone.allMob;
 
+    if (Game.challenge == Challenge.normie) {
+      allMob += 2;
+    } else if (Game.challenge == Challenge.boss) {
+      allMob += 6;
+    }
+
     done = false;
     enemies.clear();
     projectiles.clear();
@@ -113,6 +119,16 @@ class Level {
           enemies.add(enemy);
 
           maxMob++;
+
+          if (Game.challenge == Challenge.normie) {
+            enemies.add(enemy);
+            maxMob++;
+          }
+          if (Game.challenge == Challenge.boss) {
+            enemies.add(enemy);
+            enemies.add(enemy);
+            maxMob += 2;
+          }
         } else if (TileMap.map[y][x] == 9) {
           playerStart = Offset(x.toDouble(), y.toDouble());
           Player.body.x =
@@ -255,9 +271,9 @@ class TileMap {
   static List<List<int>> map = [];
 
   static Future<void> loadMap() async {
-    if (App.mobile) {
-      tileSize = 32;
-    }
+    //if (App.mobile) {
+    //  tileSize = 32;
+    //}
 
     final String source = Level.zones[Game.level].map;
     //final String source = 'assets/images/level1.txt';

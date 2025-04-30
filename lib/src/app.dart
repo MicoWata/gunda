@@ -82,8 +82,18 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     // Initialize game
     Game.reset();
 
+    Mobile.start();
+
+    if (App.mobile) {
+      Game.gameWidth /= 4;
+      Game.gameHeight /= 4;
+    }
+    //if (App.mobile) {
+    //  Game.camera = Camera(viewportWidth: 2200.0, viewportHeight: 2200.0);
+    //} else {
+    //  Game.camera = Camera(viewportWidth: 600.0, viewportHeight: 600.0);
+    //}
     // Set up camera with initial viewport size (will be updated in build)
-    Game.camera = Camera(viewportWidth: 600.0, viewportHeight: 600.0);
 
     // Animation loop for smooth movement
     Game.animationController = AnimationController(
@@ -92,8 +102,6 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     )..addListener(_updatePosition);
 
     Game.animationController.repeat();
-
-    Mobile.start();
   }
 
   @override

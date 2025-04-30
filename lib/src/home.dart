@@ -89,6 +89,7 @@ class Home {
         App.home = false;
         Game.paused = false;
         Game.challenge = level;
+        challenge = false;
 
         if (Game.playSong) {
           App.soundManager.playSong('music/song2.wav');
