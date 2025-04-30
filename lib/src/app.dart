@@ -233,14 +233,14 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         },
         child: Listener(
           // Wrap with Listener to catch scroll events
-          onPointerSignal: (pointerSignal) {
-            if (pointerSignal is PointerScrollEvent) {
-              // Use the vertical scroll delta for zooming
-              // print("OKOKOK"); // Keep for debugging if needed
-              Game.camera.zoom(pointerSignal.scrollDelta.dy);
-              // No need to call setState explicitly here if _updatePosition already does
-            }
-          },
+          //onPointerSignal: (pointerSignal) {
+          //  if (pointerSignal is PointerScrollEvent) {
+          //    // Use the vertical scroll delta for zooming
+          //    // print("OKOKOK"); // Keep for debugging if needed
+          //    Game.camera.zoom(pointerSignal.scrollDelta.dy);
+          //    // No need to call setState explicitly here if _updatePosition already does
+          //  }
+          //},
           child: MouseRegion(
             onHover: Player.updateMousePosition,
             child: Mobile.build(

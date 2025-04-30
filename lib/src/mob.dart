@@ -118,12 +118,19 @@ class Mob {
       // Create projectile color based on enemy's color
       final projectileColor = enemy.body.color.withValues(alpha: 0.8);
 
+      double xVelocity = finalDx * (enemyPowerLevel * 0.5);
+      double yVelocity = finalDy * (enemyPowerLevel * 0.5);
+
+      if (Game.challenge == Challenge.baby) {
+        xVelocity *= 0.5;
+        yVelocity *= 0.5;
+      }
       // Create projectile
       final projectile = Projectile(
         x: enemyCenterX,
         y: enemyCenterY,
-        xVelocity: finalDx * (enemyPowerLevel * 0.5),
-        yVelocity: finalDy * (enemyPowerLevel * 0.5),
+        xVelocity: xVelocity,
+        yVelocity: yVelocity,
         radius: Ball.projectileRadius * 1.5, // Slightly smaller projectiles
         color: projectileColor,
         mass: Ball.mass * 1.0, // Slightly lighter projectiles
