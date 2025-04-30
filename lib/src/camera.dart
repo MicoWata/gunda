@@ -76,23 +76,26 @@ class Camera {
     // Calculate the effective viewport boundaries in world coordinates
     final effectiveViewportWidth = viewportWidth / zoomLevel;
     final effectiveViewportHeight = viewportHeight / zoomLevel;
+    // Use effective dimensions for visibility check
     return worldX + width > x &&
-        worldX < x + viewportWidth &&
+        worldX < x + effectiveViewportWidth &&
         worldY + height > y &&
-        worldY < y + viewportHeight;
+        worldY < y + effectiveViewportHeight;
   }
 
-  /// Transform a world position to screen position
+  /// Transform a world position to screen position, considering zoom
   Offset worldToScreen(double worldX, double worldY) {
-    return Offset(worldX - x, worldY - y);
+    // Calculate position relative to camera, then scale by zoom
+    final relativeX = (worldX - x) * zoomLevel;
+    final relativeY = (worldY - y) * zoomLevel;
+    return Offset(relativeX, relativeY);
   }
 
-  /// Transform a world rectangle to screen rectangle
+  /// Transform a world rectangle to screen rectangle, considering zoom
   Rect worldToScreenRect(
     double worldX,
     double worldY,
-    double width,
-    double width,
+    double width, // Corrected: removed duplicate width parameter
     double height,
   ) {
     final screenPos = worldToScreen(worldX, worldY);
