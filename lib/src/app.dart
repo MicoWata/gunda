@@ -279,39 +279,39 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                                 : Colors.brown, // Normal background
                         child: Stack(
                           children: [
-                            // Temporarily comment out dynamic elements for debugging
-                            // ...Level.drops.map(
-                            //   (drop) => Drop.build(drop, Game.camera),
-                            // ),
-                            // ...(Level.impactParticles.isNotEmpty
-                            //     ? [
-                            //       Effect.particles(
-                            //         screenWidth,
-                            //         screenHeight,
-                            //         Game.camera,
-                            //       ),
-                            //     ]
-                            //     : []),
-                            // ...(Level.projectiles.isNotEmpty
-                            //     ? [
-                            //       Ball.buildCombinedTrails(
-                            //         screenWidth,
-                            //         screenHeight,
-                            //         Game.camera,
-                            //       ),
-                            //     ]
-                            //     : []),
-                            // ...Level.projectiles.map(
-                            //   (projectile) =>
-                            //       Ball.buildBall(projectile, Game.camera),
-                            // ),
-                            // ...Level.enemies.map(
-                            //   (enemy) => Mob.build(enemy, Game.camera),
-                            // ),
-                            // ...Level.obstacles.map(
-                            //   (obstacle) =>
-                            //       Obstacle.build(obstacle, Game.camera),
-                            // ),
+                            // Restore dynamic elements
+                            ...Level.drops.map(
+                              (drop) => Drop.build(drop, Game.camera),
+                            ),
+                            ...(Level.impactParticles.isNotEmpty
+                                ? [
+                                  Effect.particles(
+                                    screenWidth,
+                                    screenHeight,
+                                    Game.camera,
+                                  ),
+                                ]
+                                : []),
+                            ...(Level.projectiles.isNotEmpty
+                                ? [
+                                  Ball.buildCombinedTrails(
+                                    screenWidth,
+                                    screenHeight,
+                                    Game.camera,
+                                  ),
+                                ]
+                                : []),
+                            ...Level.projectiles.map(
+                              (projectile) =>
+                                  Ball.buildBall(projectile, Game.camera),
+                            ),
+                            ...Level.enemies.map(
+                              (enemy) => Mob.build(enemy, Game.camera),
+                            ),
+                            ...Level.obstacles.map(
+                              (obstacle) =>
+                                  Obstacle.build(obstacle, Game.camera),
+                            ),
                             Player.build(Game.camera), // Keep Player
                             Weapon.build( // Keep Weapon
                               screenWidth,
