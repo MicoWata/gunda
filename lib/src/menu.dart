@@ -4,13 +4,6 @@ import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/player.dart';
 
-// you're a good baby
-// now grow up
-// you grow up so fast
-// keep going
-// you're the boss now
-// you can go back to your life
-
 class Menu extends StatelessWidget {
   const Menu({super.key});
 
@@ -80,6 +73,82 @@ class Menu extends StatelessWidget {
     );
   }
 
+  Widget wintext() {
+    // you're a good baby
+    // now grow up
+    // you grow up so fast
+    // keep going
+    // you're the boss now
+    // you can go back to your life
+
+    return switch (Game.challenge) {
+      Challenge.baby => Column(
+        children: [
+          Text(
+            "You're a good baby",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            "Now grow up",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+      Challenge.normie => Column(
+        children: [
+          Text(
+            "You grow up so fast",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            "Keep going",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+      Challenge.boss => Column(
+        children: [
+          Text(
+            "You're the boss now",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            "You can go back to your life",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+    };
+    return Column(children: [Text("You're a good baby"), Text("Now grow up")]);
+  }
+
   Widget victory() {
     return Container(
       color: Colors.green,
@@ -96,6 +165,7 @@ class Menu extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 50),
+            Game.level < Level.zones.length - 1 ? Container() : wintext(),
             Game.level < Level.zones.length - 1 ? keepup() : Container(),
             const SizedBox(height: 40),
             quit(),

@@ -137,7 +137,7 @@ class Weapon {
       );
 
       canShoot = false;
-      Future.delayed(Duration(milliseconds: cooldown), () {
+      Future.delayed(Duration(milliseconds: 100), () {
         canShoot = true;
       });
     }

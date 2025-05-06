@@ -302,10 +302,6 @@ class Player {
     }
   }
 
-  // static void moveMobile(Directions direction) { // This function is no longer needed as movement is handled in updatePlayerMovement
-  //   // ... (keep old code commented or remove)
-  // }
-
   static Widget build(Camera camera) {
     if (body.xVelocity > 0.01 ||
         body.yVelocity > 0.01 ||
@@ -439,7 +435,7 @@ class _PlayerPainter extends CustomPainter {
 
       double dx = 0;
       if (Player.direction == Directions.left) {
-        dx = -78;
+        dx = -50;
       }
       // Define the destination rectangle (the full size of the CustomPaint area)
       final dstRect = Rect.fromLTWH(dx, 0, size.width, size.height);
