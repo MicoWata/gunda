@@ -20,7 +20,7 @@ class Game {
   static bool over = false;
   static bool next = false;
   static bool start = true;
-  static bool playSong = false;
+  static bool playSong = true;
   static int score = 0;
   static double gameWidth = 2400;
   static double gameHeight = 2400;
