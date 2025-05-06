@@ -4,6 +4,13 @@ import 'package:gunda/src/game.dart';
 import 'package:gunda/src/level.dart';
 import 'package:gunda/src/player.dart';
 
+// you're a good baby
+// now grow up
+// you grow up so fast
+// keep going
+// you're the boss now
+// you can go back to your life
+
 class Menu extends StatelessWidget {
   const Menu({super.key});
 

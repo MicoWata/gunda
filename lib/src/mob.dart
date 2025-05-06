@@ -681,6 +681,19 @@ class Mob {
         }
       }
     }
+
+    bool alldead = true;
+
+    for (Enemy enemy in Level.enemies) {
+      if (!enemy.dead) {
+        alldead = false;
+      }
+    }
+
+    if (alldead) {
+      Level.remaining = 0;
+      Game.over = true;
+    }
   }
 
   static Widget build(Enemy enemy, Camera camera) {
@@ -692,11 +705,13 @@ class Mob {
     } else {
       enemy.animation = Animations.idle;
     }
+
     if (enemy.body.xVelocity > 0.01) {
       enemy.direction = Directions.right;
     } else if (enemy.body.xVelocity < -0.01) {
       enemy.direction = Directions.left;
     }
+
     if (!enemy.dead) {
       return Positioned(
         left: enemy.body.x - camera.x,
